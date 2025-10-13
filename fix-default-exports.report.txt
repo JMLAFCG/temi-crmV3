@@ -1,0 +1,6 @@
+Patched files:
+src/pages/admin/RolesPage.tsx
+src/pages/clients/ClientsPage.tsx
+src/pages/documents/DocumentsPage.tsx
+src/pages/settings/IntegrationSettingsPage.tsx
+src/pages/settings/UserSettingsPage.tsx

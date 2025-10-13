@@ -1,0 +1,67 @@
+📦 FICHIERS À UPLOADER SUR GITHUB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ FICHIERS À INCLURE (tous les fichiers SAUF ceux marqués ❌) :
+
+📁 Racine du projet :
+   ✅ package.json
+   ✅ package-lock.json
+   ✅ tsconfig.json
+   ✅ tsconfig.app.json
+   ✅ tsconfig.node.json
+   ✅ vite.config.ts
+   ✅ tailwind.config.js
+   ✅ postcss.config.js
+   ✅ eslint.config.js
+   ✅ playwright.config.ts
+   ✅ vercel.json
+   ✅ index.html
+   ✅ .gitignore
+   ✅ .npmrc
+   ✅ .prettierrc
+   ✅ .prettierignore
+   ✅ README.md
+   ✅ DEPLOIEMENT_VERCEL.md
+   ✅ CORRECTIONS_EFFECTUEES.md
+   ✅ PRET_POUR_DEPLOIEMENT.md
+   ✅ Tous les autres fichiers .md
+
+📁 Dossiers à inclure ENTIÈREMENT :
+   ✅ src/
+   ✅ public/
+   ✅ supabase/
+   ✅ scripts/
+   ✅ tests/
+   ✅ tools/
+   ✅ artifacts/
+   ✅ .github/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ FICHIERS/DOSSIERS À NE PAS UPLOADER :
+
+   ❌ node_modules/ (trop gros, sera recréé automatiquement)
+   ❌ dist/ (sera généré par le build Vercel)
+   ❌ .git/ (sera créé automatiquement)
+   ❌ .env (SÉCURITÉ : ne jamais commiter les secrets!)
+   ❌ .vercel/ (si présent)
+   ❌ playwright-report/ (si présent)
+   ❌ test-results/ (si présent)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 MÉTHODE SIMPLE :
+
+1. Sélectionnez TOUS les fichiers et dossiers de votre projet
+2. Excluez UNIQUEMENT :
+   - node_modules/
+   - dist/
+   - .git/
+   - .env
+3. Uploadez le reste sur GitHub
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ Le fichier .gitignore s'occupera automatiquement de protéger les fichiers
+   sensibles dans les futurs commits !
+

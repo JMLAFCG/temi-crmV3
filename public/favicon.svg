@@ -1,0 +1,35 @@
+<svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Base du bâtiment -->
+  <rect x="20" y="60" width="60" height="30" fill="url(#gradient1)" />
+  
+  <!-- Toit -->
+  <polygon points="15,60 50,30 85,60" fill="url(#gradient2)" />
+  
+  <!-- Fenêtres -->
+  <rect x="30" y="70" width="8" height="8" fill="#ffffff" opacity="0.9" />
+  <rect x="42" y="70" width="8" height="8" fill="#ffffff" opacity="0.9" />
+  <rect x="54" y="70" width="8" height="8" fill="#ffffff" opacity="0.9" />
+  <rect x="66" y="70" width="8" height="8" fill="#ffffff" opacity="0.9" />
+  
+  <!-- Porte -->
+  <rect x="45" y="80" width="10" height="10" fill="#ffffff" opacity="0.9" />
+  
+  <!-- Cheminée -->
+  <rect x="65" y="35" width="6" height="15" fill="url(#gradient3)" />
+  
+  <!-- Définition des gradients -->
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B35" />
+      <stop offset="100%" stop-color="#E55A2B" />
+    </linearGradient>
+    <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ECDC4" />
+      <stop offset="100%" stop-color="#3BB8B0" />
+    </linearGradient>
+    <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE66D" />
+      <stop offset="100%" stop-color="#E6CF5A" />
+    </linearGradient>
+  </defs>
+</svg>
