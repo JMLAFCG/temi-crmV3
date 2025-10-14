@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
+// src/pages/dashboard/DashboardPage.tsx
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Briefcase,
   Users,
@@ -6,7 +7,6 @@ import {
   FileText,
   TrendingUp,
   Clock,
-  Calendar,
   ArrowUpRight,
   Euro,
   AlertTriangle,
@@ -21,6 +21,10 @@ import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/Button';
 import { Logo } from '../../components/ui/Logo';
 
+// 🔌 Supabase (client Vite déjà présent chez toi)
+import { supabase, getCurrentUser } from '../../lib/supabase';
+
+// === Stat cards ===
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -29,7 +33,6 @@ interface StatCardProps {
   positive?: boolean;
   gradient: string;
 }
-
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon, change, positive, gradient }) => {
   return (
     <div className={`relative overflow-hidden rounded-2xl p-6 text-white ${gradient}`}>
@@ -50,11 +53,12 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, change, positiv
         <h3 className="text-white/80 text-sm font-medium mb-1">{title}</h3>
         <p className="text-3xl font-bold">{value}</p>
       </div>
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
     </div>
   );
 };
 
+// === Project cards ===
 interface ProjectCardProps {
   title: string;
   client: string;
@@ -63,7 +67,6 @@ interface ProjectCardProps {
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   priority: 'high' | 'medium' | 'low';
 }
-
 const ProjectCard: React.FC<ProjectCardProps> = ({
   title,
   client,
@@ -77,34 +80,32 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     in_progress: 'bg-blue-100 text-blue-800 border-blue-200',
     completed: 'bg-emerald-100 text-emerald-800 border-emerald-200',
     cancelled: 'bg-red-100 text-red-800 border-red-200',
-  };
+  } as const;
 
   const priorityColors = {
     high: 'bg-red-500',
     medium: 'bg-amber-500',
     low: 'bg-emerald-500',
-  };
+  } as const;
 
   const statusLabels = {
     pending: 'En attente',
     in_progress: 'En cours',
     completed: 'Terminé',
     cancelled: 'Annulé',
-  };
+  } as const;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-300">
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-start space-x-3">
-          <div className={`w-1 h-12 rounded-full ${priorityColors[priority]}`}></div>
+          <div className={`w-1 h-12 rounded-full ${priorityColors[priority]}`} />
           <div>
             <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
             <p className="text-gray-600">Client: {client}</p>
           </div>
         </div>
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[status]}`}
-        >
+        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[status]}`}>
           {statusLabels[status]}
         </span>
       </div>
@@ -120,13 +121,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <div
             className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
-          ></div>
+          />
         </div>
       </div>
     </div>
   );
 };
 
+// === Activity items ===
 interface ActivityItemProps {
   icon: React.ReactNode;
   title: string;
@@ -134,13 +136,12 @@ interface ActivityItemProps {
   time: string;
   type: 'success' | 'warning' | 'info';
 }
-
 const ActivityItem: React.FC<ActivityItemProps> = ({ icon, title, description, time, type }) => {
   const typeColors = {
     success: 'bg-emerald-100 text-emerald-600',
     warning: 'bg-amber-100 text-amber-600',
     info: 'bg-blue-100 text-blue-600',
-  };
+  } as const;
 
   return (
     <div className="flex items-start space-x-4 p-4 hover:bg-gray-50 rounded-xl transition-colors">
@@ -153,165 +154,146 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ icon, title, description, t
     </div>
   );
 };
-import ClientDashboard from './ClientDashboard';
-import EntrepriseDashboard from './EntrepriseDashboard';
-import ApporteurDashboard from './ApporteurDashboard';
 
+// === Page ===
 const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
 
   // Redirection automatique vers le dashboard spécifique selon le rôle
   if (user) {
     const userRole = typeof user.role === 'string' ? user.role : 'unknown_role';
-    switch (userRole) {
-      case 'client':
-        return <ClientDashboard />;
-      case 'entreprise_partenaire':
-      case 'partner_company':
-        return <EntrepriseDashboard />;
-      case 'apporteur':
-      case 'business_provider':
-        return <ApporteurDashboard />;
-      // Les autres rôles (admin, manager, commercial, mandatary) utilisent le dashboard principal
-    }
+    if (userRole === 'client') return <ClientDashboard />;
+    if (userRole === 'entreprise_partenaire' || userRole === 'partner_company') return <EntrepriseDashboard />;
+    if (userRole === 'apporteur' || userRole === 'business_provider') return <ApporteurDashboard />;
   }
 
-  // Interface simplifiée pour les mandataires
+  // Rôles
   const isClient = String(user?.role) === 'client';
   const isApporteur = String(user?.role) === 'apporteur';
   const isMandatary = String(user?.role) === 'mandatary';
 
-  const stats = useMemo(() => [
-    {
-      title: 'Projets Actifs',
-      value: 24,
-      icon: <Briefcase size={24} />,
-      change: '+12%',
-      positive: true,
-      gradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
-    },
-    {
-      title: 'Clients Actifs',
-      value: 18,
-      icon: <Users size={24} />,
-      change: '+5%',
-      positive: true,
-      gradient: 'bg-gradient-to-br from-success-600 to-success-800',
-    },
-    ...(isMandatary
-      ? [
-          {
-            title: 'Devis en attente',
-            value: 8,
-            icon: <FileText size={24} />,
-            change: '+3',
-            positive: true,
-            gradient: 'bg-gradient-to-br from-warning-600 to-warning-800',
-          },
-          {
-            title: 'Commissions',
-            value: '12.5k€',
-            icon: <Euro size={24} />,
-            change: '+8%',
-            positive: true,
-            gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
-          },
-        ]
-      : [
-          {
-            title: 'Entreprises Partenaires',
-            value: 42,
-            icon: <Building size={24} />,
-            change: '+8%',
-            positive: true,
-            gradient: 'bg-gradient-to-br from-secondary-600 to-secondary-800',
-          },
-          {
-            title: "Chiffre d'Affaires",
-            value: '156k€',
-            icon: <Euro size={24} />,
-            change: '+15%',
-            positive: true,
-            gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
-          },
-        ]),
-  ], [isMandatary]);
+  // === NOUVEAU : états dynamiques ===
+  const [counts, setCounts] = useState({ projets: 0, clients: 0, entreprises: 0, ca: 0 });
+  const [loadingStats, setLoadingStats] = useState(true);
 
-  const recentActivities = useMemo(() => [
-    {
-      icon: <Target size={20} />,
-      title: 'Nouveau projet créé',
-      description: 'Projet de rénovation pour Martin Dupont',
-      time: 'Il y a 2h',
-      type: 'success' as const,
-    },
-    {
-      icon: <FileText size={20} />,
-      title: 'Document téléchargé',
-      description: "Plan d'étage pour le projet #1234",
-      time: 'Il y a 4h',
-      type: 'info' as const,
-    },
-    {
-      icon: <Award size={20} />,
-      title: 'Nouvelle entreprise partenaire',
-      description: 'Électricité Moderne a rejoint la plateforme',
-      time: 'Hier',
-      type: 'success' as const,
-    },
-    {
-      icon: <AlertTriangle size={20} />,
-      title: 'Document expirant',
-      description: 'Assurance décennale expire dans 30 jours',
-      time: 'Il y a 1 jour',
-      type: 'warning' as const,
-    },
-  ], []);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const authUser = await getCurrentUser();
+        if (!authUser) { setLoadingStats(false); return; }
 
-  const recentProjects = useMemo(() => [
-    {
-      title: 'Rénovation Cuisine Moderne',
-      client: 'Martin Dupont',
-      budget: '25 000 €',
-      progress: 65,
-      status: 'in_progress' as const,
-      priority: 'high' as const,
-    },
-    {
-      title: 'Extension Maison',
-      client: 'Sophie Martin',
-      budget: '75 000 €',
-      progress: 10,
-      status: 'pending' as const,
-      priority: 'medium' as const,
-    },
-    {
-      title: 'Rénovation Salle de Bain',
-      client: 'Jean Petit',
-      budget: '12 000 €',
-      progress: 100,
-      status: 'completed' as const,
-      priority: 'low' as const,
-    },
-  ], []);
+        const [
+          { count: projets },
+          { count: clients },
+          { count: entreprises },
+          // TODO CA : branche plus tard sur invoices/payments si tu as la table
+        ] = await Promise.all([
+          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
+          supabase.from('clients').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
+          supabase.from('companies').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
+        ]);
+
+        if (!mounted) return;
+        setCounts({
+          projets: projets ?? 0,
+          clients: clients ?? 0,
+          entreprises: entreprises ?? 0,
+          ca: 0,
+        });
+      } finally {
+        if (mounted) setLoadingStats(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  // ⚠️ AVANT : chiffres codés en dur. MAINTENANT : on injecte counts/ca.
+  const stats = useMemo(
+    () => [
+      {
+        title: 'Projets Actifs',
+        value: loadingStats ? '—' : counts.projets,
+        icon: <Briefcase size={24} />,
+        change: '+12%',
+        positive: true,
+        gradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
+      },
+      {
+        title: 'Clients Actifs',
+        value: loadingStats ? '—' : counts.clients,
+        icon: <Users size={24} />,
+        change: '+5%',
+        positive: true,
+        gradient: 'bg-gradient-to-br from-success-600 to-success-800',
+      },
+      ...(isMandatary
+        ? [
+            {
+              title: 'Devis en attente',
+              value: 8,
+              icon: <FileText size={24} />,
+              change: '+3',
+              positive: true,
+              gradient: 'bg-gradient-to-br from-warning-600 to-warning-800',
+            },
+            {
+              title: 'Commissions',
+              value: '—', // branchement réel à faire si tu as la table
+              icon: <Euro size={24} />,
+              change: '+8%',
+              positive: true,
+              gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
+            },
+          ]
+        : [
+            {
+              title: 'Entreprises Partenaires',
+              value: loadingStats ? '—' : counts.entreprises,
+              icon: <Building size={24} />,
+              change: '+8%',
+              positive: true,
+              gradient: 'bg-gradient-to-br from-secondary-600 to-secondary-800',
+            },
+            {
+              title: "Chiffre d'Affaires",
+              value: loadingStats ? '—' : `${counts.ca.toLocaleString('fr-FR')} €`,
+              icon: <Euro size={24} />,
+              change: '+15%',
+              positive: true,
+              gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
+            },
+          ]),
+    ],
+    [counts, loadingStats, isMandatary],
+  );
+
+  const recentActivities = useMemo(
+    () => [
+      { icon: <Target size={20} />, title: 'Nouveau projet créé', description: 'Projet de rénovation pour Martin Dupont', time: 'Il y a 2h', type: 'success' as const },
+      { icon: <FileText size={20} />, title: 'Document téléchargé', description: "Plan d'étage pour le projet #1234", time: 'Il y a 4h', type: 'info' as const },
+      { icon: <Award size={20} />, title: 'Nouvelle entreprise partenaire', description: 'Électricité Moderne a rejoint la plateforme', time: 'Hier', type: 'success' as const },
+      { icon: <AlertTriangle size={20} />, title: 'Document expirant', description: 'Assurance décennale expire dans 30 jours', time: 'Il y a 1 jour', type: 'warning' as const },
+    ],
+    [],
+  );
+
+  const recentProjects = useMemo(
+    () => [
+      { title: 'Rénovation Cuisine Moderne', client: 'Martin Dupont', budget: '25 000 €', progress: 65, status: 'in_progress' as const, priority: 'high' as const },
+      { title: 'Extension Maison', client: 'Sophie Martin', budget: '75 000 €', progress: 10, status: 'pending' as const, priority: 'medium' as const },
+      { title: 'Rénovation Salle de Bain', client: 'Jean Petit', budget: '12 000 €', progress: 100, status: 'completed' as const, priority: 'low' as const },
+    ],
+    [],
+  );
 
   const getQuickActions = useCallback(() => {
     if (isClient || isApporteur || isMandatary) {
       return [
         {
           icon: <Zap size={20} />,
-          title: isClient
-            ? 'Nouveau projet'
-            : isApporteur
-              ? 'Voir mes apports'
-              : isMandatary
-                ? 'Créer un devis'
-                : 'Action rapide',
-          description: isClient
-            ? 'Démarrer un nouveau projet'
-            : isApporteur
-              ? 'Consulter mes commissions'
-              : 'Nouveau devis client',
+          title: isClient ? 'Nouveau projet' : isApporteur ? 'Voir mes apports' : 'Créer un devis',
+          description: isClient ? 'Démarrer un nouveau projet' : isApporteur ? 'Consulter mes commissions' : 'Nouveau devis client',
           action: 'Commencer',
           gradient: 'from-primary-50 to-primary-100',
           iconGradient: 'from-primary-500 to-primary-600',
@@ -346,9 +328,7 @@ const DashboardPage: React.FC = () => {
               Bonjour, {user?.firstName || 'Utilisateur'} 👋
             </h1>
             <p className="text-secondary-700 text-lg">
-              {isMandatary
-                ? 'Gérez vos projets et clients efficacement'
-                : "Voici un aperçu de votre activité aujourd'hui"}
+              {isMandatary ? 'Gérez vos projets et clients efficacement' : "Voici un aperçu de votre activité aujourd'hui"}
             </p>
           </div>
 
@@ -366,18 +346,18 @@ const DashboardPage: React.FC = () => {
 
             <button className="p-3 rounded-2xl bg-accent-500/80 backdrop-blur-sm text-primary-600 relative shadow-lg hover:shadow-xl hover:bg-accent-500 transition-all duration-200 transform hover:scale-105">
               <Bell size={20} />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-warning-600 rounded-full animate-pulse"></span>
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-warning-600 rounded-full animate-pulse" />
             </button>
 
             <button className="p-3 rounded-2xl bg-accent-500/80 backdrop-blur-sm text-primary-600 relative shadow-lg hover:shadow-xl hover:bg-accent-500 transition-all duration-200 transform hover:scale-105">
               <MessageSquare size={20} />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-warning-500 rounded-full animate-pulse"></span>
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-warning-500 rounded-full animate-pulse" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Statistiques */}
+      {/* Statistiques dynamiques */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, index) => (
           <StatCard
@@ -393,7 +373,7 @@ const DashboardPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Graphique des revenus */}
+        {/* Graphique des revenus (toujours mock pour l’instant) */}
         <div className="lg:col-span-2">
           <div className="bg-accent-500/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 border border-accent-500/20">
             <div className="flex justify-between items-center mb-6">
@@ -413,30 +393,15 @@ const DashboardPage: React.FC = () => {
               {[35, 45, 30, 25, 40, 50, 60, 45, 50, 55, 70, 65].map((height, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center">
                   <div
-                    className={`w-full rounded-t-lg transition-all duration-700 delay-${i * 100} ${
+                    className={`w-full rounded-t-lg transition-all duration-700 ${
                       i === 11
                         ? 'bg-gradient-to-t from-primary-500 to-secondary-700 shadow-lg'
-                        : 'bg-gradient-to-t from-secondary-200 to-secondary-300 hover:from-primary-200 hover:to-secondary-400 transition-all duration-300'
+                        : 'bg-gradient-to-t from-secondary-200 to-secondary-300 hover:from-primary-200 hover:to-secondary-400'
                     }`}
                     style={{ height: `${height * 3}px` }}
-                  ></div>
+                  />
                   <span className="text-xs text-secondary-600 mt-2 font-medium">
-                    {
-                      [
-                        'Jan',
-                        'Fév',
-                        'Mar',
-                        'Avr',
-                        'Mai',
-                        'Jun',
-                        'Jul',
-                        'Aoû',
-                        'Sep',
-                        'Oct',
-                        'Nov',
-                        'Déc',
-                      ][i]
-                    }
+                    {['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][i]}
                   </span>
                 </div>
               ))}
@@ -444,7 +409,7 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Activité récente */}
+        {/* Activité récente (mock) */}
         <div>
           <div className="bg-accent-500/90 backdrop-blur-sm rounded-3xl shadow-xl border border-accent-500/20 h-fit">
             <div className="p-6 border-b border-gray-100/50">
@@ -468,16 +433,14 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className="p-6 border-t border-gray-100/50">
-              <Button variant="outline" fullWidth>
-                Voir toute l'activité
-              </Button>
+              <Button variant="outline" fullWidth>Voir toute l'activité</Button>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Projets récents + Commissions/Alertes (mocks) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        {/* Projets récents */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20">
           <div className="p-6 border-b border-gray-100/50">
             <div className="flex justify-between items-center">
@@ -487,39 +450,21 @@ const DashboardPage: React.FC = () => {
                 </h2>
                 <p className="text-neutral-600">Suivi de vos projets en cours</p>
               </div>
-              <Button variant="outline" size="sm">
-                Voir tous
-              </Button>
+              <Button variant="outline" size="sm">Voir tous</Button>
             </div>
           </div>
 
           <div className="p-6 space-y-4">
             {recentProjects.map((project, index) => (
-              <ProjectCard
-                key={index}
-                title={project.title}
-                client={project.client}
-                budget={project.budget}
-                progress={project.progress}
-                status={project.status}
-                priority={project.priority}
-              />
+              <ProjectCard key={index} {...project} />
             ))}
           </div>
         </div>
 
-        {/* Commissions et alertes */}
         <div className="space-y-6">
-          {/* Commissions ou alertes selon le rôle */}
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6">
             <h2 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
-              {isClient
-                ? 'Mes Documents'
-                : isApporteur
-                  ? 'Mes Commissions'
-                  : isMandatary
-                    ? 'Mes Commissions'
-                    : 'Commissions'}
+              {isClient ? 'Mes Documents' : isApporteur || isMandatary ? 'Mes Commissions' : 'Commissions'}
             </h2>
 
             <div className="space-y-4">
@@ -530,19 +475,13 @@ const DashboardPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <p className="font-semibold text-neutral-900">
-                      {isClient
-                        ? 'Documents validés'
-                        : isApporteur
-                          ? 'Mes commissions'
-                          : isMandatary
-                            ? 'Mes commissions'
-                            : 'Ce mois'}
+                      {isClient ? 'Documents validés' : (isApporteur || isMandatary) ? 'Mes commissions' : 'Ce mois'}
                     </p>
-                    <p className="text-sm text-neutral-600">Mai 2025</p>
+                    <p className="text-sm text-neutral-600">Mois courant</p>
                   </div>
                 </div>
                 <p className="font-bold text-2xl text-neutral-900">
-                  {isClient ? '2/3' : isApporteur ? '2 150 €' : isMandatary ? '3 250 €' : '8 750 €'}
+                  {isClient ? '2/3' : (isApporteur || isMandatary) ? '—' : '—'}
                 </p>
               </div>
 
@@ -553,33 +492,18 @@ const DashboardPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <p className="font-semibold text-neutral-900">
-                      {isClient
-                        ? 'En attente'
-                        : isApporteur
-                          ? 'À recevoir'
-                          : isMandatary
-                            ? 'À recevoir'
-                            : 'En attente'}
+                      {isClient ? 'En attente' : (isApporteur || isMandatary) ? 'À recevoir' : 'En attente'}
                     </p>
                     <p className="text-sm text-neutral-600">
-                      {isClient
-                        ? 'Validation documents'
-                        : isApporteur
-                          ? 'Commissions'
-                          : isMandatary
-                            ? 'Commissions'
-                            : 'Projets en cours'}
+                      {isClient ? 'Validation documents' : (isApporteur || isMandatary) ? 'Commissions' : 'Projets en cours'}
                     </p>
                   </div>
                 </div>
-                <p className="font-bold text-2xl text-neutral-900">
-                  {isClient ? '1' : isApporteur ? '850 €' : isMandatary ? '1 850 €' : '12 350 €'}
-                </p>
+                <p className="font-bold text-2xl text-neutral-900">—</p>
               </div>
             </div>
           </div>
 
-          {/* Alertes ou actions rapides selon le rôle */}
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6">
             <h2 className="text-xl font-bold bg-gradient-to-r from-warning-600 to-error-600 bg-clip-text text-transparent mb-6">
               {isClient || isApporteur || isMandatary ? 'Actions Rapides' : 'Alertes Importantes'}
@@ -591,29 +515,31 @@ const DashboardPage: React.FC = () => {
                   key={index}
                   className={`flex items-start p-4 bg-gradient-to-r ${action.gradient} rounded-xl border border-primary-200`}
                 >
-                  <div
-                    className={`p-2 rounded-lg bg-gradient-to-r ${action.iconGradient} text-white mr-4 shadow-lg`}
-                  >
+                  <div className={`p-2 rounded-lg bg-gradient-to-r ${action.iconGradient} text-white mr-4 shadow-lg`}>
                     {action.icon}
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-neutral-900">{action.title}</p>
                     <p className="text-sm text-neutral-600">{action.description}</p>
-                    <Button variant="outline" size="sm" className="mt-2">
-                      {action.action}
-                    </Button>
+                    <Button variant="outline" size="sm" className="mt-2">{action.action}</Button>
                   </div>
                 </div>
               ))}
 
-              {getAlerts().map((alert, index) => (
+              {[
+                {
+                  icon: <AlertTriangle size={20} />,
+                  title: 'Document expirant',
+                  description: 'Assurance décennale expire dans 30 jours',
+                  gradient: 'from-warning-50 to-warning-100',
+                  iconGradient: 'from-warning-500 to-warning-600',
+                },
+              ].map((alert, index) => (
                 <div
                   key={`alert-${index}`}
                   className={`flex items-start p-4 bg-gradient-to-r ${alert.gradient} rounded-xl border border-warning-200`}
                 >
-                  <div
-                    className={`p-2 rounded-lg bg-gradient-to-r ${alert.iconGradient} text-white mr-4 shadow-lg`}
-                  >
+                  <div className={`p-2 rounded-lg bg-gradient-to-r ${alert.iconGradient} text-white mr-4 shadow-lg`}>
                     {alert.icon}
                   </div>
                   <div>
@@ -630,4 +556,9 @@ const DashboardPage: React.FC = () => {
   );
 };
 
+import ClientDashboard from './ClientDashboard';
+import EntrepriseDashboard from './EntrepriseDashboard';
+import ApporteurDashboard from './ApporteurDashboard';
+
 export default DashboardPage;
+
