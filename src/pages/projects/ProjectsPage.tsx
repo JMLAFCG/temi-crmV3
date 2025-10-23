@@ -126,7 +126,7 @@ const ProjectsPage: React.FC = () => {
       setLoading(true);
       setLoadError(null);
       try {
-        // Jointure client via ta contrainte exacte 'projects_client_id_fkey'
+        // ⚠️ Suppression de full_name (n'existe pas dans ta table users)
         const { data, error } = await supabase
           .from('projects')
           .select(`
@@ -138,26 +138,23 @@ const ProjectsPage: React.FC = () => {
             activities,
             created_at,
             is_demo,
-            client:users!projects_client_id_fkey(first_name,last_name,full_name)
+            client:users!projects_client_id_fkey(first_name,last_name)
           `)
-          .eq('is_demo', false) // on masque les éventuels projets de démo
-          .order('created_at', { ascending: false });
+          .eq('is_demo', false)
+          .order('created_at', { ascending: false })
+          .limit(60);
 
         if (error) throw error;
 
         const adapted: ProjectCardProps[] = (data ?? []).map((p: any) => {
           const clientName =
-            p.client?.full_name ||
-            [p.client?.first_name, p.client?.last_name].filter(Boolean).join(' ') ||
-            '—';
+            [p.client?.first_name, p.client?.last_name].filter(Boolean).join(' ') || '—';
 
           const materials = Number(p.budget?.materials ?? 0);
           const labor     = Number(p.budget?.labor ?? 0);
           const services  = Number(p.budget?.services ?? 0);
-          const budgetTotal =
-            Number.isFinite(materials + labor + services)
-              ? materials + labor + services
-              : undefined;
+          const sum = materials + labor + services;
+          const budgetTotal = Number.isFinite(sum) ? sum : undefined;
 
           const dueDate = p.timeline?.endDate ?? p.timeline?.end_date ?? undefined;
 
@@ -315,4 +312,3 @@ const ProjectsPage: React.FC = () => {
 };
 
 export default ProjectsPage;
-
