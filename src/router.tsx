@@ -1,3 +1,4 @@
+// src/router.tsx
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
@@ -6,11 +7,26 @@ import ErrorBoundary from './ui/ErrorBoundary';
 import Guard from './utils/routeGuard';
 import { paths } from './routes/paths';
 
-const Suspense = ({ children }: { children: React.ReactNode }) => (
-  <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div></div>}>{children}</React.Suspense>
+/** Wrapper Suspense (évite les confusions avec React.Suspense et calme le linter) */
+const AppSuspense = ({ children }: { children: React.ReactNode }) => (
+  <React.Suspense
+    fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    }
+  >
+    {children}
+  </React.Suspense>
 );
 
-const lazyDefault = (factory: () => Promise<any>, modulePath: string) =>
+/** Helper lazy avec typing strict pour satisfaire le typecheck CI */
+const lazyDefault = <
+  T extends { default: React.ComponentType<any> }
+>(
+  factory: () => Promise<T>,
+  modulePath: string
+) =>
   React.lazy(async () => {
     const mod = await factory();
     if (!mod?.default) {
@@ -19,11 +35,13 @@ const lazyDefault = (factory: () => Promise<any>, modulePath: string) =>
     return { default: mod.default };
   });
 
-// Import des pages avec les bons chemins
+// ---------------------- Imports paresseux (lazy) ----------------------
+
 const Dashboard = lazyDefault(
   () => import('./pages/dashboard/DashboardPage'),
   'src/pages/dashboard/DashboardPage.tsx'
 );
+
 const ClientsPage = lazyDefault(
   () => import('./pages/clients/ClientListPage'),
   'src/pages/clients/ClientListPage.tsx'
@@ -36,6 +54,7 @@ const ClientDetailsPage = lazyDefault(
   () => import('./pages/clients/ClientDetailsPage'),
   'src/pages/clients/ClientDetailsPage.tsx'
 );
+
 const CompaniesPage = lazyDefault(
   () => import('./pages/companies/CompaniesPage'),
   'src/pages/companies/CompaniesPage.tsx'
@@ -48,6 +67,7 @@ const CompanyDetailsPage = lazyDefault(
   () => import('./pages/companies/CompanyDetailsPage'),
   'src/pages/companies/CompanyDetailsPage.tsx'
 );
+
 const ProjectsPage = lazyDefault(
   () => import('./pages/projects/ProjectsPage'),
   'src/pages/projects/ProjectsPage.tsx'
@@ -56,6 +76,7 @@ const CreateProjectPage = lazyDefault(
   () => import('./pages/projects/CreateProjectPage'),
   'src/pages/projects/CreateProjectPage.tsx'
 );
+
 const BusinessProviderPage = lazyDefault(
   () => import('./pages/providers/BusinessProviderPage'),
   'src/pages/providers/BusinessProviderPage.tsx'
@@ -68,6 +89,7 @@ const BusinessProviderDetailsPage = lazyDefault(
   () => import('./pages/providers/BusinessProviderDetailsPage'),
   'src/pages/providers/BusinessProviderDetailsPage.tsx'
 );
+
 const DocumentsPage = lazyDefault(
   () => import('./pages/documents/DocumentsPage'),
   'src/pages/documents/DocumentsPage.tsx'
@@ -80,6 +102,7 @@ const MessagesPage = lazyDefault(
   () => import('./pages/messages/MessagesPage'),
   'src/pages/messages/MessagesPage.tsx'
 );
+
 const CommissionsPage = lazyDefault(
   () => import('./pages/commissions/CommissionsPage'),
   'src/pages/commissions/CommissionsPage.tsx'
@@ -88,6 +111,7 @@ const MandataryCommissionsPage = lazyDefault(
   () => import('./pages/commissions/MandataryCommissionsPage'),
   'src/pages/commissions/MandataryCommissionsPage.tsx'
 );
+
 const InvoicingPage = lazyDefault(
   () => import('./pages/invoicing/InvoicingPage'),
   'src/pages/invoicing/InvoicingPage.tsx'
@@ -96,6 +120,7 @@ const AuditPage = lazyDefault(
   () => import('./pages/audit/AuditPage'),
   'src/pages/audit/AuditPage.tsx'
 );
+
 const AIManagementPage = lazyDefault(
   () => import('./pages/admin/AIManagementPage'),
   'src/pages/admin/AIManagementPage.tsx'
@@ -108,6 +133,7 @@ const APIDocumentationPage = lazyDefault(
   () => import('./pages/api/APIDocumentationPage'),
   'src/pages/api/APIDocumentationPage.tsx'
 );
+
 const SettingsLayout = lazyDefault(
   () => import('./pages/settings/SettingsLayout'),
   'src/pages/settings/SettingsLayout.tsx'
@@ -132,6 +158,7 @@ const IntegrationSettingsPage = lazyDefault(
   () => import('./pages/settings/IntegrationSettingsPage'),
   'src/pages/settings/IntegrationSettingsPage.tsx'
 );
+
 const UserDetailsPage = lazyDefault(
   () => import('./pages/users/UserDetailsPage'),
   'src/pages/users/UserDetailsPage.tsx'
@@ -140,6 +167,7 @@ const UserDashboardViewer = lazyDefault(
   () => import('./components/users/UserDashboardViewer'),
   'src/components/users/UserDashboardViewer.tsx'
 );
+
 const LoginPage = lazyDefault(
   () => import('./pages/auth/LoginPage'),
   'src/pages/auth/LoginPage.tsx'
@@ -152,47 +180,52 @@ const ResetPasswordPage = lazyDefault(
   () => import('./pages/auth/ResetPasswordPage'),
   'src/pages/auth/ResetPasswordPage.tsx'
 );
+
 const HomePage = lazyDefault(
   () => import('./pages/HomePage'),
   'src/pages/HomePage.tsx'
 );
 
+// ---------------------- Définition du router ----------------------
+
 const mainRoutes = createBrowserRouter([
-  // Page d'accueil publique
+  // Public
   {
     path: paths.home,
     element: (
-      <Suspense>
+      <AppSuspense>
         <HomePage />
-      </Suspense>
+      </AppSuspense>
     ),
   },
-  // Routes d'authentification
+
+  // Auth
   {
     path: paths.login,
     element: (
-      <Suspense>
+      <AppSuspense>
         <LoginPage />
-      </Suspense>
+      </AppSuspense>
     ),
   },
   {
     path: paths.register,
     element: (
-      <Suspense>
+      <AppSuspense>
         <RegisterPage />
-      </Suspense>
+      </AppSuspense>
     ),
   },
   {
     path: paths.resetPassword,
     element: (
-      <Suspense>
+      <AppSuspense>
         <ResetPasswordPage />
-      </Suspense>
+      </AppSuspense>
     ),
   },
-  // Routes protégées avec AppLayout
+
+  // Protégé par AppLayout
   {
     element: <AppLayout />,
     errorElement: (
@@ -205,9 +238,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.dashboard,
         element: (
           <Guard>
-            <Suspense>
+            <AppSuspense>
               <Dashboard />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -215,9 +248,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.dashboardClient,
         element: (
           <Guard roles={['client', 'admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <Dashboard />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -225,9 +258,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.dashboardEntreprise,
         element: (
           <Guard roles={['partner_company', 'admin', 'manager']}>
-            <Suspense>
+            <AppSuspense>
               <Dashboard />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -235,19 +268,21 @@ const mainRoutes = createBrowserRouter([
         path: paths.dashboardApporteur,
         element: (
           <Guard roles={['business_provider', 'admin', 'manager']}>
-            <Suspense>
+            <AppSuspense>
               <Dashboard />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
+
+      // Clients
       {
         path: paths.clients,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <ClientsPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -255,9 +290,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.clientsCreate,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <CreateClientPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -265,19 +300,21 @@ const mainRoutes = createBrowserRouter([
         path: paths.clientDetails,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <ClientDetailsPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
+
+      // Entreprises
       {
         path: paths.companies,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <CompaniesPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -285,9 +322,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.companiesCreate,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <CreateCompanyPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -295,19 +332,21 @@ const mainRoutes = createBrowserRouter([
         path: paths.companyDetails,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <CompanyDetailsPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
+
+      // Projets
       {
         path: paths.projects,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary', 'client']}>
-            <Suspense>
+            <AppSuspense>
               <ProjectsPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -315,19 +354,21 @@ const mainRoutes = createBrowserRouter([
         path: paths.projectsCreate,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <CreateProjectPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
+
+      // Apporteurs
       {
         path: paths.providers,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
+            <AppSuspense>
               <BusinessProviderPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -335,9 +376,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.providersCreate,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
+            <AppSuspense>
               <CreateBusinessProviderPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -345,21 +386,21 @@ const mainRoutes = createBrowserRouter([
         path: paths.providerDetails,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
+            <AppSuspense>
               <BusinessProviderDetailsPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
+
+      // Divers
       {
         path: paths.documents,
         element: (
-          <Guard
-            roles={['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company']}
-          >
-            <Suspense>
+          <Guard roles={['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company']}>
+            <AppSuspense>
               <DocumentsPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -367,21 +408,19 @@ const mainRoutes = createBrowserRouter([
         path: paths.calendar,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <CalendarPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
       {
         path: paths.messages,
         element: (
-          <Guard
-            roles={['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company']}
-          >
-            <Suspense>
+          <Guard roles={['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company']}>
+            <AppSuspense>
               <MessagesPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -389,9 +428,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.commissions,
         element: (
           <Guard roles={['admin', 'manager', 'business_provider']}>
-            <Suspense>
+            <AppSuspense>
               <CommissionsPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -399,9 +438,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.commissionsMandataries,
         element: (
           <Guard roles={['admin', 'manager', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <MandataryCommissionsPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -409,9 +448,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.invoicing,
         element: (
           <Guard roles={['admin', 'manager', 'comptable']}>
-            <Suspense>
+            <AppSuspense>
               <InvoicingPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -419,9 +458,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.audit,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
+            <AppSuspense>
               <AuditPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -429,9 +468,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.aiManagement,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
+            <AppSuspense>
               <AIManagementPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -439,9 +478,9 @@ const mainRoutes = createBrowserRouter([
         path: paths.adminGuide,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
+            <AppSuspense>
               <GuideApplicationPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
@@ -449,19 +488,21 @@ const mainRoutes = createBrowserRouter([
         path: paths.apiDocumentation,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
+            <AppSuspense>
               <APIDocumentationPage />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
       },
+
+      // Settings (routes enfants)
       {
         path: paths.settings,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
+            <AppSuspense>
               <SettingsLayout />
-            </Suspense>
+            </AppSuspense>
           </Guard>
         ),
         children: [
@@ -469,72 +510,69 @@ const mainRoutes = createBrowserRouter([
           {
             path: 'general',
             element: (
-              <Suspense>
+              <AppSuspense>
                 <GeneralSettingsPage />
-              </Suspense>
+              </AppSuspense>
             ),
           },
           {
             path: 'users',
             element: (
-              <Suspense>
+              <AppSuspense>
                 <UserSettingsPage />
-              </Suspense>
+              </AppSuspense>
             ),
           },
           {
             path: 'users/:id',
             element: (
-              <Suspense>
+              <AppSuspense>
                 <UserDetailsPage />
-              </Suspense>
+              </AppSuspense>
             ),
           },
           {
             path: 'roles',
             element: (
-              <Suspense>
+              <AppSuspense>
                 <RoleSettingsPage />
-              </Suspense>
+              </AppSuspense>
             ),
           },
           {
             path: 'billing',
             element: (
-              <Suspense>
+              <AppSuspense>
                 <BillingSettingsPage />
-              </Suspense>
+              </AppSuspense>
             ),
           },
           {
             path: 'integrations',
             element: (
-              <Suspense>
+              <AppSuspense>
                 <IntegrationSettingsPage />
-              </Suspense>
+              </AppSuspense>
             ),
           },
         ],
       },
+
+      // Dashboard utilisateur
       {
         path: paths.userDashboard,
         element: (
-          <Suspense>
+          <AppSuspense>
             <UserDashboardViewer />
-          </Suspense>
+          </AppSuspense>
         ),
       },
     ],
   },
-  // Routes 404 - en dehors du layout
-  {
-    path: paths.notFound,
-    element: <NotFound />,
-  },
-  {
-    path: '*',
-    element: <NotFound />,
-  },
+
+  // 404
+  { path: paths.notFound, element: <NotFound /> },
+  { path: '*', element: <NotFound /> },
 ]);
 
 export default mainRoutes;
