@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { ClientForm } from '../../components/clients/ClientForm';
 import { useClientStore } from '../../store/clientStore';
+import { paths } from '../../routes/paths';
 
 const CreateClientPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,10 +14,10 @@ const CreateClientPage: React.FC = () => {
   const handleSubmit = async (data: any) => {
     setIsLoading(true);
     try {
-      // ⚠️ on attend l'insert pour récupérer l'id du client
+      // On attend l'insert pour récupérer l'id du client
       const inserted = await createClient(data);
 
-      // on tente proprement plusieurs formes possibles de retour
+      // On tente proprement plusieurs formes possibles de retour
       const newClientId =
         inserted?.id ??
         inserted?.[0]?.id ??
@@ -24,19 +25,20 @@ const CreateClientPage: React.FC = () => {
         inserted?.data?.id;
 
       if (newClientId) {
-        // ✅ enchaînement : on va directement sur "Créer projet" avec le client pré-sélectionné
-        navigate(`/projects/create?client_id=${newClientId}`);
+        // Enchaînement : aller sur "Créer projet" avec le client pré-sélectionné
+        navigate(
+          `${paths.projectsCreate}?client_id=${encodeURIComponent(newClientId)}`
+        );
       } else {
         console.warn(
           '[CreateClientPage] id client non détecté dans la réponse, retour à la liste.',
           inserted
         );
-        navigate('/clients');
+        navigate(paths.clients);
       }
     } catch (error) {
       console.error('Error creating client', error);
-      // en cas d’erreur on retourne sur la liste (comportement actuel)
-      navigate('/clients');
+      navigate(paths.clients);
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +49,7 @@ const CreateClientPage: React.FC = () => {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/clients')}
+          onClick={() => navigate(paths.clients)}
           className="flex items-center text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft size={20} className="mr-2" />
@@ -60,7 +62,7 @@ const CreateClientPage: React.FC = () => {
 
         <ClientForm
           onSubmit={handleSubmit}
-          onCancel={() => navigate('/clients')}
+          onCancel={() => navigate(paths.clients)}
           isLoading={isLoading}
         />
       </div>
@@ -69,4 +71,5 @@ const CreateClientPage: React.FC = () => {
 };
 
 export default CreateClientPage;
+
 
