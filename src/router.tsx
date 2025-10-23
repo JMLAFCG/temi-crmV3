@@ -7,7 +7,7 @@ import ErrorBoundary from './ui/ErrorBoundary';
 import Guard from './utils/routeGuard';
 import { paths } from './routes/paths';
 
-/** Wrapper Suspense (évite les confusions avec React.Suspense et calme le linter) */
+/** Wrapper Suspense unique */
 const AppSuspense = ({ children }: { children: React.ReactNode }) => (
   <React.Suspense
     fallback={
@@ -20,7 +20,7 @@ const AppSuspense = ({ children }: { children: React.ReactNode }) => (
   </React.Suspense>
 );
 
-/** Helper lazy avec typing strict pour satisfaire le typecheck CI */
+/** Lazy helper typé pour le typecheck CI */
 const lazyDefault = <
   T extends { default: React.ComponentType<any> }
 >(
@@ -35,159 +35,55 @@ const lazyDefault = <
     return { default: mod.default };
   });
 
-// ---------------------- Imports paresseux (lazy) ----------------------
+// ---------- Imports paresseux ----------
+const Dashboard = lazyDefault(() => import('./pages/dashboard/DashboardPage'), 'src/pages/dashboard/DashboardPage.tsx');
 
-const Dashboard = lazyDefault(
-  () => import('./pages/dashboard/DashboardPage'),
-  'src/pages/dashboard/DashboardPage.tsx'
-);
+const ClientsPage = lazyDefault(() => import('./pages/clients/ClientListPage'), 'src/pages/clients/ClientListPage.tsx');
+const CreateClientPage = lazyDefault(() => import('./pages/clients/CreateClientPage'), 'src/pages/clients/CreateClientPage.tsx');
+const ClientDetailsPage = lazyDefault(() => import('./pages/clients/ClientDetailsPage'), 'src/pages/clients/ClientDetailsPage.tsx');
 
-const ClientsPage = lazyDefault(
-  () => import('./pages/clients/ClientListPage'),
-  'src/pages/clients/ClientListPage.tsx'
-);
-const CreateClientPage = lazyDefault(
-  () => import('./pages/clients/CreateClientPage'),
-  'src/pages/clients/CreateClientPage.tsx'
-);
-const ClientDetailsPage = lazyDefault(
-  () => import('./pages/clients/ClientDetailsPage'),
-  'src/pages/clients/ClientDetailsPage.tsx'
-);
+const CompaniesPage = lazyDefault(() => import('./pages/companies/CompaniesPage'), 'src/pages/companies/CompaniesPage.tsx');
+const CreateCompanyPage = lazyDefault(() => import('./pages/companies/CreateCompanyPage'), 'src/pages/companies/CreateCompanyPage.tsx');
+const CompanyDetailsPage = lazyDefault(() => import('./pages/companies/CompanyDetailsPage'), 'src/pages/companies/CompanyDetailsPage.tsx');
 
-const CompaniesPage = lazyDefault(
-  () => import('./pages/companies/CompaniesPage'),
-  'src/pages/companies/CompaniesPage.tsx'
-);
-const CreateCompanyPage = lazyDefault(
-  () => import('./pages/companies/CreateCompanyPage'),
-  'src/pages/companies/CreateCompanyPage.tsx'
-);
-const CompanyDetailsPage = lazyDefault(
-  () => import('./pages/companies/CompanyDetailsPage'),
-  'src/pages/companies/CompanyDetailsPage.tsx'
-);
+const ProjectsPage = lazyDefault(() => import('./pages/projects/ProjectsPage'), 'src/pages/projects/ProjectsPage.tsx');
+const CreateProjectPage = lazyDefault(() => import('./pages/projects/CreateProjectPage'), 'src/pages/projects/CreateProjectPage.tsx');
 
-const ProjectsPage = lazyDefault(
-  () => import('./pages/projects/ProjectsPage'),
-  'src/pages/projects/ProjectsPage.tsx'
-);
-const CreateProjectPage = lazyDefault(
-  () => import('./pages/projects/CreateProjectPage'),
-  'src/pages/projects/CreateProjectPage.tsx'
-);
+const BusinessProviderPage = lazyDefault(() => import('./pages/providers/BusinessProviderPage'), 'src/pages/providers/BusinessProviderPage.tsx');
+const CreateBusinessProviderPage = lazyDefault(() => import('./pages/providers/CreateBusinessProviderPage'), 'src/pages/providers/CreateBusinessProviderPage.tsx');
+const BusinessProviderDetailsPage = lazyDefault(() => import('./pages/providers/BusinessProviderDetailsPage'), 'src/pages/providers/BusinessProviderDetailsPage.tsx');
 
-const BusinessProviderPage = lazyDefault(
-  () => import('./pages/providers/BusinessProviderPage'),
-  'src/pages/providers/BusinessProviderPage.tsx'
-);
-const CreateBusinessProviderPage = lazyDefault(
-  () => import('./pages/providers/CreateBusinessProviderPage'),
-  'src/pages/providers/CreateBusinessProviderPage.tsx'
-);
-const BusinessProviderDetailsPage = lazyDefault(
-  () => import('./pages/providers/BusinessProviderDetailsPage'),
-  'src/pages/providers/BusinessProviderDetailsPage.tsx'
-);
+const DocumentsPage = lazyDefault(() => import('./pages/documents/DocumentsPage'), 'src/pages/documents/DocumentsPage.tsx');
+const CalendarPage = lazyDefault(() => import('./pages/calendar/CalendarPage'), 'src/pages/calendar/CalendarPage.tsx');
+const MessagesPage = lazyDefault(() => import('./pages/messages/MessagesPage'), 'src/pages/messages/MessagesPage.tsx');
 
-const DocumentsPage = lazyDefault(
-  () => import('./pages/documents/DocumentsPage'),
-  'src/pages/documents/DocumentsPage.tsx'
-);
-const CalendarPage = lazyDefault(
-  () => import('./pages/calendar/CalendarPage'),
-  'src/pages/calendar/CalendarPage.tsx'
-);
-const MessagesPage = lazyDefault(
-  () => import('./pages/messages/MessagesPage'),
-  'src/pages/messages/MessagesPage.tsx'
-);
+const CommissionsPage = lazyDefault(() => import('./pages/commissions/CommissionsPage'), 'src/pages/commissions/CommissionsPage.tsx');
+const MandataryCommissionsPage = lazyDefault(() => import('./pages/commissions/MandataryCommissionsPage'), 'src/pages/commissions/MandataryCommissionsPage.tsx');
 
-const CommissionsPage = lazyDefault(
-  () => import('./pages/commissions/CommissionsPage'),
-  'src/pages/commissions/CommissionsPage.tsx'
-);
-const MandataryCommissionsPage = lazyDefault(
-  () => import('./pages/commissions/MandataryCommissionsPage'),
-  'src/pages/commissions/MandataryCommissionsPage.tsx'
-);
+const InvoicingPage = lazyDefault(() => import('./pages/invoicing/InvoicingPage'), 'src/pages/invoicing/InvoicingPage.tsx');
+const AuditPage = lazyDefault(() => import('./pages/audit/AuditPage'), 'src/pages/audit/AuditPage.tsx');
 
-const InvoicingPage = lazyDefault(
-  () => import('./pages/invoicing/InvoicingPage'),
-  'src/pages/invoicing/InvoicingPage.tsx'
-);
-const AuditPage = lazyDefault(
-  () => import('./pages/audit/AuditPage'),
-  'src/pages/audit/AuditPage.tsx'
-);
+const AIManagementPage = lazyDefault(() => import('./pages/admin/AIManagementPage'), 'src/pages/admin/AIManagementPage.tsx');
+const GuideApplicationPage = lazyDefault(() => import('./pages/admin/GuideApplicationPage'), 'src/pages/admin/GuideApplicationPage.tsx');
+const APIDocumentationPage = lazyDefault(() => import('./pages/api/APIDocumentationPage'), 'src/pages/api/APIDocumentationPage.tsx');
 
-const AIManagementPage = lazyDefault(
-  () => import('./pages/admin/AIManagementPage'),
-  'src/pages/admin/AIManagementPage.tsx'
-);
-const GuideApplicationPage = lazyDefault(
-  () => import('./pages/admin/GuideApplicationPage'),
-  'src/pages/admin/GuideApplicationPage.tsx'
-);
-const APIDocumentationPage = lazyDefault(
-  () => import('./pages/api/APIDocumentationPage'),
-  'src/pages/api/APIDocumentationPage.tsx'
-);
+const SettingsLayout = lazyDefault(() => import('./pages/settings/SettingsLayout'), 'src/pages/settings/SettingsLayout.tsx');
+const GeneralSettingsPage = lazyDefault(() => import('./pages/settings/GeneralSettingsPage'), 'src/pages/settings/GeneralSettingsPage.tsx');
+const UserSettingsPage = lazyDefault(() => import('./pages/settings/UserSettingsPage'), 'src/pages/settings/UserSettingsPage.tsx');
+const RoleSettingsPage = lazyDefault(() => import('./pages/settings/RoleSettingsPage'), 'src/pages/settings/RoleSettingsPage.tsx');
+const BillingSettingsPage = lazyDefault(() => import('./pages/settings/BillingSettingsPage'), 'src/pages/settings/BillingSettingsPage.tsx');
+const IntegrationSettingsPage = lazyDefault(() => import('./pages/settings/IntegrationSettingsPage'), 'src/pages/settings/IntegrationSettingsPage.tsx');
 
-const SettingsLayout = lazyDefault(
-  () => import('./pages/settings/SettingsLayout'),
-  'src/pages/settings/SettingsLayout.tsx'
-);
-const GeneralSettingsPage = lazyDefault(
-  () => import('./pages/settings/GeneralSettingsPage'),
-  'src/pages/settings/GeneralSettingsPage.tsx'
-);
-const UserSettingsPage = lazyDefault(
-  () => import('./pages/settings/UserSettingsPage'),
-  'src/pages/settings/UserSettingsPage.tsx'
-);
-const RoleSettingsPage = lazyDefault(
-  () => import('./pages/settings/RoleSettingsPage'),
-  'src/pages/settings/RoleSettingsPage.tsx'
-);
-const BillingSettingsPage = lazyDefault(
-  () => import('./pages/settings/BillingSettingsPage'),
-  'src/pages/settings/BillingSettingsPage.tsx'
-);
-const IntegrationSettingsPage = lazyDefault(
-  () => import('./pages/settings/IntegrationSettingsPage'),
-  'src/pages/settings/IntegrationSettingsPage.tsx'
-);
+const UserDetailsPage = lazyDefault(() => import('./pages/users/UserDetailsPage'), 'src/pages/users/UserDetailsPage.tsx');
+const UserDashboardViewer = lazyDefault(() => import('./components/users/UserDashboardViewer'), 'src/components/users/UserDashboardViewer.tsx');
 
-const UserDetailsPage = lazyDefault(
-  () => import('./pages/users/UserDetailsPage'),
-  'src/pages/users/UserDetailsPage.tsx'
-);
-const UserDashboardViewer = lazyDefault(
-  () => import('./components/users/UserDashboardViewer'),
-  'src/components/users/UserDashboardViewer.tsx'
-);
+const LoginPage = lazyDefault(() => import('./pages/auth/LoginPage'), 'src/pages/auth/LoginPage.tsx');
+const RegisterPage = lazyDefault(() => import('./pages/auth/RegisterPage'), 'src/pages/auth/RegisterPage.tsx');
+const ResetPasswordPage = lazyDefault(() => import('./pages/auth/ResetPasswordPage'), 'src/pages/auth/ResetPasswordPage.tsx');
 
-const LoginPage = lazyDefault(
-  () => import('./pages/auth/LoginPage'),
-  'src/pages/auth/LoginPage.tsx'
-);
-const RegisterPage = lazyDefault(
-  () => import('./pages/auth/RegisterPage'),
-  'src/pages/auth/RegisterPage.tsx'
-);
-const ResetPasswordPage = lazyDefault(
-  () => import('./pages/auth/ResetPasswordPage'),
-  'src/pages/auth/ResetPasswordPage.tsx'
-);
+const HomePage = lazyDefault(() => import('./pages/HomePage'), 'src/pages/HomePage.tsx');
 
-const HomePage = lazyDefault(
-  () => import('./pages/HomePage'),
-  'src/pages/HomePage.tsx'
-);
-
-// ---------------------- Définition du router ----------------------
-
+// ---------- Router ----------
 const mainRoutes = createBrowserRouter([
   // Public
   {
@@ -234,6 +130,7 @@ const mainRoutes = createBrowserRouter([
       </ErrorBoundary>
     ),
     children: [
+      // Dashboards
       {
         path: paths.dashboard,
         element: (
@@ -495,7 +392,7 @@ const mainRoutes = createBrowserRouter([
         ),
       },
 
-      // Settings (routes enfants)
+      // Settings (enfants)
       {
         path: paths.settings,
         element: (
@@ -507,54 +404,12 @@ const mainRoutes = createBrowserRouter([
         ),
         children: [
           { index: true, element: <Navigate to={paths.settingsGeneral} replace /> },
-          {
-            path: 'general',
-            element: (
-              <AppSuspense>
-                <GeneralSettingsPage />
-              </AppSuspense>
-            ),
-          },
-          {
-            path: 'users',
-            element: (
-              <AppSuspense>
-                <UserSettingsPage />
-              </AppSuspense>
-            ),
-          },
-          {
-            path: 'users/:id',
-            element: (
-              <AppSuspense>
-                <UserDetailsPage />
-              </AppSuspense>
-            ),
-          },
-          {
-            path: 'roles',
-            element: (
-              <AppSuspense>
-                <RoleSettingsPage />
-              </AppSuspense>
-            ),
-          },
-          {
-            path: 'billing',
-            element: (
-              <AppSuspense>
-                <BillingSettingsPage />
-              </AppSuspense>
-            ),
-          },
-          {
-            path: 'integrations',
-            element: (
-              <AppSuspense>
-                <IntegrationSettingsPage />
-              </AppSuspense>
-            ),
-          },
+          { path: 'general', element: <AppSuspense><GeneralSettingsPage /></AppSuspense> },
+          { path: 'users', element: <AppSuspense><UserSettingsPage /></AppSuspense> },
+          { path: 'users/:id', element: <AppSuspense><UserDetailsPage /></AppSuspense> },
+          { path: 'roles', element: <AppSuspense><RoleSettingsPage /></AppSuspense> },
+          { path: 'billing', element: <AppSuspense><BillingSettingsPage /></AppSuspense> },
+          { path: 'integrations', element: <AppSuspense><IntegrationSettingsPage /></AppSuspense> },
         ],
       },
 
@@ -576,3 +431,4 @@ const mainRoutes = createBrowserRouter([
 ]);
 
 export default mainRoutes;
+
