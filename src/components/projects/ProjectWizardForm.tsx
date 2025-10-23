@@ -1,3 +1,5 @@
+
+
 // src/components/projects/ProjectWizardForm.tsx
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -23,6 +25,7 @@ import { SignaturePad } from './SignaturePad';
 import { BusinessProviderSelector } from './BusinessProviderSelector';
 import { AgentSelector } from './AgentSelector';
 import { Photo } from '../../types';
+import { useSearchParams } from 'react-router-dom'; // ⬅️ pour pré-sélection client depuis l’URL
 
 interface ProjectWizardFormProps {
   onSubmit: (data: any) => void;
@@ -59,6 +62,7 @@ const OBJECTIVE_OPTIONS = [
 export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, onCancel }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [searchParams] = useSearchParams(); // ⬅️
 
   const {
     register,
@@ -109,6 +113,16 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
     },
   });
 
+  // Pré-sélection client depuis l’URL ?client_id=...
+  useEffect(() => {
+    const cid = searchParams.get('client_id');
+    if (cid) {
+      setValue('client_id', cid, { shouldDirty: true, shouldValidate: true });
+      // on arrive directement sur l’étape suivante si tu veux accélérer :
+      // setCurrentStep(1);
+    }
+  }, [searchParams, setValue]);
+
   // valeurs "watch" utiles
   const projectType = watch('project_type');
   const projectObjective = watch('objective');
@@ -116,7 +130,9 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
   const labor = watch('budget.labor') as number | undefined;
 
   // calcul numérique + synchro du total dans le form
-  const total = (Number(materials) || 0) + (Number(labor) || 0);
+  const totalRaw = (Number(materials) || 0) + (Number(labor) || 0);
+  const total = Number.isFinite(totalRaw) ? totalRaw : 0;
+
   useEffect(() => {
     setValue('budget.total', total, { shouldDirty: true });
   }, [total, setValue]);
@@ -222,7 +238,7 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
         );
 
       case 'type':
-        // ===== Étape 4 : cartes cliquables + style actif =====
+        // Étape 4 : cartes cliquables + style actif
         return (
           <div className="space-y-6">
             <div>
@@ -325,7 +341,7 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
         );
 
       case 'budget':
-        // ===== Étape 6 : addition numérique + formatage =====
+        // Étape 6 : addition numérique + formatage
         return (
           <div className="space-y-6">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
@@ -335,6 +351,7 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
                 <Input
                   label="Budget matériaux (€)"
                   type="number"
+                  inputMode="decimal"
                   {...register('budget.materials', {
                     valueAsNumber: true,
                     required: 'Le budget matériaux est requis',
@@ -347,6 +364,7 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
                 <Input
                   label="Budget main d'œuvre (€)"
                   type="number"
+                  inputMode="decimal"
                   {...register('budget.labor', {
                     valueAsNumber: true,
                     required: "Le budget main d'œuvre est requis",
@@ -522,4 +540,3 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
     </div>
   );
 };
-
