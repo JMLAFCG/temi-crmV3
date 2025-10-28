@@ -8,18 +8,14 @@ import { safeNavigate } from '../../lib/safeNavigate';
 
 export const AppLayout: FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, checkAuth, isLoading } = useAuthStore();
+  const { user, isLoading, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !isAuthenticated) {
       safeNavigate(navigate, 'login');
     }
-  }, [user, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   // Redirection automatique selon le rôle
   useEffect(() => {
