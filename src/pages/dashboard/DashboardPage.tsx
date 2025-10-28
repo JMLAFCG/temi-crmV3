@@ -174,6 +174,7 @@ const DashboardPage: React.FC = () => {
 
   // === NOUVEAU : états dynamiques ===
   const [counts, setCounts] = useState({ projets: 0, clients: 0, entreprises: 0, ca: 0 });
+  const [changes, setChanges] = useState({ projets: 0, clients: 0, entreprises: 0, ca: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
@@ -183,22 +184,49 @@ const DashboardPage: React.FC = () => {
         const authUser = await getCurrentUser();
         if (!authUser) { setLoadingStats(false); return; }
 
+        const now = new Date();
+        const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+        const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString();
+
         const [
-          { count: projets },
-          { count: clients },
-          { count: entreprises },
-          // TODO CA : branche plus tard sur invoices/payments si tu as la table
+          { count: projetsTotal },
+          { count: projetsThisMonth },
+          { count: projetsLastMonth },
+          { count: clientsTotal },
+          { count: clientsThisMonth },
+          { count: clientsLastMonth },
+          { count: entreprisesTotal },
+          { count: entreprisesThisMonth },
+          { count: entreprisesLastMonth },
         ] = await Promise.all([
-          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
-          supabase.from('clients').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
-          supabase.from('companies').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
+          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_demo', false),
+          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_demo', false).gte('created_at', firstDayThisMonth),
+          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_demo', false).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth),
+          supabase.from('clients').select('*', { count: 'exact', head: true }),
+          supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', firstDayThisMonth),
+          supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth),
+          supabase.from('companies').select('*', { count: 'exact', head: true }),
+          supabase.from('companies').select('*', { count: 'exact', head: true }).gte('created_at', firstDayThisMonth),
+          supabase.from('companies').select('*', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth),
         ]);
+
+        const calculateChange = (current: number, previous: number) => {
+          if (previous === 0) return current > 0 ? 100 : 0;
+          return Math.round(((current - previous) / previous) * 100);
+        };
 
         if (!mounted) return;
         setCounts({
-          projets: projets ?? 0,
-          clients: clients ?? 0,
-          entreprises: entreprises ?? 0,
+          projets: projetsTotal ?? 0,
+          clients: clientsTotal ?? 0,
+          entreprises: entreprisesTotal ?? 0,
+          ca: 0,
+        });
+        setChanges({
+          projets: calculateChange(projetsThisMonth ?? 0, projetsLastMonth ?? 0),
+          clients: calculateChange(clientsThisMonth ?? 0, clientsLastMonth ?? 0),
+          entreprises: calculateChange(entreprisesThisMonth ?? 0, entreprisesLastMonth ?? 0),
           ca: 0,
         });
       } finally {
@@ -208,40 +236,40 @@ const DashboardPage: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  // ⚠️ AVANT : chiffres codés en dur. MAINTENANT : on injecte counts/ca.
+  // Stats avec pourcentages réels calculés
   const stats = useMemo(
     () => [
       {
         title: 'Projets Actifs',
         value: loadingStats ? '—' : counts.projets,
         icon: <Briefcase size={24} />,
-        change: '+12%',
-        positive: true,
+        change: loadingStats ? '' : changes.projets === 0 ? '' : `${changes.projets > 0 ? '+' : ''}${changes.projets}%`,
+        positive: changes.projets >= 0,
         gradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
       },
       {
         title: 'Clients Actifs',
         value: loadingStats ? '—' : counts.clients,
         icon: <Users size={24} />,
-        change: '+5%',
-        positive: true,
+        change: loadingStats ? '' : changes.clients === 0 ? '' : `${changes.clients > 0 ? '+' : ''}${changes.clients}%`,
+        positive: changes.clients >= 0,
         gradient: 'bg-gradient-to-br from-success-600 to-success-800',
       },
       ...(isMandatary
         ? [
             {
               title: 'Devis en attente',
-              value: 8,
+              value: loadingStats ? '—' : 0,
               icon: <FileText size={24} />,
-              change: '+3',
+              change: '',
               positive: true,
               gradient: 'bg-gradient-to-br from-warning-600 to-warning-800',
             },
             {
               title: 'Commissions',
-              value: '—', // branchement réel à faire si tu as la table
+              value: '—',
               icon: <Euro size={24} />,
-              change: '+8%',
+              change: '',
               positive: true,
               gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
             },
@@ -251,21 +279,21 @@ const DashboardPage: React.FC = () => {
               title: 'Entreprises Partenaires',
               value: loadingStats ? '—' : counts.entreprises,
               icon: <Building size={24} />,
-              change: '+8%',
-              positive: true,
+              change: loadingStats ? '' : changes.entreprises === 0 ? '' : `${changes.entreprises > 0 ? '+' : ''}${changes.entreprises}%`,
+              positive: changes.entreprises >= 0,
               gradient: 'bg-gradient-to-br from-secondary-600 to-secondary-800',
             },
             {
               title: "Chiffre d'Affaires",
               value: loadingStats ? '—' : `${counts.ca.toLocaleString('fr-FR')} €`,
               icon: <Euro size={24} />,
-              change: '+15%',
+              change: '',
               positive: true,
               gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
             },
           ]),
     ],
-    [counts, loadingStats, isMandatary],
+    [counts, changes, loadingStats, isMandatary],
   );
 
   const recentActivities = useMemo(
