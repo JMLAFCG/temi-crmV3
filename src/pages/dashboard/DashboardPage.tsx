@@ -159,23 +159,17 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ icon, title, description, t
 const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
 
-  // Redirection automatique vers le dashboard spécifique selon le rôle
-  if (user) {
-    const userRole = typeof user.role === 'string' ? user.role : 'unknown_role';
-    if (userRole === 'client') return <ClientDashboard />;
-    if (userRole === 'entreprise_partenaire' || userRole === 'partner_company') return <EntrepriseDashboard />;
-    if (userRole === 'apporteur' || userRole === 'business_provider') return <ApporteurDashboard />;
-  }
-
-  // Rôles
+  // Rôles (calculés avant les hooks)
   const isClient = String(user?.role) === 'client';
   const isApporteur = String(user?.role) === 'apporteur';
   const isMandatary = String(user?.role) === 'mandatary';
 
-  // === NOUVEAU : états dynamiques ===
+  // === TOUS LES HOOKS APPELÉS INCONDITIONNELLEMENT ===
   const [counts, setCounts] = useState({ projets: 0, clients: 0, entreprises: 0, ca: 0 });
   const [changes, setChanges] = useState({ projets: 0, clients: 0, entreprises: 0, ca: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [recentProjects, setRecentProjects] = useState<any[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -237,6 +231,36 @@ const DashboardPage: React.FC = () => {
   }, []);
 
   // Stats avec pourcentages réels calculés
+  const getTimeAgo = useCallback((date: string) => {
+    const now = new Date();
+    const past = new Date(date);
+    const diffMs = now.getTime() - past.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `Il y a ${diffMins} min`;
+    if (diffHours < 24) return `Il y a ${diffHours}h`;
+    if (diffDays === 1) return 'Hier';
+    return `Il y a ${diffDays} jours`;
+  }, []);
+
+  const getQuickActions = useCallback(() => {
+    if (isClient || isApporteur || isMandatary) {
+      return [
+        {
+          icon: <Zap size={20} />,
+          title: isClient ? 'Nouveau projet' : isApporteur ? 'Voir mes apports' : 'Créer un devis',
+          description: isClient ? 'Démarrer un nouveau projet' : isApporteur ? 'Consulter mes commissions' : 'Nouveau devis client',
+          action: 'Commencer',
+          gradient: 'from-primary-50 to-primary-100',
+          iconGradient: 'from-primary-500 to-primary-600',
+        },
+      ];
+    }
+    return [];
+  }, [isClient, isApporteur, isMandatary]);
+
   const stats = useMemo(
     () => [
       {
@@ -295,9 +319,6 @@ const DashboardPage: React.FC = () => {
     ],
     [counts, changes, loadingStats, isMandatary],
   );
-
-  const [recentActivities, setRecentActivities] = useState<any[]>([]);
-  const [recentProjects, setRecentProjects] = useState<any[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -372,49 +393,15 @@ const DashboardPage: React.FC = () => {
       }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [getTimeAgo]);
 
-  const getTimeAgo = (date: string) => {
-    const now = new Date();
-    const past = new Date(date);
-    const diffMs = now.getTime() - past.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `Il y a ${diffMins} min`;
-    if (diffHours < 24) return `Il y a ${diffHours}h`;
-    if (diffDays === 1) return 'Hier';
-    return `Il y a ${diffDays} jours`;
-  };
-
-  const getQuickActions = useCallback(() => {
-    if (isClient || isApporteur || isMandatary) {
-      return [
-        {
-          icon: <Zap size={20} />,
-          title: isClient ? 'Nouveau projet' : isApporteur ? 'Voir mes apports' : 'Créer un devis',
-          description: isClient ? 'Démarrer un nouveau projet' : isApporteur ? 'Consulter mes commissions' : 'Nouveau devis client',
-          action: 'Commencer',
-          gradient: 'from-primary-50 to-primary-100',
-          iconGradient: 'from-primary-500 to-primary-600',
-        },
-      ];
-    }
-    return [];
-  }, [isClient, isApporteur, isMandatary]);
-
-  const getAlerts = useCallback(() => {
-    return [
-      {
-        icon: <AlertTriangle size={20} />,
-        title: 'Document expirant',
-        description: 'Assurance décennale expire dans 30 jours',
-        gradient: 'from-warning-50 to-warning-100',
-        iconGradient: 'from-warning-500 to-warning-600',
-      },
-    ];
-  }, []);
+  // Redirection vers dashboard spécifique selon le rôle
+  if (user) {
+    const userRole = typeof user.role === 'string' ? user.role : 'unknown_role';
+    if (userRole === 'client') return <ClientDashboard />;
+    if (userRole === 'entreprise_partenaire' || userRole === 'partner_company') return <EntrepriseDashboard />;
+    if (userRole === 'apporteur' || userRole === 'business_provider') return <ApporteurDashboard />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-accent-50 to-secondary-50 -m-6 p-6">
