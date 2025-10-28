@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, ChevronDown, Building, Mail, Phone, MapPin, ArrowLeft, Upload } from 'lucide-react';
+import { Plus, Search, Filter, ChevronDown, Mail, Phone, MapPin, ArrowLeft, Upload } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useClientStore } from '../../store/clientStore';
 import { ClientForm } from '../../components/clients/ClientForm';
@@ -19,17 +19,17 @@ const ClientListPage: React.FC = () => {
     fetchClients();
   }, [fetchClients]);
 
-  const handleCreateClient = async (data: any) => {
+  const handleCreateClient = async (data: unknown) => {
     try {
       await createClient(data);
       setShowCreateForm(false);
-    } catch (error) {
-      console.error('Error creating client:', error);
+    } catch (_error) {
+      console.error('Error creating client:', _error);
     }
   };
 
-  const handleBulkImport = async (clients: any[]) => {
-    const { error } = await supabase.auth.admin.createUser({
+  const handleBulkImport = async (clients: unknown[]) => {
+    const { error: _error } = await supabase.auth.admin.createUser({
       email: 'temp@temp.com',
       password: Math.random().toString(36),
     });

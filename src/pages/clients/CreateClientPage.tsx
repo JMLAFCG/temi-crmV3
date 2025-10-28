@@ -10,7 +10,7 @@ const CreateClientPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { createClient } = useClientStore();
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: unknown) => {
     setIsLoading(true);
     try {
       const inserted = await createClient(data);
@@ -25,7 +25,7 @@ const CreateClientPage: React.FC = () => {
       } else {
         navigate('/clients');
       }
-    } catch (error) {
+    } catch {
       navigate('/clients');
     } finally {
       setIsLoading(false);
