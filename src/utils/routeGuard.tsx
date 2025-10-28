@@ -1,46 +1,36 @@
-import type { ReactNode, FC } from 'react';
+// src/utils/routeGuard.tsx
+import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { paths } from '../routes/paths';
 import { useAuthStore } from '../store/authStore';
-import { AccessDenied } from '../components/ui/AccessDenied';
 
-interface GuardProps {
-  children: ReactNode;
+type GuardProps = {
+  children: React.ReactNode;
   roles?: string[];
-  requiredPermission?: string;
-  fallback?: ReactNode;
-}
+};
 
-export const Guard: FC<GuardProps> = ({ children, roles = [], requiredPermission, fallback }) => {
-  const { user, isLoading } = useAuthStore();
+const Guard: React.FC<GuardProps> = ({ children, roles }) => {
+  const store = (useAuthStore as any)?.getState?.() ?? useAuthStore();
+  const { user, isAuthenticated } = store || {};
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-      </div>
-    );
+  if (!isAuthenticated || !user) {
+    return <Navigate to={paths.login} replace />;
   }
 
-  if (!user) {
-    return fallback || <Navigate to="/login" replace />;
+  if (!roles || roles.length === 0) {
+    return <>{children}</>;
   }
 
-  // Vérification des rôles
-  if (roles.length > 0 && !roles.includes(user.role)) {
-    return (
-      fallback || (
-        <AccessDenied
-          message="Vous n'avez pas les permissions nécessaires pour accéder à cette page."
-          requiredRole={roles.join(' ou ')}
-        />
-      )
-    );
-  }
+  const userRoles: string[] = Array.isArray(user?.roles)
+    ? user.roles
+    : user?.role
+    ? [user.role]
+    : [];
 
-  // Vérification des permissions (si implémenté)
-  if (requiredPermission) {
-    // Logique de vérification des permissions à implémenter
-    // Pour l'instant, on laisse passer
+  const hasRight = roles.some((r) => userRoles.includes(r)) || userRoles.includes('admin');
+
+  if (!hasRight) {
+    return <Navigate to={paths.dashboard} replace />;
   }
 
   return <>{children}</>;

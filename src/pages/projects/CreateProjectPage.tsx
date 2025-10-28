@@ -1,45 +1,53 @@
-import React from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { ProjectWizardForm } from '../../components/projects/ProjectWizardForm';
-import { useProjectStore } from '../../store/projectStore';
+import { supabase } from '../../lib/supabase';
 import { paths } from '../../routes/paths';
 
 const CreateProjectPage: React.FC = () => {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const { createProject } = useProjectStore();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const clientIdFromQuery = params.get('client_id') || '';
 
-  // client_id passé par l’étape “Créer client”
-  const presetClientId = params.get('client_id') ?? '';
-
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (form: any) => {
     try {
-      // sécurités douces : garantit des nombres
-      const materials = Number(data?.budget?.materials ?? 0);
-      const labor     = Number(data?.budget?.labor ?? 0);
-      const services  = Number(data?.budget?.services ?? 0);
-
       const payload = {
-        ...data,
-        // si le client a été pré-sélectionné, on le garde
-        client_id: data?.client_id || presetClientId || null,
-        budget: {
-          ...data?.budget,
-          materials,
-          labor,
-          services,
-          // total a déjà été calculé côté formulaire, mais on recalcule au cas où
-          total: materials + labor + services,
-        },
+        title: form.title || 'Sans titre',
+        description: form.description || null,
+        client_id: form.client_id || clientIdFromQuery || null,
+        agent_id: form.agent_id || null,
+        business_provider_id: form.business_provider_id || null,
+        status: 'draft',
+        location: form.location ?? {},
+        surface: form.surface ?? {},
+        budget: form.budget ?? {},
+        timeline: form.timeline ?? {},
+        activities: Array.isArray(form.activities) ? form.activities : [],
+        intellectual_services: Array.isArray(form.intellectual_services) ? form.intellectual_services : [],
+        additional_services: Array.isArray(form.additional_services) ? form.additional_services : [],
+        photos: Array.isArray(form.photos) ? form.photos : [],
+        is_demo: false,
       };
 
-      await createProject(payload);
-      navigate(paths.projects); // retour liste projets
-    } catch (err) {
-      console.error('Erreur création projet:', err);
-      // on reste sur la page pour que l’utilisateur corrige
+      const { data, error } = await supabase
+        .from('projects')
+        .insert(payload)
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      const newId = data?.id;
+      if (newId) {
+        navigate(`/projects/${newId}`);
+      } else {
+        navigate(paths.projects);
+      }
+    } catch (e) {
+      navigate(paths.projects);
     }
   };
 
@@ -58,14 +66,10 @@ const CreateProjectPage: React.FC = () => {
 
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Nouveau projet</h1>
-
-        {/* On injecte le client pré-sélectionné via defaultValues du form */}
         <ProjectWizardForm
           onSubmit={handleSubmit}
           onCancel={() => navigate(paths.projects)}
-          // le composant gère ses defaults, mais on force l’amorçage client ici :
-          // petite astuce : on passe via key pour réinitialiser proprement si query change
-          key={presetClientId || 'no-client'}
+          defaultClientId={clientIdFromQuery}
         />
       </div>
     </div>
@@ -73,5 +77,3 @@ const CreateProjectPage: React.FC = () => {
 };
 
 export default CreateProjectPage;
-
-
