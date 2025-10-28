@@ -296,24 +296,97 @@ const DashboardPage: React.FC = () => {
     [counts, changes, loadingStats, isMandatary],
   );
 
-  const recentActivities = useMemo(
-    () => [
-      { icon: <Target size={20} />, title: 'Nouveau projet créé', description: 'Projet de rénovation pour Martin Dupont', time: 'Il y a 2h', type: 'success' as const },
-      { icon: <FileText size={20} />, title: 'Document téléchargé', description: "Plan d'étage pour le projet #1234", time: 'Il y a 4h', type: 'info' as const },
-      { icon: <Award size={20} />, title: 'Nouvelle entreprise partenaire', description: 'Électricité Moderne a rejoint la plateforme', time: 'Hier', type: 'success' as const },
-      { icon: <AlertTriangle size={20} />, title: 'Document expirant', description: 'Assurance décennale expire dans 30 jours', time: 'Il y a 1 jour', type: 'warning' as const },
-    ],
-    [],
-  );
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [recentProjects, setRecentProjects] = useState<any[]>([]);
 
-  const recentProjects = useMemo(
-    () => [
-      { title: 'Rénovation Cuisine Moderne', client: 'Martin Dupont', budget: '25 000 €', progress: 65, status: 'in_progress' as const, priority: 'high' as const },
-      { title: 'Extension Maison', client: 'Sophie Martin', budget: '75 000 €', progress: 10, status: 'pending' as const, priority: 'medium' as const },
-      { title: 'Rénovation Salle de Bain', client: 'Jean Petit', budget: '12 000 €', progress: 100, status: 'completed' as const, priority: 'low' as const },
-    ],
-    [],
-  );
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const authUser = await getCurrentUser();
+        if (!authUser || !mounted) return;
+
+        // Récupérer les 5 projets les plus récents
+        const { data: projectsData } = await supabase
+          .from('projects')
+          .select(`
+            id,
+            title,
+            status,
+            budget,
+            progress,
+            priority,
+            created_at,
+            clients (first_name, last_name)
+          `)
+          .eq('is_demo', false)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (projectsData && mounted) {
+          const formattedProjects = projectsData.map((p: any) => ({
+            title: p.title || 'Sans titre',
+            client: p.clients ? `${p.clients.first_name} ${p.clients.last_name}` : 'Client non défini',
+            budget: p.budget ? `${p.budget.toLocaleString('fr-FR')} €` : 'Non défini',
+            progress: p.progress || 0,
+            status: p.status || 'pending',
+            priority: p.priority || 'medium',
+          }));
+          setRecentProjects(formattedProjects);
+        }
+
+        // Récupérer les logs d'audit pour les activités récentes
+        const { data: auditData } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(4);
+
+        if (auditData && mounted) {
+          const activities = auditData.map((log: any) => {
+            let icon = <FileText size={20} />;
+            let type: 'success' | 'warning' | 'info' = 'info';
+
+            if (log.action?.includes('create')) {
+              icon = <Target size={20} />;
+              type = 'success';
+            } else if (log.action?.includes('delete')) {
+              icon = <AlertTriangle size={20} />;
+              type = 'warning';
+            }
+
+            const timeAgo = getTimeAgo(log.created_at);
+
+            return {
+              icon,
+              title: log.action || 'Action',
+              description: log.details || 'Activité système',
+              time: timeAgo,
+              type,
+            };
+          });
+          setRecentActivities(activities);
+        }
+      } catch (error) {
+        console.error('Erreur chargement activités:', error);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const getTimeAgo = (date: string) => {
+    const now = new Date();
+    const past = new Date(date);
+    const diffMs = now.getTime() - past.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `Il y a ${diffMins} min`;
+    if (diffHours < 24) return `Il y a ${diffHours}h`;
+    if (diffDays === 1) return 'Hier';
+    return `Il y a ${diffDays} jours`;
+  };
 
   const getQuickActions = useCallback(() => {
     if (isClient || isApporteur || isMandatary) {

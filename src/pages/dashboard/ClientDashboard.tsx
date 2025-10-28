@@ -57,51 +57,48 @@ const ClientDashboard = () => {
     try {
       setLoading(true);
 
-      // Utiliser des données mock pour éviter les erreurs de base de données
-      const mockProjets = [
-        {
-          id: 'project-1',
-          title: 'Rénovation maison familiale',
-          description: "Rénovation complète d'une maison de 120m²",
-          status: 'in_progress' as const,
-          client_id: currentUser?.id,
-          agent_id: 'agent-1',
-          location: { address: '123 Rue de la Paix, 75001 Paris' },
-          budget: { min: 40000, max: 50000 },
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ];
+      // Récupérer les vrais projets du client
+      const { data: projetsData, error: projetsError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('client_id', currentUser?.id)
+        .order('created_at', { ascending: false });
 
-      const mockDocuments = [
-        {
-          id: 'doc-1',
-          nom_fichier: 'Devis_entreprise_A.pdf',
-          type_document: 'Devis',
-          statut: 'validé',
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: 'doc-2',
-          nom_fichier: 'Plans_architecte.pdf',
-          type_document: 'Plan',
-          statut: 'en_attente',
-          created_at: new Date().toISOString(),
-        },
-      ];
+      if (projetsError) {
+        console.error('Erreur projets:', projetsError);
+      }
 
-      const mockJournal = [
-        {
-          id: 'journal-1',
-          action: 'Projet créé',
-          description: 'Nouveau projet de rénovation créé',
-          date: new Date().toISOString(),
-        },
-      ];
+      // Récupérer les vrais documents
+      const { data: documentsData, error: documentsError } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('client_id', currentUser?.id)
+        .order('created_at', { ascending: false });
 
-      setProjets(mockProjets);
-      setDocuments(mockDocuments);
-      setJournal(mockJournal);
+      if (documentsError) {
+        console.error('Erreur documents:', documentsError);
+      }
+
+      // Récupérer les logs d'audit pour le journal d'activité
+      const { data: journalData, error: journalError } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .eq('user_id', currentUser?.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (journalError) {
+        console.error('Erreur journal:', journalError);
+      }
+
+      setProjets(projetsData || []);
+      setDocuments(documentsData || []);
+      setJournal((journalData || []).map((log: any) => ({
+        id: log.id,
+        action: log.action || 'Action',
+        description: log.details || 'Activité système',
+        date: log.created_at,
+      })));
     } catch (error) {
       console.error('Erreur lors du chargement des données client:', error);
     } finally {
