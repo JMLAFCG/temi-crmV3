@@ -115,28 +115,14 @@ const BusinessProviderCard: React.FC<BusinessProviderCardProps> = ({
     </div>
   );
 };
+
 const BusinessProviderPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const { user } = useAuthStore();
 
-  // Vérification des permissions
-  if (user?.role !== 'admin' && user?.role !== 'manager') {
-    return (
-      <div className="text-center py-12">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
-          <h2 className="text-lg font-medium text-red-800 mb-2">Accès restreint</h2>
-          <p className="text-red-700">
-            Seuls les administrateurs et gestionnaires peuvent accéder à la gestion des apporteurs
-            d'affaires.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Données de démonstration
+  // ⚠️ IMPORTANT : hook state AVANT tout return conditionnel
   const [providers, setProviders] = useState<BusinessProviderCardProps[]>([
     {
       id: '1',
@@ -201,6 +187,23 @@ const BusinessProviderPage: React.FC = () => {
       verification_status: 'verified',
     },
   ]);
+
+  // Vérification des permissions (rendu alternatif, plus de return avant hooks)
+  const hasAccess = user?.role === 'admin' || user?.role === 'manager';
+
+  if (!hasAccess) {
+    return (
+      <div className="text-center py-12">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+          <h2 className="text-lg font-medium text-red-800 mb-2">Accès restreint</h2>
+          <p className="text-red-700">
+            Seuls les administrateurs et gestionnaires peuvent accéder à la gestion des apporteurs
+            d'affaires.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
