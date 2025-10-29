@@ -39,7 +39,7 @@ const AuditPage: React.FC = () => {
       setLoading(true);
       
       // Try to fetch from audit_log_v view
-      let { data, error } = await supabase
+      const { data, error } = await supabase
         .from('audit_log_v')
         .select('*')
         .order('at', { ascending: false })
