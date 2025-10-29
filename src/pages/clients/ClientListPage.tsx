@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, ChevronDown, Building, Mail, Phone, MapPin, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Filter, ChevronDown, Building, Mail, Phone, MapPin, ArrowLeft, Upload } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useClientStore } from '../../store/clientStore';
 import { ClientForm } from '../../components/clients/ClientForm';
+import { BulkImportModal } from '../../components/import/BulkImportModal';
+import { validateClientRow } from '../../utils/excelImport';
+import { supabase } from '../../lib/supabase';
 const ClientListPage: React.FC = () => {
   const navigate = useNavigate();
   const { clients, loading, fetchClients, createClient } = useClientStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
 
   useEffect(() => {
     fetchClients();
@@ -22,6 +26,44 @@ const ClientListPage: React.FC = () => {
     } catch (error) {
       console.error('Error creating client:', error);
     }
+  };
+
+  const handleBulkImport = async (clients: any[]) => {
+    const { error } = await supabase.auth.admin.createUser({
+      email: 'temp@temp.com',
+      password: Math.random().toString(36),
+    });
+
+    for (const client of clients) {
+      const { data: userData, error: userError } = await supabase.auth.admin.createUser({
+        email: client.email,
+        password: Math.random().toString(36).substring(2, 15),
+        email_confirm: true,
+        user_metadata: {
+          first_name: client.first_name,
+          last_name: client.last_name,
+          role: 'client',
+        },
+      });
+
+      if (!userError && userData.user) {
+        await supabase.from('clients').insert({
+          user_id: userData.user.id,
+          phone: client.phone || null,
+          company_name: client.company_name || null,
+          address: client.address && client.city
+            ? {
+                address: client.address,
+                city: client.city,
+                postalCode: client.postal_code,
+              }
+            : null,
+        });
+      }
+    }
+
+    await fetchClients();
+    setShowBulkImport(false);
   };
 
   const filteredClients = clients.filter(client => {
@@ -67,7 +109,14 @@ const ClientListPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
           <p className="text-gray-600">Gérez vos clients et leurs projets</p>
         </div>
-        <div className="mt-4 sm:mt-0">
+        <div className="mt-4 sm:mt-0 flex gap-3">
+          <Button
+            variant="outline"
+            leftIcon={<Upload size={16} />}
+            onClick={() => setShowBulkImport(true)}
+          >
+            Import Excel
+          </Button>
           <Button
             variant="primary"
             leftIcon={<Plus size={16} />}
@@ -204,6 +253,16 @@ const ClientListPage: React.FC = () => {
           </div>
         ))}
       </div>
+
+      <BulkImportModal
+        isOpen={showBulkImport}
+        onClose={() => setShowBulkImport(false)}
+        entityType="clients"
+        onImport={handleBulkImport}
+        validator={validateClientRow}
+        templateHeaders={['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'postal_code', 'company_name']}
+        templateExample={['Jean', 'Dupont', 'jean.dupont@example.com', '0612345678', '123 rue de Paris', 'Paris', '75001', 'Entreprise XYZ']}
+      />
     </div>
   );
 };

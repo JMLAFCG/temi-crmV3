@@ -1,3 +1,4 @@
+// src/router.tsx
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
@@ -6,11 +7,24 @@ import ErrorBoundary from './ui/ErrorBoundary';
 import Guard from './utils/routeGuard';
 import { paths } from './routes/paths';
 
-const Suspense = ({ children }: { children: React.ReactNode }) => (
-  <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div></div>}>{children}</React.Suspense>
+/** Wrapper Suspense unique */
+const AppSuspense = ({ children }: { children: React.ReactNode }) => (
+  <React.Suspense
+    fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    }
+  >
+    {children}
+  </React.Suspense>
 );
 
-const lazyDefault = (factory: () => Promise<any>, modulePath: string) =>
+/** Lazy helper typé pour le typecheck CI */
+const lazyDefault = <T extends { default: React.ComponentType<any> }>(
+  factory: () => Promise<T>,
+  modulePath: string
+) =>
   React.lazy(async () => {
     const mod = await factory();
     if (!mod?.default) {
@@ -19,180 +33,65 @@ const lazyDefault = (factory: () => Promise<any>, modulePath: string) =>
     return { default: mod.default };
   });
 
-// Import des pages avec les bons chemins
-const Dashboard = lazyDefault(
-  () => import('./pages/dashboard/DashboardPage'),
-  'src/pages/dashboard/DashboardPage.tsx'
-);
-const ClientsPage = lazyDefault(
-  () => import('./pages/clients/ClientListPage'),
-  'src/pages/clients/ClientListPage.tsx'
-);
-const CreateClientPage = lazyDefault(
-  () => import('./pages/clients/CreateClientPage'),
-  'src/pages/clients/CreateClientPage.tsx'
-);
-const ClientDetailsPage = lazyDefault(
-  () => import('./pages/clients/ClientDetailsPage'),
-  'src/pages/clients/ClientDetailsPage.tsx'
-);
-const CompaniesPage = lazyDefault(
-  () => import('./pages/companies/CompaniesPage'),
-  'src/pages/companies/CompaniesPage.tsx'
-);
-const CreateCompanyPage = lazyDefault(
-  () => import('./pages/companies/CreateCompanyPage'),
-  'src/pages/companies/CreateCompanyPage.tsx'
-);
-const CompanyDetailsPage = lazyDefault(
-  () => import('./pages/companies/CompanyDetailsPage'),
-  'src/pages/companies/CompanyDetailsPage.tsx'
-);
-const ProjectsPage = lazyDefault(
-  () => import('./pages/projects/ProjectsPage'),
-  'src/pages/projects/ProjectsPage.tsx'
-);
-const CreateProjectPage = lazyDefault(
-  () => import('./pages/projects/CreateProjectPage'),
-  'src/pages/projects/CreateProjectPage.tsx'
-);
-const BusinessProviderPage = lazyDefault(
-  () => import('./pages/providers/BusinessProviderPage'),
-  'src/pages/providers/BusinessProviderPage.tsx'
-);
-const CreateBusinessProviderPage = lazyDefault(
-  () => import('./pages/providers/CreateBusinessProviderPage'),
-  'src/pages/providers/CreateBusinessProviderPage.tsx'
-);
-const BusinessProviderDetailsPage = lazyDefault(
-  () => import('./pages/providers/BusinessProviderDetailsPage'),
-  'src/pages/providers/BusinessProviderDetailsPage.tsx'
-);
-const DocumentsPage = lazyDefault(
-  () => import('./pages/documents/DocumentsPage'),
-  'src/pages/documents/DocumentsPage.tsx'
-);
-const CalendarPage = lazyDefault(
-  () => import('./pages/calendar/CalendarPage'),
-  'src/pages/calendar/CalendarPage.tsx'
-);
-const MessagesPage = lazyDefault(
-  () => import('./pages/messages/MessagesPage'),
-  'src/pages/messages/MessagesPage.tsx'
-);
-const CommissionsPage = lazyDefault(
-  () => import('./pages/commissions/CommissionsPage'),
-  'src/pages/commissions/CommissionsPage.tsx'
-);
-const MandataryCommissionsPage = lazyDefault(
-  () => import('./pages/commissions/MandataryCommissionsPage'),
-  'src/pages/commissions/MandataryCommissionsPage.tsx'
-);
-const InvoicingPage = lazyDefault(
-  () => import('./pages/invoicing/InvoicingPage'),
-  'src/pages/invoicing/InvoicingPage.tsx'
-);
-const AuditPage = lazyDefault(
-  () => import('./pages/audit/AuditPage'),
-  'src/pages/audit/AuditPage.tsx'
-);
-const AIManagementPage = lazyDefault(
-  () => import('./pages/admin/AIManagementPage'),
-  'src/pages/admin/AIManagementPage.tsx'
-);
-const GuideApplicationPage = lazyDefault(
-  () => import('./pages/admin/GuideApplicationPage'),
-  'src/pages/admin/GuideApplicationPage.tsx'
-);
-const APIDocumentationPage = lazyDefault(
-  () => import('./pages/api/APIDocumentationPage'),
-  'src/pages/api/APIDocumentationPage.tsx'
-);
-const SettingsLayout = lazyDefault(
-  () => import('./pages/settings/SettingsLayout'),
-  'src/pages/settings/SettingsLayout.tsx'
-);
-const GeneralSettingsPage = lazyDefault(
-  () => import('./pages/settings/GeneralSettingsPage'),
-  'src/pages/settings/GeneralSettingsPage.tsx'
-);
-const UserSettingsPage = lazyDefault(
-  () => import('./pages/settings/UserSettingsPage'),
-  'src/pages/settings/UserSettingsPage.tsx'
-);
-const RoleSettingsPage = lazyDefault(
-  () => import('./pages/settings/RoleSettingsPage'),
-  'src/pages/settings/RoleSettingsPage.tsx'
-);
-const BillingSettingsPage = lazyDefault(
-  () => import('./pages/settings/BillingSettingsPage'),
-  'src/pages/settings/BillingSettingsPage.tsx'
-);
-const IntegrationSettingsPage = lazyDefault(
-  () => import('./pages/settings/IntegrationSettingsPage'),
-  'src/pages/settings/IntegrationSettingsPage.tsx'
-);
-const UserDetailsPage = lazyDefault(
-  () => import('./pages/users/UserDetailsPage'),
-  'src/pages/users/UserDetailsPage.tsx'
-);
-const UserDashboardViewer = lazyDefault(
-  () => import('./components/users/UserDashboardViewer'),
-  'src/components/users/UserDashboardViewer.tsx'
-);
-const LoginPage = lazyDefault(
-  () => import('./pages/auth/LoginPage'),
-  'src/pages/auth/LoginPage.tsx'
-);
-const RegisterPage = lazyDefault(
-  () => import('./pages/auth/RegisterPage'),
-  'src/pages/auth/RegisterPage.tsx'
-);
-const ResetPasswordPage = lazyDefault(
-  () => import('./pages/auth/ResetPasswordPage'),
-  'src/pages/auth/ResetPasswordPage.tsx'
-);
-const HomePage = lazyDefault(
-  () => import('./pages/HomePage'),
-  'src/pages/HomePage.tsx'
-);
+// ---------- Imports paresseux ----------
+const Dashboard = lazyDefault(() => import('./pages/dashboard/DashboardPage'), 'src/pages/dashboard/DashboardPage.tsx');
 
+const ClientsPage = lazyDefault(() => import('./pages/clients/ClientListPage'), 'src/pages/clients/ClientListPage.tsx');
+const CreateClientPage = lazyDefault(() => import('./pages/clients/CreateClientPage'), 'src/pages/clients/CreateClientPage.tsx');
+const ClientDetailsPage = lazyDefault(() => import('./pages/clients/ClientDetailsPage'), 'src/pages/clients/ClientDetailsPage.tsx');
+
+const CompaniesPage = lazyDefault(() => import('./pages/companies/CompaniesPage'), 'src/pages/companies/CompaniesPage.tsx');
+const CreateCompanyPage = lazyDefault(() => import('./pages/companies/CreateCompanyPage'), 'src/pages/companies/CreateCompanyPage.tsx');
+const CompanyDetailsPage = lazyDefault(() => import('./pages/companies/CompanyDetailsPage'), 'src/pages/companies/CompanyDetailsPage.tsx');
+
+const ProjectsPage = lazyDefault(() => import('./pages/projects/ProjectsPage'), 'src/pages/projects/ProjectsPage.tsx');
+const CreateProjectPage = lazyDefault(() => import('./pages/projects/CreateProjectPage'), 'src/pages/projects/CreateProjectPage.tsx');
+
+const BusinessProviderPage = lazyDefault(() => import('./pages/providers/BusinessProviderPage'), 'src/pages/providers/BusinessProviderPage.tsx');
+const CreateBusinessProviderPage = lazyDefault(() => import('./pages/providers/CreateBusinessProviderPage'), 'src/pages/providers/CreateBusinessProviderPage.tsx');
+const BusinessProviderDetailsPage = lazyDefault(() => import('./pages/providers/BusinessProviderDetailsPage'), 'src/pages/providers/BusinessProviderDetailsPage.tsx');
+
+const DocumentsPage = lazyDefault(() => import('./pages/documents/DocumentsPage'), 'src/pages/documents/DocumentsPage.tsx');
+const CalendarPage = lazyDefault(() => import('./pages/calendar/CalendarPage'), 'src/pages/calendar/CalendarPage.tsx');
+const MessagesPage = lazyDefault(() => import('./pages/messages/MessagesPage'), 'src/pages/messages/MessagesPage.tsx');
+
+const CommissionsPage = lazyDefault(() => import('./pages/commissions/CommissionsPage'), 'src/pages/commissions/CommissionsPage.tsx');
+const MandataryCommissionsPage = lazyDefault(() => import('./pages/commissions/MandataryCommissionsPage'), 'src/pages/commissions/MandataryCommissionsPage.tsx');
+
+const InvoicingPage = lazyDefault(() => import('./pages/invoicing/InvoicingPage'), 'src/pages/invoicing/InvoicingPage.tsx');
+const AuditPage = lazyDefault(() => import('./pages/audit/AuditPage'), 'src/pages/audit/AuditPage.tsx');
+
+const AIManagementPage = lazyDefault(() => import('./pages/admin/AIManagementPage'), 'src/pages/admin/AIManagementPage.tsx');
+const GuideApplicationPage = lazyDefault(() => import('./pages/admin/GuideApplicationPage'), 'src/pages/admin/GuideApplicationPage.tsx');
+const APIDocumentationPage = lazyDefault(() => import('./pages/api/APIDocumentationPage'), 'src/pages/api/APIDocumentationPage.tsx');
+
+const SettingsLayout = lazyDefault(() => import('./pages/settings/SettingsLayout'), 'src/pages/settings/SettingsLayout.tsx');
+const GeneralSettingsPage = lazyDefault(() => import('./pages/settings/GeneralSettingsPage'), 'src/pages/settings/GeneralSettingsPage.tsx');
+const UserSettingsPage = lazyDefault(() => import('./pages/settings/UserSettingsPage'), 'src/pages/settings/UserSettingsPage.tsx');
+const RoleSettingsPage = lazyDefault(() => import('./pages/settings/RoleSettingsPage'), 'src/pages/settings/RoleSettingsPage.tsx');
+const BillingSettingsPage = lazyDefault(() => import('./pages/settings/BillingSettingsPage'), 'src/pages/settings/BillingSettingsPage.tsx');
+const IntegrationSettingsPage = lazyDefault(() => import('./pages/settings/IntegrationSettingsPage'), 'src/pages/settings/IntegrationSettingsPage.tsx');
+
+const UserDetailsPage = lazyDefault(() => import('./pages/users/UserDetailsPage'), 'src/pages/users/UserDetailsPage.tsx');
+const UserDashboardViewer = lazyDefault(() => import('./components/users/UserDashboardViewer'), 'src/components/users/UserDashboardViewer.tsx');
+
+const LoginPage = lazyDefault(() => import('./pages/auth/LoginPage'), 'src/pages/auth/LoginPage.tsx');
+const RegisterPage = lazyDefault(() => import('./pages/auth/RegisterPage'), 'src/pages/auth/RegisterPage.tsx');
+const ResetPasswordPage = lazyDefault(() => import('./pages/auth/ResetPasswordPage'), 'src/pages/auth/ResetPasswordPage.tsx');
+
+const HomePage = lazyDefault(() => import('./pages/HomePage'), 'src/pages/HomePage.tsx');
+
+// ---------- Router ----------
 const mainRoutes = createBrowserRouter([
-  // Page d'accueil publique
-  {
-    path: paths.home,
-    element: (
-      <Suspense>
-        <HomePage />
-      </Suspense>
-    ),
-  },
-  // Routes d'authentification
-  {
-    path: paths.login,
-    element: (
-      <Suspense>
-        <LoginPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: paths.register,
-    element: (
-      <Suspense>
-        <RegisterPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: paths.resetPassword,
-    element: (
-      <Suspense>
-        <ResetPasswordPage />
-      </Suspense>
-    ),
-  },
-  // Routes protégées avec AppLayout
+  // Public
+  { path: paths.home, element: <AppSuspense><HomePage /></AppSuspense> },
+
+  // Auth
+  { path: paths.login, element: <AppSuspense><LoginPage /></AppSuspense> },
+  { path: paths.register, element: <AppSuspense><RegisterPage /></AppSuspense> },
+  { path: paths.resetPassword, element: <AppSuspense><ResetPasswordPage /></AppSuspense> },
+
+  // Protégé par AppLayout
   {
     element: <AppLayout />,
     errorElement: (
@@ -201,23 +100,13 @@ const mainRoutes = createBrowserRouter([
       </ErrorBoundary>
     ),
     children: [
-      {
-        path: paths.dashboard,
-        element: (
-          <Guard>
-            <Suspense>
-              <Dashboard />
-            </Suspense>
-          </Guard>
-        ),
-      },
+      // Dashboards
+      { path: paths.dashboard, element: <Guard><AppSuspense><Dashboard /></AppSuspense></Guard> },
       {
         path: paths.dashboardClient,
         element: (
           <Guard roles={['client', 'admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <Dashboard />
-            </Suspense>
+            <AppSuspense><Dashboard /></AppSuspense>
           </Guard>
         ),
       },
@@ -225,9 +114,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.dashboardEntreprise,
         element: (
           <Guard roles={['partner_company', 'admin', 'manager']}>
-            <Suspense>
-              <Dashboard />
-            </Suspense>
+            <AppSuspense><Dashboard /></AppSuspense>
           </Guard>
         ),
       },
@@ -235,19 +122,17 @@ const mainRoutes = createBrowserRouter([
         path: paths.dashboardApporteur,
         element: (
           <Guard roles={['business_provider', 'admin', 'manager']}>
-            <Suspense>
-              <Dashboard />
-            </Suspense>
+            <AppSuspense><Dashboard /></AppSuspense>
           </Guard>
         ),
       },
+
+      // Clients
       {
         path: paths.clients,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <ClientsPage />
-            </Suspense>
+            <AppSuspense><ClientsPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -255,9 +140,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.clientsCreate,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <CreateClientPage />
-            </Suspense>
+            <AppSuspense><CreateClientPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -265,19 +148,17 @@ const mainRoutes = createBrowserRouter([
         path: paths.clientDetails,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <ClientDetailsPage />
-            </Suspense>
+            <AppSuspense><ClientDetailsPage /></AppSuspense>
           </Guard>
         ),
       },
+
+      // Entreprises
       {
         path: paths.companies,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <CompaniesPage />
-            </Suspense>
+            <AppSuspense><CompaniesPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -285,9 +166,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.companiesCreate,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <CreateCompanyPage />
-            </Suspense>
+            <AppSuspense><CreateCompanyPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -295,19 +174,17 @@ const mainRoutes = createBrowserRouter([
         path: paths.companyDetails,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <CompanyDetailsPage />
-            </Suspense>
+            <AppSuspense><CompanyDetailsPage /></AppSuspense>
           </Guard>
         ),
       },
+
+      // Projets
       {
         path: paths.projects,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary', 'client']}>
-            <Suspense>
-              <ProjectsPage />
-            </Suspense>
+            <AppSuspense><ProjectsPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -315,19 +192,17 @@ const mainRoutes = createBrowserRouter([
         path: paths.projectsCreate,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <CreateProjectPage />
-            </Suspense>
+            <AppSuspense><CreateProjectPage /></AppSuspense>
           </Guard>
         ),
       },
+
+      // Apporteurs
       {
         path: paths.providers,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
-              <BusinessProviderPage />
-            </Suspense>
+            <AppSuspense><BusinessProviderPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -335,9 +210,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.providersCreate,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
-              <CreateBusinessProviderPage />
-            </Suspense>
+            <AppSuspense><CreateBusinessProviderPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -345,21 +218,17 @@ const mainRoutes = createBrowserRouter([
         path: paths.providerDetails,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
-              <BusinessProviderDetailsPage />
-            </Suspense>
+            <AppSuspense><BusinessProviderDetailsPage /></AppSuspense>
           </Guard>
         ),
       },
+
+      // Divers
       {
         path: paths.documents,
         element: (
-          <Guard
-            roles={['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company']}
-          >
-            <Suspense>
-              <DocumentsPage />
-            </Suspense>
+          <Guard roles={['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company']}>
+            <AppSuspense><DocumentsPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -367,21 +236,15 @@ const mainRoutes = createBrowserRouter([
         path: paths.calendar,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <CalendarPage />
-            </Suspense>
+            <AppSuspense><CalendarPage /></AppSuspense>
           </Guard>
         ),
       },
       {
         path: paths.messages,
         element: (
-          <Guard
-            roles={['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company']}
-          >
-            <Suspense>
-              <MessagesPage />
-            </Suspense>
+          <Guard roles={['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company']}>
+            <AppSuspense><MessagesPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -389,9 +252,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.commissions,
         element: (
           <Guard roles={['admin', 'manager', 'business_provider']}>
-            <Suspense>
-              <CommissionsPage />
-            </Suspense>
+            <AppSuspense><CommissionsPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -399,9 +260,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.commissionsMandataries,
         element: (
           <Guard roles={['admin', 'manager', 'mandatary']}>
-            <Suspense>
-              <MandataryCommissionsPage />
-            </Suspense>
+            <AppSuspense><MandataryCommissionsPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -409,9 +268,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.invoicing,
         element: (
           <Guard roles={['admin', 'manager', 'comptable']}>
-            <Suspense>
-              <InvoicingPage />
-            </Suspense>
+            <AppSuspense><InvoicingPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -419,9 +276,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.audit,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
-              <AuditPage />
-            </Suspense>
+            <AppSuspense><AuditPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -429,9 +284,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.aiManagement,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
-            <Suspense>
-              <AIManagementPage />
-            </Suspense>
+            <AppSuspense><AIManagementPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -439,9 +292,7 @@ const mainRoutes = createBrowserRouter([
         path: paths.adminGuide,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
-              <GuideApplicationPage />
-            </Suspense>
+            <AppSuspense><GuideApplicationPage /></AppSuspense>
           </Guard>
         ),
       },
@@ -449,92 +300,38 @@ const mainRoutes = createBrowserRouter([
         path: paths.apiDocumentation,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
-              <APIDocumentationPage />
-            </Suspense>
+            <AppSuspense><APIDocumentationPage /></AppSuspense>
           </Guard>
         ),
       },
+
+      // Settings (enfants)
       {
         path: paths.settings,
         element: (
           <Guard roles={['admin', 'manager']}>
-            <Suspense>
-              <SettingsLayout />
-            </Suspense>
+            <AppSuspense><SettingsLayout /></AppSuspense>
           </Guard>
         ),
         children: [
           { index: true, element: <Navigate to={paths.settingsGeneral} replace /> },
-          {
-            path: 'general',
-            element: (
-              <Suspense>
-                <GeneralSettingsPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: 'users',
-            element: (
-              <Suspense>
-                <UserSettingsPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: 'users/:id',
-            element: (
-              <Suspense>
-                <UserDetailsPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: 'roles',
-            element: (
-              <Suspense>
-                <RoleSettingsPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: 'billing',
-            element: (
-              <Suspense>
-                <BillingSettingsPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: 'integrations',
-            element: (
-              <Suspense>
-                <IntegrationSettingsPage />
-              </Suspense>
-            ),
-          },
+          { path: 'general', element: <AppSuspense><GeneralSettingsPage /></AppSuspense> },
+          { path: 'users', element: <AppSuspense><UserSettingsPage /></AppSuspense> },
+          { path: 'users/:id', element: <AppSuspense><UserDetailsPage /></AppSuspense> },
+          { path: 'roles', element: <AppSuspense><RoleSettingsPage /></AppSuspense> },
+          { path: 'billing', element: <AppSuspense><BillingSettingsPage /></AppSuspense> },
+          { path: 'integrations', element: <AppSuspense><IntegrationSettingsPage /></AppSuspense> },
         ],
       },
-      {
-        path: paths.userDashboard,
-        element: (
-          <Suspense>
-            <UserDashboardViewer />
-          </Suspense>
-        ),
-      },
+
+      // Dashboard utilisateur
+      { path: paths.userDashboard, element: <AppSuspense><UserDashboardViewer /></AppSuspense> },
     ],
   },
-  // Routes 404 - en dehors du layout
-  {
-    path: paths.notFound,
-    element: <NotFound />,
-  },
-  {
-    path: '*',
-    element: <NotFound />,
-  },
+
+  // 404
+  { path: paths.notFound, element: <NotFound /> },
+  { path: '*', element: <NotFound /> },
 ]);
 
 export default mainRoutes;

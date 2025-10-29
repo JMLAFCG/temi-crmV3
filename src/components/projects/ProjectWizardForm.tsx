@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+
+
+// src/components/projects/ProjectWizardForm.tsx
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import {
   Camera,
@@ -22,6 +25,7 @@ import { SignaturePad } from './SignaturePad';
 import { BusinessProviderSelector } from './BusinessProviderSelector';
 import { AgentSelector } from './AgentSelector';
 import { Photo } from '../../types';
+import { useSearchParams } from 'react-router-dom'; // ⬅️ pour pré-sélection client depuis l’URL
 
 interface ProjectWizardFormProps {
   onSubmit: (data: any) => void;
@@ -29,71 +33,36 @@ interface ProjectWizardFormProps {
 }
 
 const steps = [
-  {
-    id: 'client',
-    title: 'Client',
-    description: 'Informations du client',
-    icon: <FileText size={24} />,
-  },
-  {
-    id: 'team',
-    title: 'Équipe',
-    description: 'Mandataire et apporteur',
-    icon: <Users size={24} />,
-  },
-  {
-    id: 'location',
-    title: 'Localisation',
-    description: 'Adresse du projet',
-    icon: <MapPin size={24} />,
-  },
-  {
-    id: 'type',
-    title: 'Type de projet',
-    description: 'Nature des travaux',
-    icon: <FileText size={24} />,
-  },
-  {
-    id: 'activities',
-    title: 'Activités',
-    description: 'Corps de métiers',
-    icon: <FileText size={24} />,
-  },
-  {
-    id: 'budget',
-    title: 'Budget',
-    description: 'Estimation financière',
-    icon: <Euro size={24} />,
-  },
-  {
-    id: 'timeline',
-    title: 'Planning',
-    description: 'Délais souhaités',
-    icon: <Calendar size={24} />,
-  },
-  {
-    id: 'photos',
-    title: 'Photos & Documents',
-    description: 'Upload des documents',
-    icon: <Camera size={24} />,
-  },
-  {
-    id: 'companies',
-    title: 'Entreprises',
-    description: 'Sélection des prestataires',
-    icon: <FileText size={24} />,
-  },
-  {
-    id: 'consent',
-    title: 'Validation',
-    description: 'Signature du mandat',
-    icon: <CheckSquare size={24} />,
-  },
+  { id: 'client',    title: 'Client',               description: 'Informations du client',           icon: <FileText size={24} /> },
+  { id: 'team',      title: 'Équipe',               description: 'Mandataire et apporteur',          icon: <Users size={24} /> },
+  { id: 'location',  title: 'Localisation',         description: 'Adresse du projet',                icon: <MapPin size={24} /> },
+  { id: 'type',      title: 'Type de projet',       description: 'Nature des travaux',               icon: <FileText size={24} /> },
+  { id: 'activities',title: 'Activités',            description: 'Corps de métiers',                 icon: <FileText size={24} /> },
+  { id: 'budget',    title: 'Budget',               description: 'Estimation financière',            icon: <Euro size={24} /> },
+  { id: 'timeline',  title: 'Planning',             description: 'Délais souhaités',                 icon: <Calendar size={24} /> },
+  { id: 'photos',    title: 'Photos & Documents',   description: 'Upload des documents',             icon: <Camera size={24} /> },
+  { id: 'companies', title: 'Entreprises',          description: 'Sélection des prestataires',       icon: <FileText size={24} /> },
+  { id: 'consent',   title: 'Validation',           description: 'Signature du mandat',              icon: <CheckSquare size={24} /> },
+];
+
+const TYPE_OPTIONS = [
+  { value: 'construction', label: 'Construction neuve' },
+  { value: 'renovation',   label: 'Rénovation' },
+  { value: 'extension',    label: 'Extension' },
+  { value: 'amenagement',  label: 'Aménagement' },
+];
+
+const OBJECTIVE_OPTIONS = [
+  { value: 'residence_principale', label: 'Résidence principale' },
+  { value: 'residence_secondaire', label: 'Résidence secondaire' },
+  { value: 'location',             label: 'Location' },
+  { value: 'revente',              label: 'Revente' },
 ];
 
 export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, onCancel }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [searchParams] = useSearchParams(); // ⬅️
 
   const {
     register,
@@ -144,17 +113,37 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
     },
   });
 
-  const handleNext = () => {
-    setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
-  };
+  // Pré-sélection client depuis l’URL ?client_id=...
+  useEffect(() => {
+    const cid = searchParams.get('client_id');
+    if (cid) {
+      setValue('client_id', cid, { shouldDirty: true, shouldValidate: true });
+      // on arrive directement sur l’étape suivante si tu veux accélérer :
+      // setCurrentStep(1);
+    }
+  }, [searchParams, setValue]);
 
-  const handlePrev = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 0));
-  };
+  // valeurs "watch" utiles
+  const projectType = watch('project_type');
+  const projectObjective = watch('objective');
+  const materials = watch('budget.materials') as number | undefined;
+  const labor = watch('budget.labor') as number | undefined;
+
+  // calcul numérique + synchro du total dans le form
+  const totalRaw = (Number(materials) || 0) + (Number(labor) || 0);
+  const total = Number.isFinite(totalRaw) ? totalRaw : 0;
+
+  useEffect(() => {
+    setValue('budget.total', total, { shouldDirty: true });
+  }, [total, setValue]);
+
+  const handleNext = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+  const handlePrev = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
   const handlePhotoAdd = (photo: Photo) => {
-    setPhotos([...photos, photo]);
-    setValue('photos', [...photos, photo]);
+    const next = [...photos, photo];
+    setPhotos(next);
+    setValue('photos', next);
   };
 
   const renderStepContent = () => {
@@ -249,35 +238,34 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
         );
 
       case 'type':
+        // Étape 4 : cartes cliquables + style actif
         return (
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-4">Type de projet</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {['construction', 'renovation', 'extension', 'amenagement'].map(type => (
-                  <label
-                    key={type}
-                    className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
-                  >
-                    <input
-                      type="radio"
-                      {...register('project_type', { required: 'Le type de projet est requis' })}
-                      value={type}
-                      className="sr-only"
-                    />
-                    <span className="flex flex-1">
-                      <span className="flex flex-col">
-                        <span className="block text-sm font-medium text-gray-900">
-                          {type === 'construction' && 'Construction neuve'}
-                          {type === 'renovation' && 'Rénovation'}
-                          {type === 'extension' && 'Extension'}
-                          {type === 'amenagement' && 'Aménagement'}
-                        </span>
-                      </span>
-                    </span>
-                  </label>
-                ))}
+                {TYPE_OPTIONS.map(opt => {
+                  const active = projectType === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() =>
+                        setValue('project_type', opt.value, { shouldDirty: true, shouldValidate: true })
+                      }
+                      className={`relative flex cursor-pointer rounded-lg border bg-white p-4 text-left shadow-sm transition
+                        ${active ? 'border-primary-500 ring-2 ring-primary-200 bg-primary-50'
+                                 : 'border-gray-200 hover:border-gray-300'}`}
+                    >
+                      <span className="font-medium text-gray-900">{opt.label}</span>
+                    </button>
+                  );
+                })}
               </div>
+              {/* input caché pour la validation RHF */}
+              <input type="hidden" {...register('project_type', { required: 'Le type de projet est requis' })} />
               {errors.project_type && (
                 <p className="mt-2 text-sm text-red-600">{errors.project_type.message}</p>
               )}
@@ -287,33 +275,28 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
               <label className="block text-sm font-medium text-gray-700 mb-4">
                 Objectif du projet
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {['residence_principale', 'residence_secondaire', 'location', 'revente'].map(
-                  obj => (
-                    <label
-                      key={obj}
-                      className="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {OBJECTIVE_OPTIONS.map(opt => {
+                  const active = projectObjective === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() =>
+                        setValue('objective', opt.value, { shouldDirty: true, shouldValidate: true })
+                      }
+                      className={`relative flex cursor-pointer rounded-lg border bg-white p-4 text-left shadow-sm transition
+                        ${active ? 'border-primary-500 ring-2 ring-primary-200 bg-primary-50'
+                                 : 'border-gray-200 hover:border-gray-300'}`}
                     >
-                      <input
-                        type="radio"
-                        {...register('objective', { required: "L'objectif est requis" })}
-                        value={obj}
-                        className="sr-only"
-                      />
-                      <span className="flex flex-1">
-                        <span className="flex flex-col">
-                          <span className="block text-sm font-medium text-gray-900">
-                            {obj === 'residence_principale' && 'Résidence principale'}
-                            {obj === 'residence_secondaire' && 'Résidence secondaire'}
-                            {obj === 'location' && 'Location'}
-                            {obj === 'revente' && 'Revente'}
-                          </span>
-                        </span>
-                      </span>
-                    </label>
-                  )
-                )}
+                      <span className="font-medium text-gray-900">{opt.label}</span>
+                    </button>
+                  );
+                })}
               </div>
+              <input type="hidden" {...register('objective', { required: "L'objectif est requis" })} />
               {errors.objective && (
                 <p className="mt-2 text-sm text-red-600">{errors.objective.message}</p>
               )}
@@ -358,15 +341,19 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
         );
 
       case 'budget':
+        // Étape 6 : addition numérique + formatage
         return (
           <div className="space-y-6">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
               <h4 className="text-base font-medium text-gray-900 mb-4">Budget estimé</h4>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
                   label="Budget matériaux (€)"
                   type="number"
+                  inputMode="decimal"
                   {...register('budget.materials', {
+                    valueAsNumber: true,
                     required: 'Le budget matériaux est requis',
                     min: { value: 0, message: 'Le budget ne peut pas être négatif' },
                   })}
@@ -377,7 +364,9 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
                 <Input
                   label="Budget main d'œuvre (€)"
                   type="number"
+                  inputMode="decimal"
                   {...register('budget.labor', {
+                    valueAsNumber: true,
                     required: "Le budget main d'œuvre est requis",
                     min: { value: 0, message: 'Le budget ne peut pas être négatif' },
                   })}
@@ -390,10 +379,7 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-gray-700">Budget total estimé</span>
                   <span className="text-xl font-bold text-gray-900">
-                    {new Intl.NumberFormat('fr-FR', {
-                      style: 'currency',
-                      currency: 'EUR',
-                    }).format((watch('budget.materials') || 0) + (watch('budget.labor') || 0))}
+                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(total)}
                   </span>
                 </div>
               </div>
@@ -474,9 +460,7 @@ export const ProjectWizardForm: React.FC<ProjectWizardFormProps> = ({ onSubmit, 
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    {...register('gdpr_consent', {
-                      required: 'Vous devez accepter les conditions',
-                    })}
+                    {...register('gdpr_consent', { required: 'Vous devez accepter les conditions' })}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
                   <span className="ml-2 text-sm text-gray-600">
