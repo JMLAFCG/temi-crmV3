@@ -281,4 +281,4 @@ export const AIPerformanceMonitor: React.FC = () => {
       </div>
     </div>
   );
-};∑
+};
