@@ -22,4 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+<<<<<<< HEAD
+
+# build artifacts
+artifacts/
+=======
 .env
+>>>>>>> main

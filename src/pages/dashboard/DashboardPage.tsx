@@ -1,5 +1,4 @@
-// src/pages/dashboard/DashboardPage.tsx
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React from 'react';
 import {
   Briefcase,
   Users,
@@ -20,9 +19,9 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/Button';
 import { Logo } from '../../components/ui/Logo';
-
-// 🔌 Supabase (client Vite déjà présent chez toi)
-import { supabase, getCurrentUser } from '../../lib/supabase';
+import ClientDashboard from './ClientDashboard';
+import EntrepriseDashboard from './EntrepriseDashboard';
+import ApporteurDashboard from './ApporteurDashboard';
 
 // === Stat cards ===
 interface StatCardProps {
@@ -162,158 +161,117 @@ const DashboardPage: React.FC = () => {
   // Redirection automatique vers le dashboard spécifique selon le rôle
   if (user) {
     const userRole = typeof user.role === 'string' ? user.role : 'unknown_role';
-    if (userRole === 'client') return <ClientDashboard />;
-    if (userRole === 'entreprise_partenaire' || userRole === 'partner_company') return <EntrepriseDashboard />;
-    if (userRole === 'apporteur' || userRole === 'business_provider') return <ApporteurDashboard />;
+    switch (userRole) {
+      case 'client':
+        return <ClientDashboard />;
+      case 'entreprise_partenaire':
+      case 'partner_company':
+        return <EntrepriseDashboard />;
+      case 'apporteur':
+      case 'business_provider':
+        return <ApporteurDashboard />;
+      // autres rôles => dashboard principal
+    }
   }
 
-  // Rôles
+  // Flags de rôle
   const isClient = String(user?.role) === 'client';
   const isApporteur = String(user?.role) === 'apporteur';
   const isMandatary = String(user?.role) === 'mandatary';
 
-  // === NOUVEAU : états dynamiques ===
-  const [counts, setCounts] = useState({ projets: 0, clients: 0, entreprises: 0, ca: 0 });
-  const [loadingStats, setLoadingStats] = useState(true);
+  // Données dérivées
+  const stats = [
+    {
+      title: 'Projets Actifs',
+      value: 24,
+      icon: <Briefcase size={24} />,
+      change: '+12%',
+      positive: true,
+      gradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
+    },
+    {
+      title: 'Clients Actifs',
+      value: 18,
+      icon: <Users size={24} />,
+      change: '+5%',
+      positive: true,
+      gradient: 'bg-gradient-to-br from-success-600 to-success-800',
+    },
+    ...(isMandatary
+      ? [
+          {
+            title: 'Devis en attente',
+            value: 8,
+            icon: <FileText size={24} />,
+            change: '+3',
+            positive: true,
+            gradient: 'bg-gradient-to-br from-warning-600 to-warning-800',
+          },
+          {
+            title: 'Commissions',
+            value: '12.5k€',
+            icon: <Euro size={24} />,
+            change: '+8%',
+            positive: true,
+            gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
+          },
+        ]
+      : [
+          {
+            title: 'Entreprises Partenaires',
+            value: 42,
+            icon: <Building size={24} />,
+            change: '+8%',
+            positive: true,
+            gradient: 'bg-gradient-to-br from-secondary-600 to-secondary-800',
+          },
+          {
+            title: "Chiffre d'Affaires",
+            value: '156k€',
+            icon: <Euro size={24} />,
+            change: '+15%',
+            positive: true,
+            gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
+          },
+        ]),
+  ];
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const authUser = await getCurrentUser();
-        if (!authUser) { setLoadingStats(false); return; }
+  const recentActivities = [
+    { icon: <Target size={20} />, title: 'Nouveau projet créé', description: 'Projet de rénovation pour Martin Dupont', time: 'Il y a 2h', type: 'success' as const },
+    { icon: <FileText size={20} />, title: 'Document téléchargé', description: "Plan d'étage pour le projet #1234", time: 'Il y a 4h', type: 'info' as const },
+    { icon: <Award size={20} />, title: 'Nouvelle entreprise partenaire', description: 'Électricité Moderne a rejoint la plateforme', time: 'Hier', type: 'success' as const },
+    { icon: <AlertTriangle size={20} />, title: 'Document expirant', description: 'Assurance décennale expire dans 30 jours', time: 'Il y a 1 jour', type: 'warning' as const },
+  ];
 
-        const [
-          { count: projets },
-          { count: clients },
-          { count: entreprises },
-          // TODO CA : branche plus tard sur invoices/payments si tu as la table
-        ] = await Promise.all([
-          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
-          supabase.from('clients').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
-          supabase.from('companies').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
-        ]);
+  const recentProjects = [
+    { title: 'Rénovation Cuisine Moderne', client: 'Martin Dupont', budget: '25 000 €', progress: 65, status: 'in_progress' as const, priority: 'high' as const },
+    { title: 'Extension Maison', client: 'Sophie Martin', budget: '75 000 €', progress: 10, status: 'pending' as const, priority: 'medium' as const },
+    { title: 'Rénovation Salle de Bain', client: 'Jean Petit', budget: '12 000 €', progress: 100, status: 'completed' as const, priority: 'low' as const },
+  ];
 
-        if (!mounted) return;
-        setCounts({
-          projets: projets ?? 0,
-          clients: clients ?? 0,
-          entreprises: entreprises ?? 0,
-          ca: 0,
-        });
-      } finally {
-        if (mounted) setLoadingStats(false);
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
+  const quickActions =
+    isClient || isApporteur || isMandatary
+      ? [
+          {
+            icon: <Zap size={20} />,
+            title: isClient ? 'Nouveau projet' : isApporteur ? 'Voir mes apports' : 'Créer un devis',
+            description: isClient ? 'Démarrer un nouveau projet' : isApporteur ? 'Consulter mes commissions' : 'Nouveau devis client',
+            action: 'Commencer',
+            gradient: 'from-primary-50 to-primary-100',
+            iconGradient: 'from-primary-500 to-primary-600',
+          },
+        ]
+      : [];
 
-  // ⚠️ AVANT : chiffres codés en dur. MAINTENANT : on injecte counts/ca.
-  const stats = useMemo(
-    () => [
-      {
-        title: 'Projets Actifs',
-        value: loadingStats ? '—' : counts.projets,
-        icon: <Briefcase size={24} />,
-        change: '+12%',
-        positive: true,
-        gradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
-      },
-      {
-        title: 'Clients Actifs',
-        value: loadingStats ? '—' : counts.clients,
-        icon: <Users size={24} />,
-        change: '+5%',
-        positive: true,
-        gradient: 'bg-gradient-to-br from-success-600 to-success-800',
-      },
-      ...(isMandatary
-        ? [
-            {
-              title: 'Devis en attente',
-              value: 8,
-              icon: <FileText size={24} />,
-              change: '+3',
-              positive: true,
-              gradient: 'bg-gradient-to-br from-warning-600 to-warning-800',
-            },
-            {
-              title: 'Commissions',
-              value: '—', // branchement réel à faire si tu as la table
-              icon: <Euro size={24} />,
-              change: '+8%',
-              positive: true,
-              gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
-            },
-          ]
-        : [
-            {
-              title: 'Entreprises Partenaires',
-              value: loadingStats ? '—' : counts.entreprises,
-              icon: <Building size={24} />,
-              change: '+8%',
-              positive: true,
-              gradient: 'bg-gradient-to-br from-secondary-600 to-secondary-800',
-            },
-            {
-              title: "Chiffre d'Affaires",
-              value: loadingStats ? '—' : `${counts.ca.toLocaleString('fr-FR')} €`,
-              icon: <Euro size={24} />,
-              change: '+15%',
-              positive: true,
-              gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
-            },
-          ]),
-    ],
-    [counts, loadingStats, isMandatary],
-  );
-
-  const recentActivities = useMemo(
-    () => [
-      { icon: <Target size={20} />, title: 'Nouveau projet créé', description: 'Projet de rénovation pour Martin Dupont', time: 'Il y a 2h', type: 'success' as const },
-      { icon: <FileText size={20} />, title: 'Document téléchargé', description: "Plan d'étage pour le projet #1234", time: 'Il y a 4h', type: 'info' as const },
-      { icon: <Award size={20} />, title: 'Nouvelle entreprise partenaire', description: 'Électricité Moderne a rejoint la plateforme', time: 'Hier', type: 'success' as const },
-      { icon: <AlertTriangle size={20} />, title: 'Document expirant', description: 'Assurance décennale expire dans 30 jours', time: 'Il y a 1 jour', type: 'warning' as const },
-    ],
-    [],
-  );
-
-  const recentProjects = useMemo(
-    () => [
-      { title: 'Rénovation Cuisine Moderne', client: 'Martin Dupont', budget: '25 000 €', progress: 65, status: 'in_progress' as const, priority: 'high' as const },
-      { title: 'Extension Maison', client: 'Sophie Martin', budget: '75 000 €', progress: 10, status: 'pending' as const, priority: 'medium' as const },
-      { title: 'Rénovation Salle de Bain', client: 'Jean Petit', budget: '12 000 €', progress: 100, status: 'completed' as const, priority: 'low' as const },
-    ],
-    [],
-  );
-
-  const getQuickActions = useCallback(() => {
-    if (isClient || isApporteur || isMandatary) {
-      return [
-        {
-          icon: <Zap size={20} />,
-          title: isClient ? 'Nouveau projet' : isApporteur ? 'Voir mes apports' : 'Créer un devis',
-          description: isClient ? 'Démarrer un nouveau projet' : isApporteur ? 'Consulter mes commissions' : 'Nouveau devis client',
-          action: 'Commencer',
-          gradient: 'from-primary-50 to-primary-100',
-          iconGradient: 'from-primary-500 to-primary-600',
-        },
-      ];
-    }
-    return [];
-  }, [isClient, isApporteur, isMandatary]);
-
-  const getAlerts = useCallback(() => {
-    return [
-      {
-        icon: <AlertTriangle size={20} />,
-        title: 'Document expirant',
-        description: 'Assurance décennale expire dans 30 jours',
-        gradient: 'from-warning-50 to-warning-100',
-        iconGradient: 'from-warning-500 to-warning-600',
-      },
-    ];
-  }, []);
+  const alerts = [
+    {
+      icon: <AlertTriangle size={20} />,
+      title: 'Document expirant',
+      description: 'Assurance décennale expire dans 30 jours',
+      gradient: 'from-warning-50 to-warning-100',
+      iconGradient: 'from-warning-500 to-warning-600',
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-accent-50 to-secondary-50 -m-6 p-6">
@@ -357,7 +315,7 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Statistiques dynamiques */}
+      {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, index) => (
           <StatCard
@@ -373,7 +331,7 @@ const DashboardPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Graphique des revenus (toujours mock pour l’instant) */}
+        {/* Graphique des revenus (mock) */}
         <div className="lg:col-span-2">
           <div className="bg-accent-500/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 border border-accent-500/20">
             <div className="flex justify-between items-center mb-6">
@@ -393,7 +351,7 @@ const DashboardPage: React.FC = () => {
               {[35, 45, 30, 25, 40, 50, 60, 45, 50, 55, 70, 65].map((height, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center">
                   <div
-                    className={`w-full rounded-t-lg transition-all duration-700 ${
+                    className={`w-full rounded-t-lg ${
                       i === 11
                         ? 'bg-gradient-to-t from-primary-500 to-secondary-700 shadow-lg'
                         : 'bg-gradient-to-t from-secondary-200 to-secondary-300 hover:from-primary-200 hover:to-secondary-400'
@@ -439,7 +397,7 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Projets récents + Commissions/Alertes (mocks) */}
+      {/* Projets + Commissions/Alertes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20">
           <div className="p-6 border-b border-gray-100/50">
@@ -510,7 +468,7 @@ const DashboardPage: React.FC = () => {
             </h2>
 
             <div className="space-y-4">
-              {getQuickActions().map((action, index) => (
+              {quickActions.map((action, index) => (
                 <div
                   key={index}
                   className={`flex items-start p-4 bg-gradient-to-r ${action.gradient} rounded-xl border border-primary-200`}
@@ -526,15 +484,7 @@ const DashboardPage: React.FC = () => {
                 </div>
               ))}
 
-              {[
-                {
-                  icon: <AlertTriangle size={20} />,
-                  title: 'Document expirant',
-                  description: 'Assurance décennale expire dans 30 jours',
-                  gradient: 'from-warning-50 to-warning-100',
-                  iconGradient: 'from-warning-500 to-warning-600',
-                },
-              ].map((alert, index) => (
+              {alerts.map((alert, index) => (
                 <div
                   key={`alert-${index}`}
                   className={`flex items-start p-4 bg-gradient-to-r ${alert.gradient} rounded-xl border border-warning-200`}
@@ -556,9 +506,4 @@ const DashboardPage: React.FC = () => {
   );
 };
 
-import ClientDashboard from './ClientDashboard';
-import EntrepriseDashboard from './EntrepriseDashboard';
-import ApporteurDashboard from './ApporteurDashboard';
-
 export default DashboardPage;
-
