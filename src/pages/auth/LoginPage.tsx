@@ -6,14 +6,22 @@ import { Logo } from '../../components/ui/Logo';
 import SafeLink from '../../components/common/SafeLink';
 
 function LoginPage() {
-  const { user, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && !isLoading) {
+    if (isAuthenticated && !isLoading) {
       navigate('/dashboard', { replace: true });
     }
-  }, [user, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

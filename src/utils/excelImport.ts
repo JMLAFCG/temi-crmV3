@@ -2,12 +2,12 @@ import * as XLSX from 'xlsx';
 
 export interface ImportResult<T> {
   success: T[];
-  errors: Array<{ row: number; data: any; error: string }>;
+  errors: Array<{ row: number; data: unknown; error: string }>;
 }
 
 export function parseExcelFile<T>(
   file: File,
-  validator: (row: any, index: number) => { valid: boolean; data?: T; error?: string }
+  validator: (row: Record<string, unknown>, index: number) => { valid: boolean; data?: T; error?: string }
 ): Promise<ImportResult<T>> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -17,7 +17,7 @@ export function parseExcelFile<T>(
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows: any[] = XLSX.utils.sheet_to_json(firstSheet);
+        const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(firstSheet);
 
         const result: ImportResult<T> = {
           success: [],
@@ -38,8 +38,9 @@ export function parseExcelFile<T>(
         });
 
         resolve(result);
-      } catch (error: any) {
-        reject(new Error(`Erreur de parsing Excel: ${error.message}`));
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        reject(new Error(`Erreur de parsing Excel: ${message}`));
       }
     };
 
@@ -53,7 +54,7 @@ export function parseExcelFile<T>(
 
 export function generateExcelTemplate(
   headers: string[],
-  exampleRow: any[],
+  exampleRow: unknown[],
   filename: string
 ): void {
   const worksheet = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
@@ -73,7 +74,7 @@ export interface ClientImportRow {
   company_name?: string;
 }
 
-export function validateClientRow(row: any, index: number) {
+export function validateClientRow(row: Record<string, unknown>, _index: number) {
   if (!row.first_name || !row.last_name || !row.email) {
     return {
       valid: false,
@@ -115,7 +116,7 @@ export interface CompanyImportRow {
   zones?: string;
 }
 
-export function validateCompanyRow(row: any, index: number) {
+export function validateCompanyRow(row: Record<string, unknown>, _index: number) {
   if (!row.name || !row.email) {
     return {
       valid: false,
@@ -155,7 +156,7 @@ export interface ProviderImportRow {
   commission_rate?: number;
 }
 
-export function validateProviderRow(row: any, index: number) {
+export function validateProviderRow(row: Record<string, unknown>, _index: number) {
   if (!row.first_name || !row.last_name || !row.email) {
     return {
       valid: false,

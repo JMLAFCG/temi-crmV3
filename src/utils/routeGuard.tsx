@@ -10,8 +10,7 @@ type GuardProps = {
 };
 
 const Guard: React.FC<GuardProps> = ({ children, roles }) => {
-  const store = (useAuthStore as any)?.getState?.() ?? useAuthStore();
-  const { user, isAuthenticated } = store || {};
+  const { user, isAuthenticated } = useAuthStore();
 
   if (!isAuthenticated || !user) {
     return <Navigate to={paths.login} replace />;

@@ -159,22 +159,17 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ icon, title, description, t
 const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
 
-  // Redirection automatique vers le dashboard spécifique selon le rôle
-  if (user) {
-    const userRole = typeof user.role === 'string' ? user.role : 'unknown_role';
-    if (userRole === 'client') return <ClientDashboard />;
-    if (userRole === 'entreprise_partenaire' || userRole === 'partner_company') return <EntrepriseDashboard />;
-    if (userRole === 'apporteur' || userRole === 'business_provider') return <ApporteurDashboard />;
-  }
-
-  // Rôles
+  // Rôles (calculés avant les hooks)
   const isClient = String(user?.role) === 'client';
   const isApporteur = String(user?.role) === 'apporteur';
   const isMandatary = String(user?.role) === 'mandatary';
 
-  // === NOUVEAU : états dynamiques ===
+  // === TOUS LES HOOKS APPELÉS INCONDITIONNELLEMENT ===
   const [counts, setCounts] = useState({ projets: 0, clients: 0, entreprises: 0, ca: 0 });
+  const [changes, setChanges] = useState({ projets: 0, clients: 0, entreprises: 0, ca: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [recentProjects, setRecentProjects] = useState<any[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -183,22 +178,49 @@ const DashboardPage: React.FC = () => {
         const authUser = await getCurrentUser();
         if (!authUser) { setLoadingStats(false); return; }
 
+        const now = new Date();
+        const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+        const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString();
+
         const [
-          { count: projets },
-          { count: clients },
-          { count: entreprises },
-          // TODO CA : branche plus tard sur invoices/payments si tu as la table
+          { count: projetsTotal },
+          { count: projetsThisMonth },
+          { count: projetsLastMonth },
+          { count: clientsTotal },
+          { count: clientsThisMonth },
+          { count: clientsLastMonth },
+          { count: entreprisesTotal },
+          { count: entreprisesThisMonth },
+          { count: entreprisesLastMonth },
         ] = await Promise.all([
-          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
-          supabase.from('clients').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
-          supabase.from('companies').select('*', { count: 'exact', head: true }).eq('created_by', authUser.id),
+          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_demo', false),
+          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_demo', false).gte('created_at', firstDayThisMonth),
+          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_demo', false).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth),
+          supabase.from('clients').select('*', { count: 'exact', head: true }),
+          supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', firstDayThisMonth),
+          supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth),
+          supabase.from('companies').select('*', { count: 'exact', head: true }),
+          supabase.from('companies').select('*', { count: 'exact', head: true }).gte('created_at', firstDayThisMonth),
+          supabase.from('companies').select('*', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth),
         ]);
+
+        const calculateChange = (current: number, previous: number) => {
+          if (previous === 0) return current > 0 ? 100 : 0;
+          return Math.round(((current - previous) / previous) * 100);
+        };
 
         if (!mounted) return;
         setCounts({
-          projets: projets ?? 0,
-          clients: clients ?? 0,
-          entreprises: entreprises ?? 0,
+          projets: projetsTotal ?? 0,
+          clients: clientsTotal ?? 0,
+          entreprises: entreprisesTotal ?? 0,
+          ca: 0,
+        });
+        setChanges({
+          projets: calculateChange(projetsThisMonth ?? 0, projetsLastMonth ?? 0),
+          clients: calculateChange(clientsThisMonth ?? 0, clientsLastMonth ?? 0),
+          entreprises: calculateChange(entreprisesThisMonth ?? 0, entreprisesLastMonth ?? 0),
           ca: 0,
         });
       } finally {
@@ -208,84 +230,20 @@ const DashboardPage: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  // ⚠️ AVANT : chiffres codés en dur. MAINTENANT : on injecte counts/ca.
-  const stats = useMemo(
-    () => [
-      {
-        title: 'Projets Actifs',
-        value: loadingStats ? '—' : counts.projets,
-        icon: <Briefcase size={24} />,
-        change: '+12%',
-        positive: true,
-        gradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
-      },
-      {
-        title: 'Clients Actifs',
-        value: loadingStats ? '—' : counts.clients,
-        icon: <Users size={24} />,
-        change: '+5%',
-        positive: true,
-        gradient: 'bg-gradient-to-br from-success-600 to-success-800',
-      },
-      ...(isMandatary
-        ? [
-            {
-              title: 'Devis en attente',
-              value: 8,
-              icon: <FileText size={24} />,
-              change: '+3',
-              positive: true,
-              gradient: 'bg-gradient-to-br from-warning-600 to-warning-800',
-            },
-            {
-              title: 'Commissions',
-              value: '—', // branchement réel à faire si tu as la table
-              icon: <Euro size={24} />,
-              change: '+8%',
-              positive: true,
-              gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
-            },
-          ]
-        : [
-            {
-              title: 'Entreprises Partenaires',
-              value: loadingStats ? '—' : counts.entreprises,
-              icon: <Building size={24} />,
-              change: '+8%',
-              positive: true,
-              gradient: 'bg-gradient-to-br from-secondary-600 to-secondary-800',
-            },
-            {
-              title: "Chiffre d'Affaires",
-              value: loadingStats ? '—' : `${counts.ca.toLocaleString('fr-FR')} €`,
-              icon: <Euro size={24} />,
-              change: '+15%',
-              positive: true,
-              gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
-            },
-          ]),
-    ],
-    [counts, loadingStats, isMandatary],
-  );
+  // Stats avec pourcentages réels calculés
+  const getTimeAgo = useCallback((date: string) => {
+    const now = new Date();
+    const past = new Date(date);
+    const diffMs = now.getTime() - past.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
 
-  const recentActivities = useMemo(
-    () => [
-      { icon: <Target size={20} />, title: 'Nouveau projet créé', description: 'Projet de rénovation pour Martin Dupont', time: 'Il y a 2h', type: 'success' as const },
-      { icon: <FileText size={20} />, title: 'Document téléchargé', description: "Plan d'étage pour le projet #1234", time: 'Il y a 4h', type: 'info' as const },
-      { icon: <Award size={20} />, title: 'Nouvelle entreprise partenaire', description: 'Électricité Moderne a rejoint la plateforme', time: 'Hier', type: 'success' as const },
-      { icon: <AlertTriangle size={20} />, title: 'Document expirant', description: 'Assurance décennale expire dans 30 jours', time: 'Il y a 1 jour', type: 'warning' as const },
-    ],
-    [],
-  );
-
-  const recentProjects = useMemo(
-    () => [
-      { title: 'Rénovation Cuisine Moderne', client: 'Martin Dupont', budget: '25 000 €', progress: 65, status: 'in_progress' as const, priority: 'high' as const },
-      { title: 'Extension Maison', client: 'Sophie Martin', budget: '75 000 €', progress: 10, status: 'pending' as const, priority: 'medium' as const },
-      { title: 'Rénovation Salle de Bain', client: 'Jean Petit', budget: '12 000 €', progress: 100, status: 'completed' as const, priority: 'low' as const },
-    ],
-    [],
-  );
+    if (diffMins < 60) return `Il y a ${diffMins} min`;
+    if (diffHours < 24) return `Il y a ${diffHours}h`;
+    if (diffDays === 1) return 'Hier';
+    return `Il y a ${diffDays} jours`;
+  }, []);
 
   const getQuickActions = useCallback(() => {
     if (isClient || isApporteur || isMandatary) {
@@ -303,17 +261,147 @@ const DashboardPage: React.FC = () => {
     return [];
   }, [isClient, isApporteur, isMandatary]);
 
-  const getAlerts = useCallback(() => {
-    return [
+  const stats = useMemo(
+    () => [
       {
-        icon: <AlertTriangle size={20} />,
-        title: 'Document expirant',
-        description: 'Assurance décennale expire dans 30 jours',
-        gradient: 'from-warning-50 to-warning-100',
-        iconGradient: 'from-warning-500 to-warning-600',
+        title: 'Projets Actifs',
+        value: loadingStats ? '—' : counts.projets,
+        icon: <Briefcase size={24} />,
+        change: loadingStats ? '' : changes.projets === 0 ? '' : `${changes.projets > 0 ? '+' : ''}${changes.projets}%`,
+        positive: changes.projets >= 0,
+        gradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
       },
-    ];
-  }, []);
+      {
+        title: 'Clients Actifs',
+        value: loadingStats ? '—' : counts.clients,
+        icon: <Users size={24} />,
+        change: loadingStats ? '' : changes.clients === 0 ? '' : `${changes.clients > 0 ? '+' : ''}${changes.clients}%`,
+        positive: changes.clients >= 0,
+        gradient: 'bg-gradient-to-br from-success-600 to-success-800',
+      },
+      ...(isMandatary
+        ? [
+            {
+              title: 'Devis en attente',
+              value: loadingStats ? '—' : 0,
+              icon: <FileText size={24} />,
+              change: '',
+              positive: true,
+              gradient: 'bg-gradient-to-br from-warning-600 to-warning-800',
+            },
+            {
+              title: 'Commissions',
+              value: '—',
+              icon: <Euro size={24} />,
+              change: '',
+              positive: true,
+              gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
+            },
+          ]
+        : [
+            {
+              title: 'Entreprises Partenaires',
+              value: loadingStats ? '—' : counts.entreprises,
+              icon: <Building size={24} />,
+              change: loadingStats ? '' : changes.entreprises === 0 ? '' : `${changes.entreprises > 0 ? '+' : ''}${changes.entreprises}%`,
+              positive: changes.entreprises >= 0,
+              gradient: 'bg-gradient-to-br from-secondary-600 to-secondary-800',
+            },
+            {
+              title: "Chiffre d'Affaires",
+              value: loadingStats ? '—' : `${counts.ca.toLocaleString('fr-FR')} €`,
+              icon: <Euro size={24} />,
+              change: '',
+              positive: true,
+              gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
+            },
+          ]),
+    ],
+    [counts, changes, loadingStats, isMandatary],
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const authUser = await getCurrentUser();
+        if (!authUser || !mounted) return;
+
+        // Récupérer les 5 projets les plus récents
+        const { data: projectsData } = await supabase
+          .from('projects')
+          .select(`
+            id,
+            title,
+            status,
+            budget,
+            progress,
+            priority,
+            created_at,
+            clients (first_name, last_name)
+          `)
+          .eq('is_demo', false)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (projectsData && mounted) {
+          const formattedProjects = projectsData.map((p: any) => ({
+            title: p.title || 'Sans titre',
+            client: p.clients ? `${p.clients.first_name} ${p.clients.last_name}` : 'Client non défini',
+            budget: p.budget ? `${p.budget.toLocaleString('fr-FR')} €` : 'Non défini',
+            progress: p.progress || 0,
+            status: p.status || 'pending',
+            priority: p.priority || 'medium',
+          }));
+          setRecentProjects(formattedProjects);
+        }
+
+        // Récupérer les logs d'audit pour les activités récentes
+        const { data: auditData } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(4);
+
+        if (auditData && mounted) {
+          const activities = auditData.map((log: any) => {
+            let icon = <FileText size={20} />;
+            let type: 'success' | 'warning' | 'info' = 'info';
+
+            if (log.action?.includes('create')) {
+              icon = <Target size={20} />;
+              type = 'success';
+            } else if (log.action?.includes('delete')) {
+              icon = <AlertTriangle size={20} />;
+              type = 'warning';
+            }
+
+            const timeAgo = getTimeAgo(log.created_at);
+
+            return {
+              icon,
+              title: log.action || 'Action',
+              description: log.details || 'Activité système',
+              time: timeAgo,
+              type,
+            };
+          });
+          setRecentActivities(activities);
+        }
+      } catch (error) {
+        console.error('Erreur chargement activités:', error);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [getTimeAgo]);
+
+  // Redirection vers dashboard spécifique selon le rôle
+  if (user) {
+    const userRole = typeof user.role === 'string' ? user.role : 'unknown_role';
+    if (userRole === 'client') return <ClientDashboard />;
+    if (userRole === 'entreprise_partenaire' || userRole === 'partner_company') return <EntrepriseDashboard />;
+    if (userRole === 'apporteur' || userRole === 'business_provider') return <ApporteurDashboard />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-accent-50 to-secondary-50 -m-6 p-6">

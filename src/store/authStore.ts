@@ -7,6 +7,7 @@ import { env } from '../config/env';
 interface AuthState {
   user: User | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
@@ -19,7 +20,8 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   subscribeWithSelector((set, get) => ({
   user: null,
-  isLoading: false,
+  isLoading: true,
+  isAuthenticated: false,
   error: null,
 
   login: async (email: string, password: string) => {
@@ -28,16 +30,16 @@ export const useAuthStore = create<AuthState>()(
       const { data, error } = await signIn(email, password);
 
       if (error) {
-        set({ error: error.message, isLoading: false });
+        set({ error: error.message, isLoading: false, isAuthenticated: false });
         return;
       }
 
       if (data.user) {
         const appUser = await mapSupabaseUserToAppUser(data.user);
-        set({ user: appUser, isLoading: false });
+        set({ user: appUser, isLoading: false, isAuthenticated: true });
       }
     } catch (err) {
-      set({ error: "Une erreur inattendue s'est produite", isLoading: false });
+      set({ error: "Une erreur inattendue s'est produite", isLoading: false, isAuthenticated: false });
     }
   },
 
@@ -47,16 +49,16 @@ export const useAuthStore = create<AuthState>()(
       const { data, error } = await signUp(email, password);
 
       if (error) {
-        set({ error: error.message, isLoading: false });
+        set({ error: error.message, isLoading: false, isAuthenticated: false });
         return;
       }
 
       if (data.user) {
         const appUser = await mapSupabaseUserToAppUser(data.user);
-        set({ user: appUser, isLoading: false });
+        set({ user: appUser, isLoading: false, isAuthenticated: true });
       }
     } catch (err) {
-      set({ error: "Une erreur inattendue s'est produite", isLoading: false });
+      set({ error: "Une erreur inattendue s'est produite", isLoading: false, isAuthenticated: false });
     }
   },
 
@@ -66,20 +68,18 @@ export const useAuthStore = create<AuthState>()(
       const { error } = await signOut();
 
       if (error) {
-        set({ error: error.message, isLoading: false });
+        set({ error: error.message, isLoading: false, isAuthenticated: false });
         return;
       }
 
-      // Nettoyer complètement le localStorage et sessionStorage après la déconnexion
       localStorage.clear();
       sessionStorage.clear();
 
-      set({ user: null, isLoading: false });
-      
-      // Rediriger vers la page de connexion après déconnexion
+      set({ user: null, isLoading: false, isAuthenticated: false });
+
       window.location.href = '/login';
     } catch (err) {
-      set({ error: "Une erreur inattendue s'est produite", isLoading: false });
+      set({ error: "Une erreur inattendue s'est produite", isLoading: false, isAuthenticated: false });
     }
   },
 
@@ -90,13 +90,13 @@ export const useAuthStore = create<AuthState>()(
 
       if (supabaseUser) {
         const appUser = await mapSupabaseUserToAppUser(supabaseUser);
-        set({ user: appUser, isLoading: false });
+        set({ user: appUser, isLoading: false, isAuthenticated: true });
       } else {
-        set({ user: null, isLoading: false });
+        set({ user: null, isLoading: false, isAuthenticated: false });
       }
     } catch (err) {
       console.error("Erreur lors de la vérification de l'authentification:", err);
-      set({ user: null, isLoading: false, error: null });
+      set({ user: null, isLoading: false, isAuthenticated: false, error: null });
     }
   },
 
@@ -110,7 +110,7 @@ export const useAuthStore = create<AuthState>()(
       createdAt: '2024-01-15T09:30:00Z',
       updatedAt: '2025-04-10T14:22:00Z',
     };
-    set({ user: mockUser, isLoading: false, error: null });
+    set({ user: mockUser, isLoading: false, isAuthenticated: true, error: null });
   },
 
   getViewUser: () => {

@@ -26,7 +26,7 @@ export default tseslint.config(
       'no-duplicate-imports': 'warn',
       // Autoriser les any pour les types complexes
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   }
 );

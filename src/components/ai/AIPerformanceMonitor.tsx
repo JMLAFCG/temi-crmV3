@@ -206,7 +206,7 @@ export const AIPerformanceMonitor: React.FC = () => {
               <span className="font-semibold text-yellow-600">28%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Confiance < 70%</span>
+              <span className="text-gray-600">Confiance &lt; 70%</span>
               <span className="font-semibold text-red-600">5%</span>
             </div>
           </div>

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Send, Phone, Video, MoreVertical } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../store/authStore';
+import { supabase } from '../../lib/supabase';
 
 interface Message {
   id: string;
@@ -26,72 +27,96 @@ const MessagesPage: React.FC = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messageText, setMessageText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - in a real app, this would come from an API
-  const conversations: Conversation[] = [
-    {
-      id: '1',
-      participantName: 'Martin Dupont',
-      lastMessage: 'Merci pour le devis, nous allons l\'étudier',
-      timestamp: '2025-01-15T10:30:00Z',
-      unreadCount: 2,
-      projectTitle: 'Rénovation Cuisine Moderne',
-    },
-    {
-      id: '2',
-      participantName: 'Sophie Martin',
-      lastMessage: 'Quand pouvons-nous commencer les travaux ?',
-      timestamp: '2025-01-15T09:15:00Z',
-      unreadCount: 0,
-      projectTitle: 'Extension Maison',
-    },
-    {
-      id: '3',
-      participantName: 'Entreprises Leroy',
-      lastMessage: 'Le planning est confirmé pour la semaine prochaine',
-      timestamp: '2025-01-14T16:45:00Z',
-      unreadCount: 1,
-      projectTitle: 'Nouvel Immeuble de Bureaux',
-    },
-  ];
+  useEffect(() => {
+    if (user) {
+      fetchConversations();
+    }
+  }, [user]);
 
-  const messages: Message[] = [
-    {
-      id: '1',
-      content: 'Bonjour, j\'ai bien reçu votre devis pour la rénovation de ma cuisine.',
-      senderId: 'client-1',
-      senderName: 'Martin Dupont',
-      timestamp: '2025-01-15T09:00:00Z',
-      isRead: true,
-    },
-    {
-      id: '2',
-      content: 'Parfait ! Avez-vous des questions sur les matériaux proposés ?',
-      senderId: user?.id || 'agent-1',
-      senderName: user?.first_name + ' ' + user?.last_name || 'Agent',
-      timestamp: '2025-01-15T09:15:00Z',
-      isRead: true,
-    },
-    {
-      id: '3',
-      content: 'Merci pour le devis, nous allons l\'étudier et vous recontacter rapidement.',
-      senderId: 'client-1',
-      senderName: 'Martin Dupont',
-      timestamp: '2025-01-15T10:30:00Z',
-      isRead: false,
-    },
-  ];
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation);
+    }
+  }, [selectedConversation]);
+
+  const fetchConversations = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('*')
+        .contains('participants', [user?.id])
+        .order('last_message_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedConversations: Conversation[] = (data || []).map((conv: any) => ({
+        id: conv.id,
+        participantName: conv.title || 'Conversation',
+        lastMessage: conv.last_message_preview || 'Aucun message',
+        timestamp: conv.last_message_at,
+        unreadCount: 0,
+        projectTitle: undefined,
+      }));
+
+      setConversations(formattedConversations);
+    } catch (error) {
+      console.error('Erreur chargement conversations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMessages = async (conversationId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      const formattedMessages: Message[] = (data || []).map((msg: any) => ({
+        id: msg.id,
+        content: msg.content,
+        senderId: msg.sender_id,
+        senderName: msg.sender_id === user?.id ? `${user.first_name} ${user.last_name}` : 'Utilisateur',
+        timestamp: msg.created_at,
+        isRead: msg.is_read,
+      }));
+
+      setMessages(formattedMessages);
+    } catch (error) {
+      console.error('Erreur chargement messages:', error);
+    }
+  };
 
   const filteredConversations = conversations.filter(conv =>
     conv.participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     conv.projectTitle?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSendMessage = () => {
-    if (messageText.trim()) {
-      // In a real app, this would send the message via API
-      console.log('Sending message:', messageText);
-      setMessageText('');
+  const handleSendMessage = async () => {
+    if (messageText.trim() && selectedConversation && user) {
+      try {
+        const { error } = await supabase.from('messages').insert({
+          conversation_id: selectedConversation,
+          sender_id: user.id,
+          content: messageText.trim(),
+        });
+
+        if (error) throw error;
+
+        setMessageText('');
+        await fetchMessages(selectedConversation);
+      } catch (error) {
+        console.error('Erreur envoi message:', error);
+      }
     }
   };
 

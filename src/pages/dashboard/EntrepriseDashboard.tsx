@@ -46,84 +46,16 @@ const EntrepriseDashboard = () => {
     try {
       setLoading(true);
 
-      // En mode démo ou si l'ID utilisateur n'est pas un UUID valide, utiliser des données fictives
-      if (
-        env.VITE_DEMO_MODE ||
-        !currentUser?.id.match(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-        )
-      ) {
-        const mockMissions: Mission[] = [
-          {
-            id: 'demo-mission-1',
-            title: 'Rénovation cuisine complète',
-            description: "Rénovation complète d'une cuisine de 15m²",
-            status: 'in_progress',
-            amount: 25000,
-            location: { address: '123 Rue de la Paix, Paris' },
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: 'demo-mission-2',
-            title: 'Extension maison',
-            description: 'Extension de 30m² avec terrasse',
-            status: 'pending',
-            amount: 45000,
-            location: { address: '456 Avenue des Champs, Lyon' },
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ];
-
-        const mockPaiements: Paiement[] = [
-          {
-            id: 'demo-paiement-1',
-            montant: 3000,
-            statut: 'payé',
-            type_paiement: 'commission',
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: 'demo-paiement-2',
-            montant: 1500,
-            statut: 'en_attente',
-            type_paiement: 'commission',
-            created_at: new Date().toISOString(),
-          },
-        ];
-
-        const mockDocuments: Document[] = [
-          {
-            id: 'demo-doc-1',
-            nom_fichier: 'RC_Pro_2024.pdf',
-            type_document: 'rc_pro',
-            statut: 'validé',
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: 'demo-doc-2',
-            nom_fichier: 'Kbis_entreprise.pdf',
-            type_document: 'kbis',
-            statut: 'en_attente',
-            created_at: new Date().toISOString(),
-          },
-        ];
-
-        setMissions(mockMissions);
-        setPaiements(mockPaiements);
-        setDocumentsLegaux(mockDocuments);
-        return;
-      }
-
       // Récupérer les projets assignés à cette entreprise
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select('*')
-        .eq('agent_id', currentUser?.id)
+        .or(`business_providers.cs.{${currentUser?.id}}`)
         .order('created_at', { ascending: false });
 
-      if (projectsError) throw projectsError;
+      if (projectsError) {
+        console.error('Erreur projets:', projectsError);
+      }
 
       // Récupérer les commissions
       const { data: commissionsData, error: commissionsError } = await supabase
@@ -132,14 +64,16 @@ const EntrepriseDashboard = () => {
         .eq('provider_id', currentUser?.id)
         .order('created_at', { ascending: false });
 
-      if (commissionsError) throw commissionsError;
+      if (commissionsError) {
+        console.error('Erreur commissions:', commissionsError);
+      }
 
       // Récupérer les documents
       const { data: docsData, error: docsError } = await supabase
         .from('documents')
         .select('*')
-        .eq('uploaded_by', currentUser?.id)
-        .order('created_at', { ascending: false });
+        .eq('company_id', currentUser?.id)
+        .order('created_at', { ascending: false});
 
       if (docsError) throw docsError;
 

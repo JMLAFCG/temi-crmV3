@@ -19,9 +19,9 @@ interface BusinessProvider {
   pending_commissions: number;
   projects_count: number;
   documents: {
-    identity: any;
-    kbis?: any;
-    partnership_agreement: any;
+    identity: unknown;
+    kbis?: unknown;
+    partnership_agreement: unknown;
   };
   banking: {
     iban: string;
