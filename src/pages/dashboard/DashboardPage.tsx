@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React from 'react';
 import {
   Briefcase,
   Users,
@@ -6,7 +6,6 @@ import {
   FileText,
   TrendingUp,
   Clock,
-  Calendar,
   ArrowUpRight,
   Euro,
   AlertTriangle,
@@ -20,6 +19,9 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/Button';
 import { Logo } from '../../components/ui/Logo';
+import ClientDashboard from './ClientDashboard';
+import EntrepriseDashboard from './EntrepriseDashboard';
+import ApporteurDashboard from './ApporteurDashboard';
 
 interface StatCardProps {
   title: string;
@@ -153,9 +155,6 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ icon, title, description, t
     </div>
   );
 };
-import ClientDashboard from './ClientDashboard';
-import EntrepriseDashboard from './EntrepriseDashboard';
-import ApporteurDashboard from './ApporteurDashboard';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -172,16 +171,17 @@ const DashboardPage: React.FC = () => {
       case 'apporteur':
       case 'business_provider':
         return <ApporteurDashboard />;
-      // Les autres rôles (admin, manager, commercial, mandatary) utilisent le dashboard principal
+      // autres rôles => dashboard principal
     }
   }
 
-  // Interface simplifiée pour les mandataires
+  // Flags de rôle
   const isClient = String(user?.role) === 'client';
   const isApporteur = String(user?.role) === 'apporteur';
   const isMandatary = String(user?.role) === 'mandatary';
 
-  const stats = useMemo(() => [
+  // Données dérivées (simples const, pas de hooks)
+  const stats = [
     {
       title: 'Projets Actifs',
       value: 24,
@@ -235,9 +235,9 @@ const DashboardPage: React.FC = () => {
             gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
           },
         ]),
-  ], [isMandatary]);
+  ];
 
-  const recentActivities = useMemo(() => [
+  const recentActivities = [
     {
       icon: <Target size={20} />,
       title: 'Nouveau projet créé',
@@ -266,9 +266,9 @@ const DashboardPage: React.FC = () => {
       time: 'Il y a 1 jour',
       type: 'warning' as const,
     },
-  ], []);
+  ];
 
-  const recentProjects = useMemo(() => [
+  const recentProjects = [
     {
       title: 'Rénovation Cuisine Moderne',
       client: 'Martin Dupont',
@@ -293,20 +293,17 @@ const DashboardPage: React.FC = () => {
       status: 'completed' as const,
       priority: 'low' as const,
     },
-  ], []);
+  ];
 
-  const getQuickActions = useCallback(() => {
-    if (isClient || isApporteur || isMandatary) {
-      return [
+  const quickActions = isClient || isApporteur || isMandatary
+    ? [
         {
           icon: <Zap size={20} />,
           title: isClient
             ? 'Nouveau projet'
             : isApporteur
               ? 'Voir mes apports'
-              : isMandatary
-                ? 'Créer un devis'
-                : 'Action rapide',
+              : 'Créer un devis',
           description: isClient
             ? 'Démarrer un nouveau projet'
             : isApporteur
@@ -316,22 +313,18 @@ const DashboardPage: React.FC = () => {
           gradient: 'from-primary-50 to-primary-100',
           iconGradient: 'from-primary-500 to-primary-600',
         },
-      ];
-    }
-    return [];
-  }, [isClient, isApporteur, isMandatary]);
+      ]
+    : [];
 
-  const getAlerts = useCallback(() => {
-    return [
-      {
-        icon: <AlertTriangle size={20} />,
-        title: 'Document expirant',
-        description: 'Assurance décennale expire dans 30 jours',
-        gradient: 'from-warning-50 to-warning-100',
-        iconGradient: 'from-warning-500 to-warning-600',
-      },
-    ];
-  }, []);
+  const alerts = [
+    {
+      icon: <AlertTriangle size={20} />,
+      title: 'Document expirant',
+      description: 'Assurance décennale expire dans 30 jours',
+      gradient: 'from-warning-50 to-warning-100',
+      iconGradient: 'from-warning-500 to-warning-600',
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-accent-50 to-secondary-50 -m-6 p-6">
@@ -413,7 +406,7 @@ const DashboardPage: React.FC = () => {
               {[35, 45, 30, 25, 40, 50, 60, 45, 50, 55, 70, 65].map((height, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center">
                   <div
-                    className={`w-full rounded-t-lg transition-all duration-700 delay-${i * 100} ${
+                    className={`w-full rounded-t-lg ${
                       i === 11
                         ? 'bg-gradient-to-t from-primary-500 to-secondary-700 shadow-lg'
                         : 'bg-gradient-to-t from-secondary-200 to-secondary-300 hover:from-primary-200 hover:to-secondary-400 transition-all duration-300'
@@ -510,7 +503,6 @@ const DashboardPage: React.FC = () => {
 
         {/* Commissions et alertes */}
         <div className="space-y-6">
-          {/* Commissions ou alertes selon le rôle */}
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6">
             <h2 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
               {isClient
@@ -579,14 +571,13 @@ const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Alertes ou actions rapides selon le rôle */}
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6">
             <h2 className="text-xl font-bold bg-gradient-to-r from-warning-600 to-error-600 bg-clip-text text-transparent mb-6">
               {isClient || isApporteur || isMandatary ? 'Actions Rapides' : 'Alertes Importantes'}
             </h2>
 
             <div className="space-y-4">
-              {getQuickActions().map((action, index) => (
+              {quickActions.map((action, index) => (
                 <div
                   key={index}
                   className={`flex items-start p-4 bg-gradient-to-r ${action.gradient} rounded-xl border border-primary-200`}
@@ -606,7 +597,7 @@ const DashboardPage: React.FC = () => {
                 </div>
               ))}
 
-              {getAlerts().map((alert, index) => (
+              {alerts.map((alert, index) => (
                 <div
                   key={`alert-${index}`}
                   className={`flex items-start p-4 bg-gradient-to-r ${alert.gradient} rounded-xl border border-warning-200`}
