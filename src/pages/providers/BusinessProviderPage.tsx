@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Filter, Search, ChevronDown, User, Mail, Phone, MapPin, Euro } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { supabase } from '../../lib/supabase';
 
 interface BusinessProviderCardProps {
   id: string;
@@ -122,70 +123,52 @@ const BusinessProviderPage: React.FC = () => {
   // Tous les hooks appelés inconditionnellement
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
-  const [providers, setProviders] = useState<BusinessProviderCardProps[]>([
-    {
-      id: '1',
-      type: 'individual',
-      first_name: 'Thomas',
-      last_name: 'Durand',
-      name: 'Thomas Durand',
-      email: 'thomas.durand@example.com',
-      phone: '06 12 34 56 78',
-      address: 'Paris',
-      projectsCount: 12,
-      totalCommissions: 24500,
-      pendingCommissions: 3500,
-      status: 'active',
-      verification_status: 'verified',
-    },
-    {
-      id: '2',
-      type: 'company',
-      first_name: 'Sophie',
-      last_name: 'Martin',
-      company_name: 'Électricité Moderne SARL',
-      name: 'Sophie Martin',
-      email: 'sophie.martin@example.com',
-      phone: '06 23 45 67 89',
-      address: 'Lyon',
-      projectsCount: 8,
-      totalCommissions: 15800,
-      pendingCommissions: 2200,
-      status: 'active',
-      verification_status: 'pending',
-    },
-    {
-      id: '3',
-      type: 'individual',
-      first_name: 'Jean',
-      last_name: 'Petit',
-      name: 'Jean Petit',
-      email: 'jean.petit@example.com',
-      phone: '06 34 56 78 90',
-      address: 'Marseille',
-      projectsCount: 5,
-      totalCommissions: 9500,
-      pendingCommissions: 1500,
-      status: 'inactive',
-      verification_status: 'rejected',
-    },
-    {
-      id: '4',
-      type: 'company',
-      first_name: 'Marc',
-      last_name: 'Dubois',
-      company_name: 'Électricité Moderne',
-      name: 'Électricité Moderne',
-      email: 'contact@electricite-moderne.fr',
-      phone: '01 23 45 67 89',
-      address: 'Paris',
-      projectsCount: 6,
-      totalCommissions: 8500,
-      pendingCommissions: 1200,
-      status: 'active',
-      verification_status: 'verified',
-    },
-  ]);
+  const [providers, setProviders] = useState<BusinessProviderCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('business_providers')
+          .select(`
+            *,
+            user:user_id(first_name, last_name)
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching providers:', error);
+          return;
+        }
+
+        const formattedProviders: BusinessProviderCardProps[] = (data || []).map((provider: any) => ({
+          id: provider.id,
+          type: provider.company_name ? 'company' : 'individual',
+          first_name: provider.user?.first_name || '',
+          last_name: provider.user?.last_name || '',
+          company_name: provider.company_name || undefined,
+          name: provider.company_name || `${provider.user?.first_name || ''} ${provider.user?.last_name || ''}`.trim(),
+          email: provider.email,
+          phone: provider.phone || '',
+          address: provider.address && typeof provider.address === 'object' && provider.address.city ? provider.address.city : '',
+          projectsCount: 0,
+          totalCommissions: 0,
+          pendingCommissions: 0,
+          status: provider.status || 'active',
+          verification_status: 'verified',
+        }));
+
+        setProviders(formattedProviders);
+      } catch (error) {
+        console.error('Error loading providers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProviders();
+  }, []);
 
   // Vérification des permissions
   if (user?.role !== 'admin' && user?.role !== 'manager') {

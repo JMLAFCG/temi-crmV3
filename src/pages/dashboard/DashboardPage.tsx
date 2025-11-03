@@ -194,9 +194,9 @@ const DashboardPage: React.FC = () => {
           { count: entreprisesThisMonth },
           { count: entreprisesLastMonth },
         ] = await Promise.all([
-          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_demo', false),
-          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_demo', false).gte('created_at', firstDayThisMonth),
-          supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_demo', false).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth),
+          supabase.from('projects').select('*', { count: 'exact', head: true }),
+          supabase.from('projects').select('*', { count: 'exact', head: true }).gte('created_at', firstDayThisMonth),
+          supabase.from('projects').select('*', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth),
           supabase.from('clients').select('*', { count: 'exact', head: true }),
           supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', firstDayThisMonth),
           supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth),
@@ -327,7 +327,7 @@ const DashboardPage: React.FC = () => {
         const authUser = await getCurrentUser();
         if (!authUser || !mounted) return;
 
-        // Récupérer les 5 projets les plus récents
+        // Récupérer les 5 projets les plus récents avec les infos du client via users
         const { data: projectsData } = await supabase
           .from('projects')
           .select(`
@@ -335,23 +335,20 @@ const DashboardPage: React.FC = () => {
             title,
             status,
             budget,
-            progress,
-            priority,
             created_at,
-            clients (first_name, last_name)
+            client:client_id(first_name, last_name)
           `)
-          .eq('is_demo', false)
           .order('created_at', { ascending: false })
           .limit(5);
 
         if (projectsData && mounted) {
           const formattedProjects = projectsData.map((p: any) => ({
             title: p.title || 'Sans titre',
-            client: p.clients ? `${p.clients.first_name} ${p.clients.last_name}` : 'Client non défini',
-            budget: p.budget ? `${p.budget.toLocaleString('fr-FR')} €` : 'Non défini',
-            progress: p.progress || 0,
+            client: p.client ? `${p.client.first_name || ''} ${p.client.last_name || ''}`.trim() || 'Client non défini' : 'Client non défini',
+            budget: p.budget && typeof p.budget === 'object' && p.budget.total ? `${p.budget.total.toLocaleString('fr-FR')} €` : 'Non défini',
+            progress: 0,
             status: p.status || 'pending',
-            priority: p.priority || 'medium',
+            priority: 'medium',
           }));
           setRecentProjects(formattedProjects);
         }
