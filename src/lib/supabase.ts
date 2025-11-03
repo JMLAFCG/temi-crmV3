@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables with fallbacks to prevent errors
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-url.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
+// FORCE correct Supabase configuration
+const supabaseUrl = 'https://cgyucfxdutvjclptfsme.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNneXVjZnhkdXR2amNscHRmc21lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNTI5NjIsImV4cCI6MjA2MzgyODk2Mn0.vM1hh8oZ3Idz2qTQCsKv793irDTEy9e8_u2o7DOq_MM';
 
 // Validate Supabase configuration
 const isValidConfig =
