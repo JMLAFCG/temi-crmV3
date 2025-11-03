@@ -10,9 +10,6 @@ import {
   ArrowUpRight,
   Euro,
   AlertTriangle,
-  Search,
-  Bell,
-  MessageSquare,
   Target,
   Award,
   Zap,
@@ -427,27 +424,6 @@ const DashboardPage: React.FC = () => {
 
           <div className="flex items-center justify-center flex-shrink-0">
             <Logo size="xl" variant="full" />
-          </div>
-
-          <div className="flex items-center space-x-4 flex-shrink-0">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search size={20} className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="pl-12 pr-4 py-3 rounded-2xl border-0 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-accent-500/80 backdrop-blur-sm shadow-lg w-80 placeholder-gray-500"
-              />
-            </div>
-
-            <button className="p-3 rounded-2xl bg-accent-500/80 backdrop-blur-sm text-primary-600 relative shadow-lg hover:shadow-xl hover:bg-accent-500 transition-all duration-200 transform hover:scale-105">
-              <Bell size={20} />
-            </button>
-
-            <button className="p-3 rounded-2xl bg-accent-500/80 backdrop-blur-sm text-primary-600 relative shadow-lg hover:shadow-xl hover:bg-accent-500 transition-all duration-200 transform hover:scale-105">
-              <MessageSquare size={20} />
-            </button>
           </div>
         </div>
       </div>

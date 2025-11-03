@@ -324,7 +324,7 @@ export default function HomePage() {
                 Outil Interne Non Commercial
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                TEMI <span className="font-bold text-black">n'est pas un produit commercial</span>. C'est la plateforme informatique propriétaire développée par <span className="font-bold text-[#C00000]">TEMI-Construction</span> pour ses salariés, mandataires et partenaires professionnels.
+                TEMI <span className="font-bold text-black">n'est pas un produit commercial</span>. C'est la plateforme informatique propriétaire développée par le <span className="font-bold text-[#C00000]">Groupe AFCG</span> pour sa filiale <span className="font-bold text-[#C00000]">TEMI-Construction</span>, ses salariés, mandataires et partenaires professionnels.
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
