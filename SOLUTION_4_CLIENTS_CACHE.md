@@ -2,43 +2,29 @@
 
 ## 🔍 Diagnostic
 
-**Problème identifié** : Le Service Worker (PWA) cachait les réponses API Supabase
+**Problème identifié** : Le Service Worker (PWA) a mis en cache les anciennes données
 
 ### Ce qui s'est passé
 
 1. ✅ Code nettoyé → **0 données hardcodées**
-2. ✅ Base de données → **0 clients, 0 projets**
-3. ❌ Cache navigateur → **4 clients** (anciennes réponses API cachées)
+2. ✅ Base de données Supabase → **0 clients, 0 projets** (VÉRIFIÉ)
+3. ❌ Cache navigateur → **4 clients** (anciennes données en cache)
 
-Le Service Worker interceptait **toutes** les requêtes, y compris celles vers Supabase, et servait les anciennes réponses depuis le cache.
+**Le Service Worker était déjà configuré correctement** (ligne 54-58 du sw.js) pour ne PAS cacher Supabase, mais votre navigateur a gardé un ancien cache.
 
 ## ✅ Solution appliquée
 
-### 1. **Service Worker corrigé** (`public/sw.js`)
+### 1. **Nouveau nom de cache forcé**
 
 ```javascript
-// ❌ AVANT : Cachait TOUT (y compris Supabase)
-self.addEventListener('fetch', (event) => {
-  event.respondWith(caches.match(event.request)...
-
-// ✅ APRÈS : Ne cache JAMAIS Supabase
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-  
-  // Ne JAMAIS cacher les requêtes Supabase
-  if (url.hostname.includes('supabase.co')) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-  ...
-```
-
-### 2. **Nouveau nom de cache**
-
-```javascript
-// Force le navigateur à invalider l'ancien cache
+// AVANT
 const CACHE_NAME = 'temi-construction-v3-20251103-clean';
+
+// APRÈS - Force le navigateur à tout rafraîchir
+const CACHE_NAME = 'temi-construction-v4-20251104-zero-clients';
 ```
+
+Cela force le navigateur à supprimer tous les anciens caches et à recommencer de zéro.
 
 ## 🚀 Comment voir les changements
 
