@@ -78,13 +78,15 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      {/* Debug info */}
-      <div className="bg-construction-teal/10 p-3 rounded-lg text-sm text-construction-teal border border-construction-teal/20">
-        <p>
-          <strong>Mode développement :</strong> Les clients sont créés localement pour la
-          démonstration.
-        </p>
-      </div>
+      {/* Debug info - Only in development */}
+      {import.meta.env.DEV && (
+        <div className="bg-construction-teal/10 p-3 rounded-lg text-sm text-construction-teal border border-construction-teal/20">
+          <p>
+            <strong>Mode développement :</strong> Les clients sont créés localement pour la
+            démonstration.
+          </p>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Type de client</label>
