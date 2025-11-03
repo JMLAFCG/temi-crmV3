@@ -170,6 +170,7 @@ const DashboardPage: React.FC = () => {
   const [loadingStats, setLoadingStats] = useState(true);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
+  const [dataLoadedAt] = useState(() => Date.now());
 
   useEffect(() => {
     let mounted = true;
@@ -456,7 +457,7 @@ const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, index) => (
           <StatCard
-            key={index}
+            key={`${index}-${dataLoadedAt}`}
             title={stat.title}
             value={stat.value}
             icon={stat.icon}
@@ -476,16 +477,16 @@ const DashboardPage: React.FC = () => {
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-700 bg-clip-text text-transparent">
                   Revenus Mensuels
                 </h2>
-                <p className="text-secondary-600">Performance de l'année en cours</p>
+                <p className="text-secondary-600">Aucune donnée disponible pour le moment</p>
               </div>
-              <div className="flex items-center text-success-600 bg-success-50 px-4 py-2 rounded-xl border border-success-200">
+              <div className="flex items-center text-gray-400 bg-gray-50 px-4 py-2 rounded-xl border border-gray-200">
                 <ArrowUpRight size={20} className="mr-2" />
-                <span className="font-semibold">+12.5%</span>
+                <span className="font-semibold">—</span>
               </div>
             </div>
 
             <div className="h-80 flex items-end space-x-3">
-              {[35, 45, 30, 25, 40, 50, 60, 45, 50, 55, 70, 65].map((height, i) => (
+              {[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map((height, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center">
                   <div
                     className={`w-full rounded-t-lg transition-all duration-700 ${
