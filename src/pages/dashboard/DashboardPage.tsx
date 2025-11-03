@@ -442,12 +442,10 @@ const DashboardPage: React.FC = () => {
 
             <button className="p-3 rounded-2xl bg-accent-500/80 backdrop-blur-sm text-primary-600 relative shadow-lg hover:shadow-xl hover:bg-accent-500 transition-all duration-200 transform hover:scale-105">
               <Bell size={20} />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-warning-600 rounded-full animate-pulse" />
             </button>
 
             <button className="p-3 rounded-2xl bg-accent-500/80 backdrop-blur-sm text-primary-600 relative shadow-lg hover:shadow-xl hover:bg-accent-500 transition-all duration-200 transform hover:scale-105">
               <MessageSquare size={20} />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-warning-500 rounded-full animate-pulse" />
             </button>
           </div>
         </div>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'temi-construction-v1';
+const CACHE_NAME = 'temi-construction-v2-20251103';
 const urlsToCache = [
   '/',
   '/dashboard',
