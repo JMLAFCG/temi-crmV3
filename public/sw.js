@@ -1,4 +1,4 @@
-const CACHE_NAME = 'temi-construction-v2-20251103';
+const CACHE_NAME = 'temi-construction-v3-20251103-clean';
 const urlsToCache = [
   '/',
   '/dashboard',
@@ -47,8 +47,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Stratégie de cache
+// Stratégie de cache : Network First pour les API Supabase
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // Ne JAMAIS cacher les requêtes Supabase
+  if (url.hostname.includes('supabase.co')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
