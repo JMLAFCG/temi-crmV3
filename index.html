@@ -20,6 +20,23 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx?v=20251103"></script>
+    <script>
+      // Forcer le vidage du cache au chargement (VERSION 2)
+      (async () => {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const reg of registrations) {
+            await reg.unregister();
+            console.log('🔄 Service Worker désinstallé');
+          }
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+          console.log('🗑️ Cache vidé:', keys.length, 'caches');
+        }
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx?v=20251103-v2"></script>
   </body>
 </html>
