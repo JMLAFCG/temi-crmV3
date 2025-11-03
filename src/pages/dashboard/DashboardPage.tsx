@@ -211,6 +211,16 @@ const DashboardPage: React.FC = () => {
         };
 
         if (!mounted) return;
+
+        console.log('📊 Dashboard Stats:', {
+          projetsTotal,
+          clientsTotal,
+          entreprisesTotal,
+          projetsThisMonth,
+          clientsThisMonth,
+          entreprisesThisMonth,
+        });
+
         setCounts({
           projets: projetsTotal ?? 0,
           clients: clientsTotal ?? 0,
