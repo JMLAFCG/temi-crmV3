@@ -415,11 +415,8 @@ const DashboardPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-accent-50 to-secondary-50 -m-6 p-6">
       {/* En-tête */}
       <div className="mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div>
-            <div className="flex items-center mb-4">
-              <Logo size="lg" variant="full" className="mr-3" />
-            </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
               Bonjour, {user?.firstName || 'Utilisateur'} 👋
             </h1>
@@ -428,7 +425,11 @@ const DashboardPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="mt-6 lg:mt-0 flex items-center space-x-4">
+          <div className="flex items-center justify-center flex-shrink-0">
+            <Logo size="md" variant="full" />
+          </div>
+
+          <div className="flex items-center space-x-4 flex-shrink-0">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Search size={20} className="text-gray-400" />

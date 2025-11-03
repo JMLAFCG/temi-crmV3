@@ -49,11 +49,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
       {/* En-tête */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
-        <Logo size="lg" variant="full" />
+        <div className="flex items-center justify-center w-full">
+          <Logo size="lg" variant="full" />
+        </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600"
+            className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 absolute right-4 top-6"
             aria-label="Fermer la barre latérale"
           >
             ×

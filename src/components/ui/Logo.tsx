@@ -10,7 +10,7 @@ export const Logo: FC<LogoProps> = ({ size = 'md', variant = 'full', className =
   const sizes = {
     sm: { height: 35 },
     md: { height: 60 },
-    lg: { height: 100 },
+    lg: { height: 110 },
     xl: { height: 140 },
   };
 
