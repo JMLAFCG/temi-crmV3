@@ -26,17 +26,14 @@ export default function HomePage() {
           <div className="flex justify-between items-center py-1.5">
             <div className="flex items-center space-x-6">
               <Logo size="xl" />
-              <div className="flex flex-col gap-1">
-                <span className="text-base text-gray-600">Propulsée par</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-base text-gray-600">Filiale du</span>
-                  <img
-                    src="/GROUPE AFCG Black Logo.png"
-                    alt="Groupe AFCG"
-                    className="h-16 object-contain"
-                  />
-                </div>
-              </div>
+            </div>
+            <div className="flex items-center gap-3 absolute left-1/2 transform -translate-x-1/2">
+              <span className="text-lg text-gray-600">Propulsée par et filiale du</span>
+              <img
+                src="/GROUPE AFCG Black Logo.png"
+                alt="Groupe AFCG"
+                className="h-16 object-contain"
+              />
             </div>
             <div className="flex items-center space-x-4">
               <Link
