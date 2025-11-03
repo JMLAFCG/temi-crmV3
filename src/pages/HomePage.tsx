@@ -56,20 +56,20 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-block mb-6 px-4 py-2 bg-[#C00000]/20 border border-[#C00000] rounded-full">
-              <span className="text-[#C00000] font-semibold text-sm">Plateforme professionnelle privée</span>
+              <span className="text-[#C00000] font-semibold text-sm">Plateforme Informatique Interne - Groupe AFCG</span>
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              Rejoins <span className="text-[#C00000]">TEMI</span>
+              Bienvenue sur <span className="text-[#C00000]">TEMI</span>
             </h1>
             <p className="text-2xl md:text-3xl font-light text-gray-300 mb-4">
-              L'écosystème digital des professionnels
+              La plateforme de travail digitale du Groupe AFCG
             </p>
             <p className="text-xl text-gray-400 mb-12">
-              Conseil • Financement • Bâtiment
+              Courtage en Travaux • Conseil • Financement
             </p>
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 mb-10 inline-block">
               <p className="text-lg text-white/90">
-                Une plateforme <span className="font-semibold text-[#C00000]">exclusive</span>, conçue pour nos mandataires,<br />apporteurs d'affaires et partenaires artisans
+                L'outil professionnel <span className="font-semibold text-[#C00000]">exclusif</span> pour nos salariés,<br />mandataires, apporteurs d'affaires et entreprises partenaires
               </p>
             </div>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -95,10 +95,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-              Pourquoi TEMI existe
+              Notre Plateforme Informatique
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Une solution professionnelle interne pour optimiser la collaboration entre tous les acteurs de l'écosystème AFCG
+              TEMI est l'outil de travail quotidien développé par TEMI-Construction pour digitaliser et optimiser toutes les opérations du groupe AFCG
             </p>
           </div>
 
@@ -107,9 +107,9 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-[#C00000]/10 rounded-xl flex items-center justify-center mb-6">
                 <Shield className="w-8 h-8 text-[#C00000]" />
               </div>
-              <h3 className="text-xl font-bold text-black mb-3">Plateforme sécurisée</h3>
+              <h3 className="text-xl font-bold text-black mb-3">Système informatique sécurisé</h3>
               <p className="text-gray-600 leading-relaxed">
-                Environnement professionnel dédié, accessible uniquement aux membres du réseau AFCG
+                Infrastructure professionnelle accessible uniquement aux collaborateurs et partenaires validés du groupe
               </p>
             </div>
 
@@ -117,9 +117,9 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-[#C00000]/10 rounded-xl flex items-center justify-center mb-6">
                 <Users className="w-8 h-8 text-[#C00000]" />
               </div>
-              <h3 className="text-xl font-bold text-black mb-3">Collaboration optimisée</h3>
+              <h3 className="text-xl font-bold text-black mb-3">Travail collaboratif</h3>
               <p className="text-gray-600 leading-relaxed">
-                Centralisation des clients, projets et documents pour une collaboration fluide
+                Centralisation de toutes les données clients, projets et documents pour une efficacité maximale
               </p>
             </div>
 
@@ -127,9 +127,9 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-[#C00000]/10 rounded-xl flex items-center justify-center mb-6">
                 <TrendingUp className="w-8 h-8 text-[#C00000]" />
               </div>
-              <h3 className="text-xl font-bold text-black mb-3">Gestion des commissions</h3>
+              <h3 className="text-xl font-bold text-black mb-3">Gestion automatisée</h3>
               <p className="text-gray-600 leading-relaxed">
-                Suivi transparent et automatisé de toutes les commissions et rémunérations
+                Calcul et suivi automatique des commissions, rémunérations et performances de chaque acteur
               </p>
             </div>
           </div>
@@ -140,10 +140,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-              Pour qui ?
+              Qui utilise TEMI ?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              TEMI s'adresse à trois profils professionnels de notre écosystème
+              L'outil de travail au quotidien de tous les acteurs du groupe TEMI-Construction
             </p>
           </div>
 
@@ -242,10 +242,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Les avantages de l'écosystème
+              Fonctionnalités de la plateforme
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Des outils professionnels pour développer votre activité
+              Tous les outils nécessaires pour gérer efficacement votre activité au sein du groupe
             </p>
           </div>
 
@@ -254,9 +254,9 @@ export default function HomePage() {
               <div className="w-14 h-14 bg-[#C00000] rounded-lg flex items-center justify-center mb-4">
                 <FileCheck className="w-7 h-7 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-3">CRM dédié</h3>
+              <h3 className="text-xl font-bold mb-3">CRM Intégré</h3>
               <p className="text-gray-400">
-                Outil complet de gestion de la relation client adapté au courtage travaux
+                Système complet de gestion clients et prospects adapté au métier du courtage en travaux
               </p>
             </div>
 
@@ -294,9 +294,9 @@ export default function HomePage() {
               <div className="w-14 h-14 bg-[#C00000] rounded-lg flex items-center justify-center mb-4">
                 <Users className="w-7 h-7 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Accompagnement</h3>
+              <h3 className="text-xl font-bold mb-3">Support Technique</h3>
               <p className="text-gray-400">
-                Support administratif et commercial par les équipes AFCG
+                Assistance technique et formation continue assurées par les équipes TEMI-Construction
               </p>
             </div>
 
@@ -304,9 +304,9 @@ export default function HomePage() {
               <div className="w-14 h-14 bg-[#C00000] rounded-lg flex items-center justify-center mb-4">
                 <Briefcase className="w-7 h-7 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Portail client</h3>
+              <h3 className="text-xl font-bold mb-3">Espace Client</h3>
               <p className="text-gray-400">
-                Interface dédiée pour vos clients avec suivi en temps réel
+                Interface dédiée pour vos clients leur permettant de suivre leurs dossiers en temps réel
               </p>
             </div>
           </div>
@@ -321,15 +321,15 @@ export default function HomePage() {
                 <span className="text-[#C00000] font-bold text-sm uppercase tracking-wide">Usage exclusif</span>
               </div>
               <h2 className="text-4xl font-bold text-black mb-6">
-                Une plateforme interne
+                Outil Interne Non Commercial
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                Cette plateforme <span className="font-bold text-black">n'est pas commercialisée</span>. Elle est exclusivement mise à disposition par le <span className="font-bold text-[#C00000]">Groupe AFCG</span> pour ses partenaires et collaborateurs.
+                TEMI <span className="font-bold text-black">n'est pas un produit commercial</span>. C'est la plateforme informatique propriétaire développée par <span className="font-bold text-[#C00000]">TEMI-Construction</span> pour ses salariés, mandataires et partenaires professionnels.
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
               <p className="text-center text-gray-700 text-lg">
-                L'accès à TEMI est réservé aux professionnels validés par nos équipes et fait partie intégrante de notre offre de partenariat.
+                L'accès à TEMI est strictement réservé aux membres de l'organisation : salariés de TEMI-Construction, mandataires en courtage travaux, apporteurs d'affaires et entreprises partenaires sous contrat.
               </p>
             </div>
           </div>
@@ -340,10 +340,10 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-              Processus d'adhésion
+              Rejoindre TEMI-Construction
             </h2>
             <p className="text-xl text-gray-600">
-              Trois étapes pour rejoindre le réseau TEMI
+              Le processus pour devenir partenaire et accéder à la plateforme
             </p>
           </div>
 
@@ -353,9 +353,9 @@ export default function HomePage() {
                 1
               </div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold text-black mb-2">Manifester son intérêt</h3>
+                <h3 className="text-2xl font-bold text-black mb-2">Candidature</h3>
                 <p className="text-gray-600 text-lg">
-                  Remplissez le formulaire ci-dessous pour nous faire part de votre souhait de rejoindre l'écosystème TEMI
+                  Remplissez le formulaire ci-dessous pour manifester votre intérêt à rejoindre le groupe TEMI-Construction
                 </p>
               </div>
             </div>
@@ -365,9 +365,9 @@ export default function HomePage() {
                 2
               </div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold text-black mb-2">Vérification du dossier</h3>
+                <h3 className="text-2xl font-bold text-black mb-2">Étude du dossier</h3>
                 <p className="text-gray-600 text-lg">
-                  Nos équipes étudient votre profil et vérifient votre éligibilité au réseau AFCG
+                  Nos équipes RH et commerciales étudient votre candidature et vérifient votre adéquation avec nos critères
                 </p>
               </div>
             </div>
@@ -377,9 +377,9 @@ export default function HomePage() {
                 3
               </div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold text-black mb-2">Signature & accès</h3>
+                <h3 className="text-2xl font-bold text-black mb-2">Intégration</h3>
                 <p className="text-gray-600 text-lg">
-                  Après validation, signature du partenariat et activation de votre accès à TEMI
+                  Après validation : signature du contrat de collaboration, formation et création de votre compte sur TEMI
                 </p>
               </div>
             </div>
@@ -388,7 +388,7 @@ export default function HomePage() {
           {!submitted ? (
             <div className="bg-gradient-to-br from-gray-50 to-white p-10 rounded-2xl border-2 border-gray-200 shadow-xl">
               <h3 className="text-2xl font-bold text-black mb-8 text-center">
-                Formulaire de demande d'adhésion
+                Formulaire de candidature
               </h3>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -505,15 +505,15 @@ export default function HomePage() {
                 </div>
               </div>
               <p className="text-gray-400 text-sm">
-                L'écosystème digital professionnel du conseil, du financement et du bâtiment
+                La plateforme informatique de TEMI-Construction - Courtage en travaux
               </p>
             </div>
 
             <div>
-              <h4 className="font-bold mb-4 text-[#C00000]">Contact</h4>
+              <h4 className="font-bold mb-4 text-[#C00000]">À propos</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li>Groupe AFCG</li>
-                <li>Plateforme réservée aux partenaires</li>
+                <li>TEMI-Construction (Groupe AFCG)</li>
+                <li>Plateforme interne professionnelle</li>
               </ul>
             </div>
 
@@ -530,10 +530,10 @@ export default function HomePage() {
 
           <div className="border-t border-gray-800 pt-8 text-center">
             <p className="text-gray-400 text-sm">
-              &copy; {new Date().getFullYear()} TEMI - Propriété du Groupe AFCG. Tous droits réservés.
+              &copy; {new Date().getFullYear()} TEMI-Construction - Groupe AFCG. Tous droits réservés.
             </p>
             <p className="text-gray-500 text-xs mt-2">
-              Plateforme professionnelle interne non commercialisée
+              Système informatique interne - Non commercialisé
             </p>
           </div>
         </div>
