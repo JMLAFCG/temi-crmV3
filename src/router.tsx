@@ -59,6 +59,11 @@ const CommissionsPage = lazyDefault(() => import('./pages/commissions/Commission
 const MandataryCommissionsPage = lazyDefault(() => import('./pages/commissions/MandataryCommissionsPage'), 'src/pages/commissions/MandataryCommissionsPage.tsx');
 
 const InvoicingPage = lazyDefault(() => import('./pages/invoicing/InvoicingPage'), 'src/pages/invoicing/InvoicingPage.tsx');
+
+const ImportPage = lazyDefault(() => import('./pages/import/ImportPage'), 'src/pages/import/ImportPage.tsx');
+const ValidationPage = lazyDefault(() => import('./pages/import/ValidationPage'), 'src/pages/import/ValidationPage.tsx');
+const ProspectionPage = lazyDefault(() => import('./pages/prospection/ProspectionPage'), 'src/pages/prospection/ProspectionPage.tsx');
+
 const AuditPage = lazyDefault(() => import('./pages/audit/AuditPage'), 'src/pages/audit/AuditPage.tsx');
 
 const AIManagementPage = lazyDefault(() => import('./pages/admin/AIManagementPage'), 'src/pages/admin/AIManagementPage.tsx');
@@ -269,6 +274,30 @@ const mainRoutes = createBrowserRouter([
         element: (
           <Guard roles={['admin', 'manager', 'comptable']}>
             <AppSuspense><InvoicingPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
+        path: paths.import,
+        element: (
+          <Guard roles={['admin', 'manager', 'mandatary']}>
+            <AppSuspense><ImportPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
+        path: paths.importValidation,
+        element: (
+          <Guard roles={['admin', 'manager']}>
+            <AppSuspense><ValidationPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
+        path: paths.prospection,
+        element: (
+          <Guard roles={['admin', 'manager', 'mandatary']}>
+            <AppSuspense><ProspectionPage /></AppSuspense>
           </Guard>
         ),
       },

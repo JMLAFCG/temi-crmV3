@@ -41,7 +41,12 @@ export const paths = {
   
   // Facturation
   invoicing: '/invoicing',
-  
+
+  // Import & Prospection
+  import: '/import',
+  importValidation: '/import/validation',
+  prospection: '/prospection',
+
   // Audit
   audit: '/audit',
 
