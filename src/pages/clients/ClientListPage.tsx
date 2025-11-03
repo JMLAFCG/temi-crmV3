@@ -67,10 +67,11 @@ const ClientListPage: React.FC = () => {
   };
 
   const filteredClients = clients.filter(client => {
+    if (!client.user) return false;
     const searchString = searchQuery.toLowerCase();
     return (
-      `${client.user.first_name} ${client.user.last_name}`.toLowerCase().includes(searchString) ||
-      client.user.email.toLowerCase().includes(searchString) ||
+      `${client.user.first_name || ''} ${client.user.last_name || ''}`.toLowerCase().includes(searchString) ||
+      (client.user.email && client.user.email.toLowerCase().includes(searchString)) ||
       (client.company_name && client.company_name.toLowerCase().includes(searchString)) ||
       (client.phone && client.phone.toLowerCase().includes(searchString))
     );
@@ -201,27 +202,28 @@ const ClientListPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredClients.map(client => (
-          <div
-            key={client.id}
-            className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => navigate(`/clients/${client.id}`)}
-          >
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {client.user.first_name} {client.user.last_name}
-                </h3>
-                {client.company_name && (
-                  <p className="text-sm text-gray-600">{client.company_name}</p>
-                )}
+          client.user && (
+            <div
+              key={client.id}
+              className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate(`/clients/${client.id}`)}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {client.user.first_name || ''} {client.user.last_name || ''}
+                  </h3>
+                  {client.company_name && (
+                    <p className="text-sm text-gray-600">{client.company_name}</p>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600 flex items-center">
-                <Mail size={16} className="mr-2 text-gray-400" />
-                {client.user.email}
-              </p>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600 flex items-center">
+                  <Mail size={16} className="mr-2 text-gray-400" />
+                  {client.user.email || 'N/A'}
+                </p>
               {client.phone && (
                 <p className="text-sm text-gray-600 flex items-center">
                   <Phone size={16} className="mr-2 text-gray-400" />
@@ -250,7 +252,8 @@ const ClientListPage: React.FC = () => {
                 </Button>
               </div>
             </div>
-          </div>
+            </div>
+          )
         ))}
       </div>
 

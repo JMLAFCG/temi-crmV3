@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Filter, Search, ChevronDown, User, Mail, Shield } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 import { UserRole } from '../../types';
+import { supabase } from '../../lib/supabase';
 
 interface UserCardProps {
   id: string;
@@ -84,36 +85,35 @@ const UsersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
 
-  // Données de démonstration
-  const users: UserCardProps[] = [
-    {
-      id: '1',
-      firstName: 'Thomas',
-      lastName: 'Durand',
-      email: 'thomas.durand@example.com',
-      role: 'admin',
-      lastLogin: '2025-05-10T10:30:00',
-      status: 'active',
-    },
-    {
-      id: '2',
-      firstName: 'Sophie',
-      lastName: 'Martin',
-      email: 'sophie.martin@example.com',
-      role: 'manager',
-      lastLogin: '2025-05-09T15:45:00',
-      status: 'active',
-    },
-    {
-      id: '3',
-      firstName: 'Jean',
-      lastName: 'Petit',
-      email: 'jean.petit@example.com',
-      role: 'commercial',
-      lastLogin: '2025-05-08T09:15:00',
-      status: 'active',
-    },
-  ];
+  const [users, setUsers] = useState<UserCardProps[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching users:', error);
+        return;
+      }
+
+      const formattedUsers: UserCardProps[] = (data || []).map(user => ({
+        id: user.id,
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        email: user.email,
+        role: user.role,
+        lastLogin: user.updated_at,
+        status: 'active',
+      }));
+
+      setUsers(formattedUsers);
+    };
+
+    fetchUsers();
+  }, []);
 
   return (
     <div>
