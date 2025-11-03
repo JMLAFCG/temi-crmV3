@@ -222,8 +222,6 @@ const DashboardPage: React.FC = () => {
           entreprisesThisMonth,
         });
 
-        console.warn('🔴 VERSION 2 - CACHE VIDÉ - Si vous voyez toujours 4 clients, le cache PWA est actif !');
-
         setCounts({
           projets: projetsTotal ?? 0,
           clients: clientsTotal ?? 0,

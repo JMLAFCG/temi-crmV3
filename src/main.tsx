@@ -16,14 +16,11 @@ createRoot(root).render(
   </StrictMode>
 );
 
-// Service Worker avec mise à jour automatique
+// Initialiser PWA après le rendu
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(registration => {
-      console.log('✅ Service Worker enregistré (version 2)');
-      registration.update();
-    }).catch((error) => {
-      console.log('⚠️ Service Worker registration failed:', error);
+    navigator.serviceWorker.register('/sw.js').catch((error) => {
+      console.log('Service Worker registration failed:', error);
     });
   });
 }
