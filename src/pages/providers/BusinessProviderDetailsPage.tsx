@@ -17,27 +17,7 @@ const BusinessProviderDetailsPage: React.FC = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
 
-  // Mock data - à remplacer par des données réelles
-  const provider = {
-    id: '1',
-    name: 'Thomas Durand',
-    email: 'thomas.durand@example.com',
-    phone: '06 12 34 56 78',
-    address: 'Paris',
-    status: 'active',
-    commission_rate: 5,
-    total_commissions: 24500,
-    pending_commissions: 3500,
-    projects_count: 12,
-    projects: [
-      { id: '1', name: 'Rénovation Appartement Martin', status: 'en_cours', commission: 1200 },
-      { id: '2', name: 'Extension Maison Dupont', status: 'terminé', commission: 2300 },
-    ],
-    commissions_history: [
-      { date: '2025-05-01', amount: 1500, project: 'Rénovation Cuisine' },
-      { date: '2025-04-15', amount: 2000, project: 'Extension Maison' },
-    ],
-  };
+  const provider = null;
 
   if (!provider) {
     return (

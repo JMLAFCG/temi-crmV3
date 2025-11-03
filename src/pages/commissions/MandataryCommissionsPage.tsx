@@ -259,43 +259,9 @@ const MandataryCommissionsPage: React.FC = () => {
   const canViewAllMandataries = user && ['admin', 'manager'].includes(user.role);
   const isMandatary = user?.role === 'mandatary';
 
-  // Mock data - à remplacer par les vraies données
-  const mandataryStats: MandataryStats[] = [
-    {
-      mandataryId: 'mandatary-1',
-      mandataryName: 'Jean-Marc Leton',
-      currentYear: 2025,
-      monthsElapsed: 7, // Juillet
-      annualProduction: 150000, // Production réelle à ce jour
-      monthlyAverage: 21428, // 150000 / 7
-      projectedAnnualProduction: 257142, // (150000 / 7) * 12
-      currentTier: MANDATARY_COMMISSION_TIERS[1], // 30%
-      projectedTier: MANDATARY_COMMISSION_TIERS[2], // 35%
-      totalCommissionsEarned: 5400,
-      pendingCommissions: 1800,
-      projectsCount: 12,
-      conversionRate: 75,
-    },
-    {
-      mandataryId: 'mandatary-2',
-      mandataryName: 'Sophie Martin',
-      currentYear: 2025,
-      monthsElapsed: 7,
-      annualProduction: 80000,
-      monthlyAverage: 11428,
-      projectedAnnualProduction: 137142,
-      currentTier: MANDATARY_COMMISSION_TIERS[0], // 25%
-      projectedTier: MANDATARY_COMMISSION_TIERS[1], // 30%
-      totalCommissionsEarned: 2400,
-      pendingCommissions: 600,
-      projectsCount: 8,
-      conversionRate: 68,
-    },
-  ];
+  const mandataryStats: MandataryStats[] = [];
 
-  const currentMandataryStats = isMandatary
-    ? mandataryStats[0] // Simuler que l'utilisateur connecté est Jean-Marc
-    : mandataryStats.find(m => m.mandataryId === selectedMandatary) || mandataryStats[0];
+  const currentMandataryStats = mandataryStats.find(m => m.mandataryId === selectedMandatary) || null;
 
   const handleSimulateProject = (amount: number) => {
     const result = simulateProjectImpact(
@@ -306,44 +272,7 @@ const MandataryCommissionsPage: React.FC = () => {
     setSimulationResult(result);
   };
 
-  const mockProjectCommissions: ProjectCommission[] = [
-    {
-      id: '1',
-      projectTitle: 'Rénovation Cuisine Moderne',
-      clientName: 'Martin Dupont',
-      projectAmount: 25000,
-      temiCommission: 3000, // 12% de 25000
-      mandataryCommission: 900, // 30% de 3000
-      commissionRate: 30,
-      status: 'paid',
-      quoteSignedDate: '2025-01-15',
-      createdAt: '2025-01-10',
-    },
-    {
-      id: '2',
-      projectTitle: 'Extension Maison',
-      clientName: 'Sophie Bernard',
-      projectAmount: 75000,
-      temiCommission: 9000,
-      mandataryCommission: 2700,
-      commissionRate: 30,
-      status: 'invoiced',
-      quoteSignedDate: '2025-01-20',
-      createdAt: '2025-01-15',
-    },
-    {
-      id: '3',
-      projectTitle: 'Rénovation Salle de Bain',
-      clientName: 'Jean Petit',
-      projectAmount: 12000,
-      temiCommission: 1440,
-      mandataryCommission: 432,
-      commissionRate: 30,
-      status: 'pending',
-      quoteSignedDate: '2025-01-25',
-      createdAt: '2025-01-20',
-    },
-  ];
+  const projectCommissions: ProjectCommission[] = [];
 
   return (
     <div>

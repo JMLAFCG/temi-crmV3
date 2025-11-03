@@ -26,46 +26,8 @@ export const useAIQuoteStore = create<AIQuoteState>((set, get) => ({
   fetchPropositions: async (projetId?: string) => {
     set({ loading: true, error: null });
     try {
-      // Utiliser des données mock pour éviter les erreurs de relations
-      const mockPropositions: PropositionGlobale[] = [];
-
-      if (projetId) {
-        // Ajouter une proposition mock pour le projet
-        mockPropositions.push({
-          id: `prop-${projetId}`,
-          projet_id: projetId,
-          status: 'en_attente',
-          total_amount: 45000,
-          total_margin: 5400,
-          ai_confidence: 0.92,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          lots: [
-            {
-              id: `lot-1-${projetId}`,
-              proposition_id: `prop-${projetId}`,
-              lot_name: 'Gros œuvre',
-              description: 'Fondations, murs porteurs, charpente',
-              estimated_amount: 25000,
-              selected_company_id: 'company-1',
-              ai_reasoning: 'Meilleur rapport qualité-prix pour ce type de travaux',
-              created_at: new Date().toISOString(),
-            },
-            {
-              id: `lot-2-${projetId}`,
-              proposition_id: `prop-${projetId}`,
-              lot_name: 'Second œuvre',
-              description: 'Plomberie, électricité, isolation',
-              estimated_amount: 20000,
-              selected_company_id: 'company-2',
-              ai_reasoning: 'Expertise reconnue en installations techniques',
-              created_at: new Date().toISOString(),
-            },
-          ],
-        });
-      }
-
-      set({ propositions: mockPropositions, error: null });
+      const propositions: PropositionGlobale[] = [];
+      set({ propositions, error: null });
     } catch (error) {
       console.error('Erreur récupération propositions:', error);
       set({ error: 'Erreur lors de la récupération des propositions' });
@@ -77,32 +39,8 @@ export const useAIQuoteStore = create<AIQuoteState>((set, get) => ({
   fetchAnalyses: async (projetId: string) => {
     set({ loading: true, error: null });
     try {
-      // Utiliser des données mock pour les analyses
-      const mockAnalyses: DevisAnalysis[] = [
-        {
-          id: `analysis-${projetId}`,
-          projet_id: projetId,
-          document_id: `doc-${projetId}`,
-          extracted_data: {
-            company_name: 'Entreprise Exemple',
-            total_amount: 45000,
-            items: [
-              { description: 'Gros œuvre', amount: 25000 },
-              { description: 'Second œuvre', amount: 20000 },
-            ],
-          },
-          ai_insights: {
-            price_analysis: 'Prix compétitif pour ce type de projet',
-            quality_score: 8.5,
-            recommendations: ['Vérifier les délais', 'Négocier les finitions'],
-          },
-          confidence_score: 0.92,
-          status: 'completed',
-          created_at: new Date().toISOString(),
-        },
-      ];
-
-      set({ analyses: mockAnalyses, error: null });
+      const analyses: DevisAnalysis[] = [];
+      set({ analyses, error: null });
     } catch (error) {
       console.error('Erreur récupération analyses:', error);
       set({ error: 'Erreur lors de la récupération des analyses' });

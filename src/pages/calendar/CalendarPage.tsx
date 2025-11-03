@@ -111,70 +111,7 @@ export const CalendarPage: React.FC = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   }, [currentMonth]);
 
-  // Mock events data - in a real app, this would come from an API
-  const events: Record<string, CalendarEvent[]> = {
-    '2025-05-12': [
-      {
-        id: '1',
-        title: 'Réunion client Martin Dupont',
-        date: '2025-05-12',
-        startTime: '10:00',
-        endTime: '11:30',
-        location: 'Bureau TEMI',
-        attendees: ['Martin Dupont', 'Sophie Martin', 'Thomas Durand'],
-        type: 'meeting',
-      },
-      {
-        id: '2',
-        title: 'Appel fournisseur',
-        date: '2025-05-12',
-        startTime: '14:00',
-        endTime: '14:30',
-        attendees: ['Thomas Durand'],
-        type: 'other',
-      },
-    ],
-    '2025-05-15': [
-      {
-        id: '3',
-        title: 'Visite chantier Extension Maison',
-        date: '2025-05-15',
-        startTime: '14:00',
-        endTime: '16:00',
-        location: '8 Avenue Victor Hugo, Lyon',
-        attendees: ['Sophie Martin', 'Jean Petit', 'Électricité Moderne'],
-        type: 'site-visit',
-      },
-    ],
-    '2025-05-18': [
-      {
-        id: '4',
-        title: 'Revue avec partenaires',
-        date: '2025-05-18',
-        startTime: '11:00',
-        endTime: '12:30',
-        location: 'Salle de conférence',
-        attendees: [
-          'Thomas Durand',
-          'Maçonnerie Dupont',
-          'Plomberie Martin',
-          'Menuiserie Bois & Cie',
-        ],
-        type: 'meeting',
-      },
-    ],
-    '2025-05-20': [
-      {
-        id: '5',
-        title: 'Échéance projet Rénovation Cuisine',
-        date: '2025-05-20',
-        startTime: '18:00',
-        endTime: '18:00',
-        attendees: ['Thomas Durand', 'Martin Dupont'],
-        type: 'deadline',
-      },
-    ],
-  };
+  const events: Record<string, CalendarEvent[]> = {};
 
   // Get events for a specific day
   const getEventsForDay = (date: Date) => {

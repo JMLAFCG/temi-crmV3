@@ -46,32 +46,8 @@ const AuditPage: React.FC = () => {
         .limit(100);
 
       if (error) {
-        console.warn('Audit log view not available, using mock data:', error);
-        // Use mock data if audit_log_v doesn't exist yet
-        const mockAuditLogs: AuditLogEntry[] = [
-          {
-            id: '1',
-            at: new Date().toISOString(),
-            user_name: 'Jean-Marc Leton',
-            user_email: 'admin@temi-construction.fr',
-            action: 'INSERT',
-            entity: 'projects',
-            entity_id: 'project-1',
-            after: { title: 'Nouveau projet', status: 'draft' }
-          },
-          {
-            id: '2',
-            at: new Date(Date.now() - 3600000).toISOString(),
-            user_name: 'Sophie Martin',
-            user_email: 'sophie@temi-construction.fr',
-            action: 'UPDATE',
-            entity: 'users',
-            entity_id: 'user-1',
-            before: { status: 'inactive' },
-            after: { status: 'active' }
-          }
-        ];
-        setAuditLogs(mockAuditLogs);
+        console.warn('Audit log view not available:', error);
+        setAuditLogs([]);
       } else {
         setAuditLogs(data || []);
       }

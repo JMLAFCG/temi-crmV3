@@ -70,63 +70,7 @@ export const ClientsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
 
-  // Mock data - in a real app, this would come from an API
-  const clients: ClientCardProps[] = [
-    {
-      id: '1',
-      name: 'Martin Dupont',
-      email: 'martin.dupont@example.com',
-      phone: '06 12 34 56 78',
-      address: '15 Rue de Paris, 75001 Paris',
-      projectCount: 3,
-      lastActivity: "Aujourd'hui, 10:30",
-    },
-    {
-      id: '2',
-      name: 'Sophie Martin',
-      email: 'sophie.martin@example.com',
-      phone: '06 23 45 67 89',
-      address: '8 Avenue Victor Hugo, 69002 Lyon',
-      projectCount: 1,
-      lastActivity: 'Hier, 14:15',
-    },
-    {
-      id: '3',
-      name: 'Jean Petit',
-      email: 'jean.petit@example.com',
-      phone: '06 34 56 78 90',
-      address: '25 Boulevard de la Liberté, 59800 Lille',
-      projectCount: 2,
-      lastActivity: 'Il y a 3 jours',
-    },
-    {
-      id: '4',
-      name: 'Marie Dubois',
-      email: 'marie.dubois@example.com',
-      phone: '06 45 67 89 01',
-      address: '12 Rue Alsace-Lorraine, 31000 Toulouse',
-      projectCount: 1,
-      lastActivity: 'Il y a 1 semaine',
-    },
-    {
-      id: '5',
-      name: 'Pierre Lefebvre',
-      email: 'pierre.lefebvre@example.com',
-      phone: '06 56 78 90 12',
-      address: '5 Rue de la République, 13001 Marseille',
-      projectCount: 2,
-      lastActivity: 'Il y a 2 semaines',
-    },
-    {
-      id: '6',
-      name: 'Isabelle Moreau',
-      email: 'isabelle.moreau@example.com',
-      phone: '06 67 89 01 23',
-      address: '18 Rue du Commerce, 44000 Nantes',
-      projectCount: 1,
-      lastActivity: 'Il y a 1 mois',
-    },
-  ];
+  const clients: ClientCardProps[] = [];
 
   const filteredClients = clients.filter(
     client =>

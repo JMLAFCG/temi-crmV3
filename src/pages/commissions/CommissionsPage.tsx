@@ -311,92 +311,9 @@ const CommissionsPage: React.FC = () => {
     );
   }
 
-  // Données de démonstration
-  const mockCommissions: CommissionCardProps[] = [
-    {
-      id: '1',
-      projectTitle: 'Rénovation Cuisine Moderne',
-      clientName: 'Martin Dupont',
-      providerName: 'Thomas Durand',
-      providerType: 'business_provider',
-      projectAmount: 25000,
-      commissionRate: 12,
-      commissionAmount: 300, // 10% de la commission TEMI (3000€)
-      mandataryCommissionAmount: 900, // 30% de la commission TEMI (3000€)
-      temiCommissionAmount: 1800, // 60% de la commission TEMI (3000€) - ce qui reste à TEMI
-      status: 'paid',
-      projectStatus: 'in_progress',
-      quoteStatus: 'signed',
-      downPaymentStatus: 'confirmed',
-      invoiceDate: '2025-01-15',
-      paymentDate: '2025-01-30',
-      quoteSignedDate: '2025-01-10',
-      downPaymentDate: '2025-01-12',
-      createdAt: '2025-01-10',
-    },
-    {
-      id: '2',
-      projectTitle: 'Extension Maison',
-      clientName: 'Sophie Martin',
-      providerName: 'Électricité Moderne',
-      providerType: 'partner_company',
-      projectAmount: 75000,
-      commissionRate: 12,
-      commissionAmount: 900, // 10% de la commission TEMI (9000€)
-      mandataryCommissionAmount: 2700, // 30% de la commission TEMI (9000€)
-      temiCommissionAmount: 5400, // 60% de la commission TEMI (9000€) - ce qui reste à TEMI
-      status: 'invoiced',
-      projectStatus: 'in_progress',
-      quoteStatus: 'signed',
-      downPaymentStatus: 'confirmed',
-      invoiceDate: '2025-01-20',
-      dueDate: '2025-02-20',
-      quoteSignedDate: '2025-01-18',
-      downPaymentDate: '2025-01-19',
-      createdAt: '2025-01-15',
-    },
-    {
-      id: '3',
-      projectTitle: 'Rénovation Salle de Bain',
-      clientName: 'Jean Petit',
-      providerName: 'Jean Petit',
-      providerType: 'business_provider',
-      projectAmount: 12000,
-      commissionRate: 12,
-      commissionAmount: 144, // 10% de la commission TEMI (1440€)
-      mandataryCommissionAmount: 432, // 30% de la commission TEMI (1440€)
-      temiCommissionAmount: 864, // 60% de la commission TEMI (1440€) - ce qui reste à TEMI
-      status: 'pending',
-      projectStatus: 'in_progress',
-      quoteStatus: 'sent',
-      downPaymentStatus: 'pending',
-      createdAt: '2025-01-05',
-    },
-    {
-      id: '4',
-      projectTitle: 'Installation Domotique',
-      clientName: 'Marie Dubois',
-      providerName: 'Électricité Moderne',
-      providerType: 'partner_company',
-      projectAmount: 8500,
-      commissionRate: 12,
-      commissionAmount: 102, // 10% de la commission TEMI (1020€)
-      mandataryCommissionAmount: 306, // 30% de la commission TEMI (1020€)
-      temiCommissionAmount: 612, // 60% de la commission TEMI (1020€) - ce qui reste à TEMI
-      status: 'invoiced',
-      projectStatus: 'in_progress',
-      quoteStatus: 'signed',
-      downPaymentStatus: 'confirmed',
-      invoiceDate: '2025-01-25',
-      dueDate: '2025-01-20', // En retard
-      quoteSignedDate: '2025-01-22',
-      downPaymentDate: '2025-01-23',
-      createdAt: '2025-01-20',
-    },
-  ];
+  const allCommissions: CommissionCardProps[] = [];
 
-  // Filtrer selon le rôle
-  const filteredCommissions = mockCommissions.filter(commission => {
+  const filteredCommissions = allCommissions.filter(commission => {
     // Si c'est un apporteur, ne montrer que ses commissions
     if (isProvider) {
       return (

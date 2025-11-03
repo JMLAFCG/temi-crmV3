@@ -427,46 +427,10 @@ const EntrepriseDashboard = () => {
               </div>
             </div>
             <div className="p-6">
-              <div className="space-y-4">
-                {/* Exemple de devis analysé */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h4 className="font-medium text-gray-900">Devis Rénovation Cuisine</h4>
-                      <p className="text-sm text-gray-600">Projet Martin Dupont</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                        <Zap className="inline mr-1" size={12} />
-                        Analysé IA
-                      </span>
-                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                        Confiance: 92%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">Lots détectés</p>
-                      <p className="font-medium text-gray-900">3 lots</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Montant total</p>
-                      <p className="font-medium text-gray-900">25 000€</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Statut</p>
-                      <p className="font-medium text-green-600">Intégré à la proposition</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-center py-4">
-                  <p className="text-gray-500 text-sm">
-                    Vos prochains devis seront automatiquement analysés par IA
-                  </p>
-                </div>
+              <div className="text-center py-8">
+                <p className="text-gray-500 text-sm">
+                  Vos prochains devis seront automatiquement analysés par IA
+                </p>
               </div>
             </div>
           </div>
