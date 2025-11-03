@@ -55,7 +55,6 @@ export const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
 
           <button className="p-2 rounded-2xl text-white hover:bg-white/20 relative transition-colors">
             <MessageSquare size={20} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-accent-500 rounded-full animate-pulse"></span>
           </button>
 
           <NotificationCenter />
