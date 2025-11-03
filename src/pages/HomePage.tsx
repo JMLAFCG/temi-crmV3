@@ -23,7 +23,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-1.5 relative">
+          {/* Version Desktop */}
+          <div className="hidden md:flex justify-between items-center py-1.5 relative">
             <div className="flex items-center gap-8">
               <Logo size="xl" />
               <span className="text-lg text-gray-600">Propulsée par et filiale du</span>
@@ -48,6 +49,37 @@ export default function HomePage() {
               >
                 Rejoindre le réseau
               </a>
+            </div>
+          </div>
+
+          {/* Version Mobile */}
+          <div className="md:hidden py-3">
+            <div className="flex flex-col items-center space-y-3">
+              <div className="flex items-center justify-between w-full">
+                <Logo size="lg" />
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/login"
+                    className="border-2 border-gray-300 text-gray-700 text-sm px-3 py-1.5 rounded-lg"
+                  >
+                    Connexion
+                  </Link>
+                  <a
+                    href="#rejoindre"
+                    className="bg-[#C00000] text-white text-sm px-3 py-1.5 rounded-lg"
+                  >
+                    Rejoindre
+                  </a>
+                </div>
+              </div>
+              <div className="flex flex-col items-center space-y-2">
+                <span className="text-sm text-gray-600">Propulsée par et filiale du</span>
+                <img
+                  src="/GROUPE AFCG Black Logo.png"
+                  alt="Groupe AFCG"
+                  className="h-12 object-contain"
+                />
+              </div>
             </div>
           </div>
         </div>
