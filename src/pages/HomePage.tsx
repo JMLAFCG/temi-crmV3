@@ -26,14 +26,14 @@ export default function HomePage() {
           <div className="flex justify-between items-center py-1.5">
             <div className="flex items-center space-x-6">
               <Logo size="xl" />
-              <div className="flex flex-col">
-                <span className="text-xs text-gray-400 font-light italic mb-0.5" style={{ fontFamily: 'Brush Script MT, cursive' }}>Propulsé par</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-base text-gray-600">Propulsée par</span>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500 font-light italic" style={{ fontFamily: 'Brush Script MT, cursive' }}>Filiale du</span>
+                  <span className="text-base text-gray-600">Filiale du</span>
                   <img
                     src="/GROUPE AFCG Black Logo.png"
                     alt="Groupe AFCG"
-                    className="h-12 object-contain"
+                    className="h-16 object-contain"
                   />
                 </div>
               </div>
