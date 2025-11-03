@@ -30,16 +30,55 @@ export const useAuthStore = create<AuthState>()(
       const { data, error } = await signIn(email, password);
 
       if (error) {
-        set({ error: error.message, isLoading: false, isAuthenticated: false });
+        console.error('Erreur de connexion:', error);
+        set({
+          error: error.message || 'Identifiants invalides',
+          isLoading: false,
+          isAuthenticated: false,
+          user: null
+        });
         return;
       }
 
-      if (data.user) {
-        const appUser = await mapSupabaseUserToAppUser(data.user);
-        set({ user: appUser, isLoading: false, isAuthenticated: true });
+      if (data?.user) {
+        try {
+          const appUser = await mapSupabaseUserToAppUser(data.user);
+
+          if (!appUser || !appUser.email) {
+            throw new Error('Impossible de charger les données utilisateur');
+          }
+
+          set({
+            user: appUser,
+            isLoading: false,
+            isAuthenticated: true,
+            error: null
+          });
+        } catch (mappingError: any) {
+          console.error('Erreur lors du mapping de l\'utilisateur:', mappingError);
+          set({
+            error: mappingError.message || 'Erreur lors du chargement des données utilisateur',
+            isLoading: false,
+            isAuthenticated: false,
+            user: null
+          });
+        }
+      } else {
+        set({
+          error: 'Aucun utilisateur retourné',
+          isLoading: false,
+          isAuthenticated: false,
+          user: null
+        });
       }
-    } catch (err) {
-      set({ error: "Une erreur inattendue s'est produite", isLoading: false, isAuthenticated: false });
+    } catch (err: any) {
+      console.error('Erreur inattendue lors de la connexion:', err);
+      set({
+        error: err.message || "Une erreur inattendue s'est produite",
+        isLoading: false,
+        isAuthenticated: false,
+        user: null
+      });
     }
   },
 
@@ -89,10 +128,22 @@ export const useAuthStore = create<AuthState>()(
       const supabaseUser = await getCurrentUser();
 
       if (supabaseUser) {
-        const appUser = await mapSupabaseUserToAppUser(supabaseUser);
-        set({ user: appUser, isLoading: false, isAuthenticated: true });
+        try {
+          const appUser = await mapSupabaseUserToAppUser(supabaseUser);
+
+          if (!appUser || !appUser.email) {
+            console.warn('Données utilisateur invalides après mapping');
+            set({ user: null, isLoading: false, isAuthenticated: false, error: null });
+            return;
+          }
+
+          set({ user: appUser, isLoading: false, isAuthenticated: true, error: null });
+        } catch (mappingError) {
+          console.error('Erreur lors du mapping de l\'utilisateur (checkAuth):', mappingError);
+          set({ user: null, isLoading: false, isAuthenticated: false, error: null });
+        }
       } else {
-        set({ user: null, isLoading: false, isAuthenticated: false });
+        set({ user: null, isLoading: false, isAuthenticated: false, error: null });
       }
     } catch (err) {
       console.error("Erreur lors de la vérification de l'authentification:", err);

@@ -113,6 +113,10 @@ export async function getCurrentUser() {
 
 // Helper function to map Supabase user to app User interface
 export async function mapSupabaseUserToAppUser(supabaseUser: any) {
+  if (!supabaseUser) {
+    throw new Error('Aucun utilisateur fourni pour le mapping');
+  }
+
   try {
     const { data: userData, error } = await supabase
       .from('users')
@@ -128,9 +132,9 @@ export async function mapSupabaseUserToAppUser(supabaseUser: any) {
       return {
         id: userData.id,
         email: userData.email,
-        firstName: userData.first_name,
-        lastName: userData.last_name,
-        role: userData.role,
+        firstName: userData.first_name || '',
+        lastName: userData.last_name || '',
+        role: userData.role || 'client',
         companyId: userData.company_id,
         createdAt: userData.created_at,
         updatedAt: userData.updated_at,
@@ -140,15 +144,24 @@ export async function mapSupabaseUserToAppUser(supabaseUser: any) {
     console.error('Error mapping user:', err);
   }
 
+  const firstName = supabaseUser.user_metadata?.first_name ||
+                    supabaseUser.user_metadata?.firstName ||
+                    supabaseUser.email?.split('@')[0] || '';
+
+  const lastName = supabaseUser.user_metadata?.last_name ||
+                   supabaseUser.user_metadata?.lastName || '';
+
+  const role = supabaseUser.user_metadata?.role ||
+               supabaseUser.app_metadata?.role ||
+               'client';
+
   return {
     id: supabaseUser.id,
-    email: supabaseUser.email,
-    firstName:
-      supabaseUser.user_metadata?.first_name ||
-      supabaseUser.user_metadata?.firstName,
-    lastName: supabaseUser.user_metadata?.last_name || supabaseUser.user_metadata?.lastName,
-    role: supabaseUser.user_metadata?.role,
-    companyId: supabaseUser.user_metadata?.companyId,
+    email: supabaseUser.email || '',
+    firstName,
+    lastName,
+    role,
+    companyId: supabaseUser.user_metadata?.companyId || supabaseUser.app_metadata?.companyId,
     createdAt: supabaseUser.created_at,
     updatedAt: supabaseUser.updated_at || supabaseUser.created_at,
   };
