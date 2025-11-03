@@ -426,7 +426,7 @@ const DashboardPage: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-center flex-shrink-0">
-            <Logo size="md" variant="full" />
+            <Logo size="xl" variant="full" />
           </div>
 
           <div className="flex items-center space-x-4 flex-shrink-0">
