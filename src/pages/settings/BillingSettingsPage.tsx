@@ -67,7 +67,7 @@ const BillingSettingsPage: React.FC = () => {
                 </div>
                 <span className="text-sm text-gray-500">Ce mois</span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-gray-900">45 600€</p>
+              <p className="mt-2 text-2xl font-semibold text-gray-900">0€</p>
               <p className="text-sm text-gray-500">Chiffre d'affaires</p>
             </div>
 
@@ -78,7 +78,7 @@ const BillingSettingsPage: React.FC = () => {
                 </div>
                 <span className="text-sm text-gray-500">Actifs</span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-gray-900">12</p>
+              <p className="mt-2 text-2xl font-semibold text-gray-900">0</p>
               <p className="text-sm text-gray-500">Apporteurs & Mandataires</p>
             </div>
 
@@ -89,7 +89,7 @@ const BillingSettingsPage: React.FC = () => {
                 </div>
                 <span className="text-sm text-gray-500">En attente</span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-gray-900">5 470€</p>
+              <p className="mt-2 text-2xl font-semibold text-gray-900">0€</p>
               <p className="text-sm text-gray-500">Commissions à payer</p>
             </div>
 
@@ -100,7 +100,7 @@ const BillingSettingsPage: React.FC = () => {
                 </div>
                 <span className="text-sm text-gray-500">Prochain</span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-gray-900">15/06</p>
+              <p className="mt-2 text-2xl font-semibold text-gray-900">--</p>
               <p className="text-sm text-gray-500">Paiement commissions</p>
             </div>
           </div>

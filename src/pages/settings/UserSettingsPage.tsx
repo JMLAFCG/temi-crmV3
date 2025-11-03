@@ -19,36 +19,8 @@ const UserSettingsPage: React.FC = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Données de démonstration
-  const users: User[] = [
-    {
-      id: '1',
-      firstName: 'Thomas',
-      lastName: 'Durand',
-      email: 'thomas.durand@example.com',
-      role: 'admin',
-      status: 'active',
-      lastLogin: '2025-05-10T10:30:00',
-    },
-    {
-      id: '2',
-      firstName: 'Sophie',
-      lastName: 'Martin',
-      email: 'sophie.martin@example.com',
-      role: 'manager',
-      status: 'active',
-      lastLogin: '2025-05-09T15:45:00',
-    },
-    {
-      id: '3',
-      firstName: 'Jean',
-      lastName: 'Petit',
-      email: 'jean.petit@example.com',
-      role: 'commercial',
-      status: 'active',
-      lastLogin: '2025-05-08T09:15:00',
-    },
-  ];
+  // Données réelles à charger depuis Supabase
+  const users: User[] = [];
 
   const handleCreateUser = async (data: any) => {
     // Logique de création d'utilisateur

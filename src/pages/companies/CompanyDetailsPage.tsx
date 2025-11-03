@@ -9,29 +9,8 @@ const CompanyDetailsPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { user } = useAuthStore();
 
-  // Mock data - à remplacer par des données réelles
-  const company = {
-    id: '1',
-    name: 'Électricité Moderne',
-    type: 'SARL',
-    status: 'active',
-    category: 'construction_partner', // ou "service_provider"
-    email: 'contact@electricite-moderne.fr',
-    phone: '01 23 45 67 89',
-    address: '25 Rue des Artisans, 75011 Paris',
-    siret: '12345678901234',
-    activities: ['Électricité', 'Domotique'],
-    description: 'Entreprise spécialisée en installations électriques et solutions domotiques.',
-    createdAt: '2024-01-15',
-    projects: [
-      { id: '1', name: 'Rénovation Appartement Dupont', status: 'en_cours' },
-      { id: '2', name: 'Installation Domotique Martin', status: 'terminé' },
-    ],
-    team: [
-      { name: 'Jean Dupont', role: 'Directeur' },
-      { name: 'Marie Martin', role: 'Chargée de projet' },
-    ],
-  };
+  // Charger les données réelles depuis Supabase
+  const company = null; // À remplacer par useCompanyStore ou requête Supabase
 
   if (!company) {
     return (

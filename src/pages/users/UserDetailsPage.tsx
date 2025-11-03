@@ -25,48 +25,8 @@ const isValidUUID = (str: string): boolean => {
   return uuidRegex.test(str);
 };
 
-// Données mock pour les utilisateurs de test
-const mockUsers: UserDetails[] = [
-  {
-    id: 'user-1',
-    email: 'martin.dupont@email.com',
-    first_name: 'Martin',
-    last_name: 'Dupont',
-    role: 'client',
-    phone: '06 12 34 56 78',
-    address: '123 Rue de la Paix, 75001 Paris',
-    created_at: '2024-01-15T10:00:00Z',
-    updated_at: '2024-01-15T10:00:00Z',
-    last_login: '2024-01-20T14:30:00Z',
-    status: 'active',
-  },
-  {
-    id: 'user-2',
-    email: 'sophie.martin@email.com',
-    first_name: 'Sophie',
-    last_name: 'Martin',
-    role: 'entreprise_partenaire',
-    phone: '06 98 76 54 32',
-    address: '456 Avenue des Champs, 69000 Lyon',
-    created_at: '2024-01-10T09:00:00Z',
-    updated_at: '2024-01-10T09:00:00Z',
-    last_login: '2024-01-19T16:45:00Z',
-    status: 'active',
-  },
-  {
-    id: 'user-3',
-    email: 'jean.petit@email.com',
-    first_name: 'Jean',
-    last_name: 'Petit',
-    role: 'apporteur',
-    phone: '06 11 22 33 44',
-    address: '789 Boulevard du Commerce, 13000 Marseille',
-    created_at: '2024-01-05T08:00:00Z',
-    updated_at: '2024-01-05T08:00:00Z',
-    last_login: '2024-01-18T11:20:00Z',
-    status: 'active',
-  },
-];
+// Pas de données mock - uniquement les données réelles de Supabase
+const mockUsers: UserDetails[] = [];
 
 interface UserDetails {
   id: string;

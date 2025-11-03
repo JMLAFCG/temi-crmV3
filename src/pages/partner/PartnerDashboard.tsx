@@ -23,117 +23,37 @@ const PartnerDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [activeSection, setActiveSection] = useState<'contractor' | 'provider'>('contractor');
 
-  // Mock data - à remplacer par les données réelles
+  // Charger les données réelles depuis Supabase
   const company = {
-    name: 'Électricité Moderne',
-    status: 'verified',
-    isBusinessProvider: true, // Cette entreprise est aussi apporteur d'affaires
+    name: '',
+    status: 'pending',
+    isBusinessProvider: false,
     documentsStatus: {
-      kbis: 'valid',
-      insurance: 'expiring',
-      urssaf: 'valid',
-      decennial: 'valid',
+      kbis: 'missing',
+      insurance: 'missing',
+      urssaf: 'missing',
+      decennial: 'missing',
     },
     territory: {
       center: { lat: 48.8566, lng: 2.3522 },
-      radius: 50,
+      radius: 0,
     },
-    activities: ['Électricité', 'Domotique'],
-    // Statistiques entreprise
-    projectsCount: 12,
-    activeProjects: 3,
-    completedProjects: 9,
-    // Statistiques apporteur
-    providedProjectsCount: 8,
-    totalCommissions: 15600,
-    pendingCommissions: 2400,
-    commissionRate: 10,
+    activities: [],
+    projectsCount: 0,
+    activeProjects: 0,
+    completedProjects: 0,
+    providedProjectsCount: 0,
+    totalCommissions: 0,
+    pendingCommissions: 0,
+    commissionRate: 0,
   };
 
-  const contractorProjects = [
-    {
-      id: '1',
-      title: 'Rénovation électrique Dupont',
-      status: 'in_progress',
-      amount: 12000,
-      progress: 65,
-    },
-    {
-      id: '2',
-      title: 'Installation domotique Martin',
-      status: 'pending',
-      amount: 8500,
-      progress: 0,
-    },
-    { id: '3', title: 'Mise aux normes Bureau', status: 'completed', amount: 15000, progress: 100 },
-  ];
+  const contractorProjects: any[] = [];
+  const providedProjects: any[] = [];
+  const quotes: any[] = [];
+  const documents: any[] = [];
 
-  const providedProjects = [
-    {
-      id: '4',
-      title: 'Extension maison Petit',
-      status: 'in_progress',
-      commission: 850,
-      expectedCommission: 1200,
-    },
-    {
-      id: '5',
-      title: 'Rénovation appartement Moreau',
-      status: 'completed',
-      commission: 650,
-      expectedCommission: 650,
-    },
-    {
-      id: '6',
-      title: 'Construction garage Lefebvre',
-      status: 'pending',
-      commission: 0,
-      expectedCommission: 900,
-    },
-  ];
-
-  const quotes = [
-    {
-      id: '1',
-      projectTitle: 'Rénovation cuisine moderne',
-      clientName: 'Sophie Bernard',
-      amount: 18500,
-      status: 'pending',
-      submittedAt: '2025-01-15',
-    },
-    {
-      id: '2',
-      projectTitle: 'Installation VMC double flux',
-      clientName: 'Pierre Durand',
-      amount: 4200,
-      status: 'accepted',
-      submittedAt: '2025-01-10',
-    },
-  ];
-
-  const documents = [
-    {
-      id: '1',
-      name: 'Devis_Renovation_Dupont.pdf',
-      type: 'quote',
-      status: 'signed',
-      date: '2025-01-15',
-    },
-    {
-      id: '2',
-      name: 'Facture_Installation_Martin.pdf',
-      type: 'invoice',
-      status: 'paid',
-      date: '2025-01-12',
-    },
-    {
-      id: '3',
-      name: 'Contrat_Mise_aux_normes.pdf',
-      type: 'contract',
-      status: 'pending',
-      date: '2025-01-08',
-    },
-  ];
+  const messages: any[] = [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
