@@ -23,20 +23,19 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-4">
-              <Logo size="sm" />
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-6">
+              <Logo size="xl" />
               <div>
-                <span className="text-2xl font-bold text-black">TEMI</span>
-                <p className="text-xs text-gray-600">Groupe AFCG</p>
+                <p className="text-base font-semibold text-gray-700">Filiale du Groupe AFCG</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <Link
                 to="/login"
-                className="text-gray-700 hover:text-[#C00000] transition-colors font-medium px-4 py-2"
+                className="border-2 border-gray-300 text-gray-700 hover:border-[#C00000] hover:text-[#C00000] transition-all font-medium px-6 py-2 rounded-lg hover:shadow-md"
               >
-                Connexion réseau
+                Connexion
               </Link>
               <a
                 href="#rejoindre"

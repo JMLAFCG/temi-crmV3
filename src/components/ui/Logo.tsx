@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 interface LogoProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   variant?: 'full' | 'icon' | 'text';
   className?: string;
 }
@@ -12,6 +12,7 @@ export const Logo: FC<LogoProps> = ({ size = 'md', variant = 'full', className =
     md: { height: 60 },
     lg: { height: 110 },
     xl: { height: 140 },
+    '2xl': { height: 180 },
   };
 
   const currentSize = sizes[size];
