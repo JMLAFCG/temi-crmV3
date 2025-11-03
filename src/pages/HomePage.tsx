@@ -26,8 +26,9 @@ export default function HomePage() {
           <div className="flex justify-between items-center py-1.5">
             <div className="flex items-center space-x-6">
               <Logo size="xl" />
-              <div>
-                <p className="text-lg font-medium italic text-gray-600" style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.5px' }}>Filiale du Groupe AFCG</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl text-gray-500" style={{ fontFamily: 'Brush Script MT, cursive', letterSpacing: '0.5px' }}>Filiale du</span>
+                <span className="text-lg font-semibold text-gray-700" style={{ fontFamily: 'Georgia, serif', letterSpacing: '1px' }}>Groupe AFCG</span>
               </div>
             </div>
             <div className="flex items-center space-x-4">
