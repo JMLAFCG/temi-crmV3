@@ -25,9 +25,6 @@ const isValidUUID = (str: string): boolean => {
   return uuidRegex.test(str);
 };
 
-// Pas de données mock - uniquement les données réelles de Supabase
-const mockUsers: UserDetails[] = [];
-
 interface UserDetails {
   id: string;
   email: string;
@@ -61,22 +58,10 @@ const UserDetailsPage: React.FC = () => {
     setError(null);
 
     try {
-      // Vérifier si l'ID est un UUID valide
-      if (isValidUUID(id!)) {
-        // Requête Supabase pour les vrais utilisateurs
-        const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
+      const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
 
-        if (error) throw error;
-        setUserDetails(data);
-      } else {
-        // Utiliser les données mock pour les IDs non-UUID
-        const mockUser = mockUsers.find(user => user.id === id);
-        if (mockUser) {
-          setUserDetails(mockUser);
-        } else {
-          throw new Error('Utilisateur non trouvé');
-        }
-      }
+      if (error) throw error;
+      setUserDetails(data);
     } catch (err) {
       console.error('Erreur lors de la récupération des détails utilisateur:', err);
       setError('Utilisateur non trouvé');
@@ -87,12 +72,6 @@ const UserDetailsPage: React.FC = () => {
 
   const handleDeleteUser = async () => {
     if (!userDetails || !window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-      return;
-    }
-
-    // Ne pas essayer de supprimer les utilisateurs mock
-    if (!isValidUUID(userDetails.id)) {
-      alert('Impossible de supprimer un utilisateur de démonstration');
       return;
     }
 

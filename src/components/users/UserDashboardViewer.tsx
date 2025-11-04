@@ -8,42 +8,6 @@ import EntrepriseDashboard from '../../pages/dashboard/EntrepriseDashboard';
 import ApporteurDashboard from '../../pages/dashboard/ApporteurDashboard';
 import { supabase } from '../../lib/supabase';
 
-// Fonction pour valider si une chaîne est un UUID valide
-const isValidUUID = (str: string): boolean => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
-};
-
-// Données mock pour les utilisateurs de test
-const mockUsers = [
-  {
-    id: 'user-1',
-    email: 'martin.dupont@email.com',
-    first_name: 'Martin',
-    last_name: 'Dupont',
-    role: 'client',
-    created_at: '2024-01-15T10:00:00Z',
-    updated_at: '2024-01-15T10:00:00Z',
-  },
-  {
-    id: 'user-2',
-    email: 'sophie.martin@email.com',
-    first_name: 'Sophie',
-    last_name: 'Martin',
-    role: 'entreprise_partenaire',
-    created_at: '2024-01-10T09:00:00Z',
-    updated_at: '2024-01-10T09:00:00Z',
-  },
-  {
-    id: 'user-3',
-    email: 'jean.petit@email.com',
-    first_name: 'Jean',
-    last_name: 'Petit',
-    role: 'apporteur',
-    created_at: '2024-01-05T08:00:00Z',
-    updated_at: '2024-01-05T08:00:00Z',
-  },
-];
 
 export const UserDashboardViewer: React.FC = () => {
   const { id: userId } = useParams<{ id: string }>();
@@ -66,35 +30,21 @@ export const UserDashboardViewer: React.FC = () => {
     setError(null);
 
     try {
-      let user;
+      const { data, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-      // Vérifier si l'ID est un UUID valide
-      if (isValidUUID(userId)) {
-        // Requête Supabase pour les vrais utilisateurs
-        const { data, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', userId)
-          .single();
+      if (userError) throw userError;
 
-        if (userError) throw userError;
-        user = data;
-      } else {
-        // Utiliser les données mock pour les IDs non-UUID
-        const mockUser = mockUsers.find(u => u.id === userId);
-        if (!mockUser) {
-          throw new Error('Utilisateur non trouvé');
-        }
-        user = mockUser;
-      }
-
-      setUserData(user);
+      setUserData(data);
 
       // Temporairement remplacer l'utilisateur dans le store pour la visualisation
       const tempUser = {
-        ...user,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        ...data,
+        firstName: data.first_name,
+        lastName: data.last_name,
       };
 
       // Injecter temporairement l'utilisateur visualisé
