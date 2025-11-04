@@ -27,10 +27,26 @@ const GeneralSettingsPage: React.FC = () => {
 
   const loadSettings = async () => {
     try {
+      // Vérifier l'utilisateur actuel
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Utilisateur actuel:', user?.id, user?.email);
+
+      // Vérifier le rôle de l'utilisateur
+      if (user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        console.log('Rôle utilisateur:', userData?.role);
+      }
+
       const { data, error } = await supabase
         .from('app_settings')
         .select('*')
         .maybeSingle();
+
+      console.log('Paramètres chargés:', { data, error });
 
       if (error) throw error;
 
@@ -75,28 +91,42 @@ const GeneralSettingsPage: React.FC = () => {
       };
 
       if (settingsId) {
-        const { error: updateError } = await supabase
+        console.log('Tentative de mise à jour des paramètres avec ID:', settingsId);
+        const { data, error: updateError } = await supabase
           .from('app_settings')
           .update(settingsData)
-          .eq('id', settingsId);
+          .eq('id', settingsId)
+          .select();
 
-        if (updateError) throw updateError;
+        console.log('Résultat de la mise à jour:', { data, error: updateError });
+
+        if (updateError) {
+          console.error('Erreur UPDATE:', updateError);
+          throw updateError;
+        }
       } else {
+        console.log('Tentative de création de nouveaux paramètres');
         const { data: newData, error: insertError } = await supabase
           .from('app_settings')
           .insert([settingsData])
           .select()
           .single();
 
-        if (insertError) throw insertError;
+        console.log('Résultat de l\'insertion:', { data: newData, error: insertError });
+
+        if (insertError) {
+          console.error('Erreur INSERT:', insertError);
+          throw insertError;
+        }
         if (newData) setSettingsId(newData.id);
       }
 
       setSuccess('Paramètres enregistrés avec succès');
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur lors de la sauvegarde des paramètres:', err);
-      setError('Erreur lors de la sauvegarde des paramètres');
+      const errorMessage = err?.message || 'Erreur lors de la sauvegarde des paramètres';
+      setError(`Erreur: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
