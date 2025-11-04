@@ -39,12 +39,13 @@ export const StatusBanner: React.FC = () => {
           <span className="text-gray-400 capitalize">{formatDateTime(currentTime)}</span>
         </div>
         <div className="hidden md:flex items-center space-x-3">
+          <span className="text-gray-300">Plateforme interne du</span>
           <img
             src="/GROUPE AFCG White logo.png"
             alt="Groupe AFCG"
             className="h-5 object-contain"
           />
-          <span className="text-gray-300">Plateforme interne du Groupe AFCG — Les courtiers à vos côtés</span>
+          <span className="text-gray-300">— Les courtiers à vos côtés !</span>
         </div>
         <div className="flex items-center space-x-2">
           <span className="text-gray-400">Statut :</span>
