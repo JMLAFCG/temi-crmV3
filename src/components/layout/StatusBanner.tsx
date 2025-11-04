@@ -40,9 +40,9 @@ export const StatusBanner: React.FC = () => {
         </div>
         <div className="hidden md:flex items-center space-x-3">
           <img
-            src="/GROUPE AFCG Main Logo.png"
+            src="/GROUPE AFCG White logo.png"
             alt="Groupe AFCG"
-            className="h-5 object-contain opacity-80"
+            className="h-5 object-contain"
           />
           <span className="text-gray-300">Plateforme interne du Groupe AFCG — Les courtiers à vos côtés</span>
         </div>
