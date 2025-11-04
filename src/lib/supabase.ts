@@ -4,12 +4,84 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
+// Sanitize URL for logging (hide path and query params)
+function sanitizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return 'invalid-url';
+  }
+}
+
 // Validate Supabase configuration
 const isValidConfig =
   supabaseUrl &&
   supabaseAnonKey &&
   !supabaseUrl.includes('placeholder') &&
-  !supabaseAnonKey.includes('placeholder');
+  !supabaseAnonKey.includes('placeholder') &&
+  supabaseUrl.includes('.supabase.co');
+
+// ENV Diagnostics (dev console only)
+if (import.meta.env.DEV || import.meta.env.MODE !== 'production') {
+  console.group('🔧 Supabase ENV Diagnostics');
+  console.log('URL Supabase (sanitized):', supabaseUrl ? sanitizeUrl(supabaseUrl) : '❌ ABSENT');
+  console.log('Clé Anon:', supabaseAnonKey ? '✅ Présente' : '❌ ABSENTE');
+  console.log('Origin actuel:', window.location.origin);
+  console.log('Mode:', import.meta.env.MODE);
+  console.groupEnd();
+}
+
+// Self-test des endpoints Supabase
+async function testSupabaseEndpoints() {
+  if (!supabaseUrl) {
+    console.warn('⚠️ Self-test impossible: URL Supabase manquante');
+    return;
+  }
+
+  try {
+    const healthUrl = `${supabaseUrl}/auth/v1/health`;
+    const settingsUrl = `${supabaseUrl}/auth/v1/settings`;
+
+    const [healthResponse, settingsResponse] = await Promise.allSettled([
+      fetch(healthUrl, { method: 'GET' }),
+      fetch(settingsUrl, { method: 'GET' })
+    ]);
+
+    if (import.meta.env.DEV || import.meta.env.MODE !== 'production') {
+      console.group('🏥 Supabase Self-Test');
+
+      if (healthResponse.status === 'fulfilled') {
+        const status = healthResponse.value.status;
+        console.log(`Health endpoint (${healthUrl}):`, status >= 200 && status < 300 ? '✅' : '❌', `HTTP ${status}`);
+        if (status >= 400) {
+          console.warn(`⚠️ Health check failed with status ${status}`);
+        }
+      } else {
+        console.error('❌ Health endpoint unreachable:', healthResponse.reason);
+      }
+
+      if (settingsResponse.status === 'fulfilled') {
+        const status = settingsResponse.value.status;
+        console.log(`Settings endpoint (${settingsUrl}):`, status >= 200 && status < 300 ? '✅' : '❌', `HTTP ${status}`);
+        if (status >= 400) {
+          console.warn(`⚠️ Settings check failed with status ${status}`);
+        }
+      } else {
+        console.error('❌ Settings endpoint unreachable:', settingsResponse.reason);
+      }
+
+      console.groupEnd();
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors du self-test Supabase:', error);
+  }
+}
+
+// Run self-test on startup
+if (isValidConfig) {
+  testSupabaseEndpoints();
+}
 
 // Create a Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -22,12 +94,28 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 // Check configuration and log appropriate messages
 if (!isValidConfig) {
-  console.warn(
-    'Configuration Supabase invalide. Vérifiez votre fichier .env avec une URL et une clé anon Supabase valides.'
+  console.error(
+    '❌ Configuration Supabase invalide. Vérifiez votre fichier .env avec une URL et une clé anon Supabase valides.'
   );
+  if (!supabaseUrl) {
+    console.error('  → VITE_SUPABASE_URL est manquante ou vide');
+  } else if (!supabaseUrl.includes('.supabase.co')) {
+    console.error('  → VITE_SUPABASE_URL ne semble pas être une URL Supabase valide');
+  }
+  if (!supabaseAnonKey) {
+    console.error('  → VITE_SUPABASE_ANON_KEY est manquante ou vide');
+  }
 } else {
-  console.log("Supabase configuré avec l'URL:", supabaseUrl);
+  console.log('✅ Supabase configuré:', sanitizeUrl(supabaseUrl));
 }
+
+// Export config state
+export const supabaseConfigState = {
+  isValid: isValidConfig,
+  hasUrl: !!supabaseUrl,
+  hasAnonKey: !!supabaseAnonKey,
+  url: supabaseUrl,
+};
 
 export async function signIn(email: string, password: string) {
   if (!isValidConfig) {
@@ -47,17 +135,49 @@ export async function signIn(email: string, password: string) {
 
     if (error) {
       console.error('Erreur de connexion Supabase:', error);
+
+      // Detect 500 errors from auth endpoint
+      if (error.message?.includes('500') || (error as any).status === 500) {
+        console.error('\n❌ ERREUR 500 DÉTECTÉE');
+        console.error('Endpoint appelé:', `${supabaseUrl}/auth/v1/token?grant_type=password`);
+        console.error('Cause probable: Configuration Supabase invalide côté client (URL/clé)');
+        console.error('Solution: Vérifier les variables d\'environnement Vercel (Production & Preview)');
+
+        return {
+          data: null,
+          error: {
+            message: 'Erreur d\'authentification (500) — Configuration Supabase invalide côté client. Vérifiez les variables d\'environnement Vercel (Production & Preview).',
+            status: 500,
+          } as any,
+        };
+      }
     }
 
     return { data, error };
-  } catch (networkError) {
+  } catch (networkError: any) {
     console.error('Erreur réseau lors de la connexion:', networkError);
+
+    // Check if it's a 500 error
+    if (networkError?.status === 500 || networkError?.message?.includes('500')) {
+      console.error('\n❌ ERREUR 500 DÉTECTÉE (catch block)');
+      console.error('Endpoint appelé:', `${supabaseUrl}/auth/v1/token?grant_type=password`);
+      console.error('Cause probable: Configuration Supabase invalide');
+
+      return {
+        data: null,
+        error: {
+          message: 'Erreur d\'authentification (500) — Configuration Supabase invalide. Vérifiez les variables d\'environnement Vercel.',
+          status: 500,
+        } as any,
+      };
+    }
+
     return {
       data: null,
       error: {
         message:
           'Erreur de connexion. Vérifiez votre connexion internet et la configuration Supabase.',
-      },
+      } as any,
     };
   }
 }

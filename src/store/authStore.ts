@@ -31,8 +31,16 @@ export const useAuthStore = create<AuthState>()(
 
       if (error) {
         console.error('Erreur de connexion:', error);
+
+        // Enhanced error message for 500 errors
+        let errorMessage = error.message || 'Identifiants invalides';
+        if ((error as any).status === 500 || error.message?.includes('500')) {
+          errorMessage = 'Erreur d\'authentification (500) — Configuration Supabase invalide. Vérifiez les variables d\'environnement.';
+          console.error('❌ ERREUR 500 détectée dans authStore.login');
+        }
+
         set({
-          error: error.message || 'Identifiants invalides',
+          error: errorMessage,
           isLoading: false,
           isAuthenticated: false,
           user: null

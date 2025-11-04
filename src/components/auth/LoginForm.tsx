@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { useAuthStore } from '../../store/authStore';
+import { supabaseConfigState } from '../../lib/supabase';
 
 export const LoginForm: FC = () => {
   const [email, setEmail] = useState('');
@@ -13,8 +14,19 @@ export const LoginForm: FC = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const [isPreviewEnv, setIsPreviewEnv] = useState(false);
 
   const { login, isLoading, error } = useAuthStore();
+
+  useEffect(() => {
+    const currentOrigin = window.location.origin;
+    const isVercelPreview = currentOrigin.includes('-git-') ||
+                            (currentOrigin.includes('vercel.app') && currentOrigin !== 'https://temi-crm-v3.vercel.app');
+
+    if (isVercelPreview && !supabaseConfigState.isValid) {
+      setIsPreviewEnv(true);
+    }
+  }, []);
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -137,6 +149,24 @@ export const LoginForm: FC = () => {
         <p className="mt-2 text-sm text-gray-600">Accédez à votre espace TEMI-Construction</p>
       </div>
 
+      {isPreviewEnv && import.meta.env.MODE !== 'production' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-yellow-600" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800">Environnement preview</h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>
+                  Configuration Supabase invalide pour cet environnement preview. Configure les variables d'environnement sur Vercel (Production & Preview) ou utilise le domaine de production: <strong>https://temi-crm-v3.vercel.app</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Adresse email"
@@ -197,9 +227,54 @@ export const LoginForm: FC = () => {
         )}
 
 
-        <Button type="submit" variant="primary" isLoading={isLoading} fullWidth>
+        <Button
+          type="submit"
+          variant="primary"
+          isLoading={isLoading}
+          fullWidth
+          disabled={!supabaseConfigState.isValid}
+        >
           Se connecter
         </Button>
+
+        {import.meta.env.DEV && (
+          <button
+            type="button"
+            onClick={async () => {
+              const url = supabaseConfigState.url;
+              if (!url) {
+                alert('❌ URL Supabase manquante');
+                return;
+              }
+
+              try {
+                const response = await fetch(`${url}/rest/v1/`, {
+                  method: 'GET',
+                  headers: {
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+                  },
+                });
+
+                const status = response.status;
+                const statusText = response.statusText;
+
+                if (status >= 200 && status < 300) {
+                  alert(`✅ Test connexion OK\nStatus: ${status} ${statusText}`);
+                } else {
+                  alert(`❌ Test connexion échoué\nStatus: ${status} ${statusText}`);
+                }
+
+                console.log('Test connexion Supabase:', { status, statusText });
+              } catch (err: any) {
+                alert(`❌ Erreur connexion\n${err.message}`);
+                console.error('Test connexion échoué:', err);
+              }
+            }}
+            className="w-full text-xs text-gray-500 hover:text-gray-700 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            🔧 Test connexion Supabase (dev-only)
+          </button>
+        )}
       </form>
     </div>
   );

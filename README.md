@@ -48,6 +48,36 @@ VITE_SUPABASE_URL=https://votre-projet.supabase.co
 VITE_SUPABASE_ANON_KEY=votre_cle_anonyme_supabase
 ```
 
+#### Supabase ENV Sanity Check
+
+**Configuration Vercel (Production & Preview)**
+
+Lors du déploiement sur Vercel, vous **devez** configurer les variables d'environnement Supabase pour :
+- **Production** (domaine principal: `https://temi-crm-v3.vercel.app`)
+- **Preview** (branches Git / pull requests)
+
+**Variables requises sur Vercel :**
+
+1. Accédez aux paramètres du projet Vercel → Environment Variables
+2. Ajoutez les deux variables suivantes pour **Production ET Preview** :
+   - `VITE_SUPABASE_URL` : URL de votre instance Supabase (ex: `https://xxx.supabase.co`)
+   - `VITE_SUPABASE_ANON_KEY` : Clé anonyme de votre projet Supabase
+
+**Important :**
+- Tous les domaines preview pointent vers la **même base de données** si vous utilisez les mêmes variables d'environnement
+- Pour tester en production, utilisez toujours : **https://temi-crm-v3.vercel.app**
+- Les environnements preview sans configuration Supabase valide afficheront un avertissement
+
+**Diagnostic automatique :**
+
+L'application effectue automatiquement au démarrage :
+- ✅ Vérification de la présence des variables ENV
+- ✅ Validation du format de l'URL Supabase
+- ✅ Test de connectivité aux endpoints auth/health
+- ✅ Détection des environnements preview Vercel
+
+Ces diagnostics sont visibles dans la console du navigateur (mode développement uniquement).
+
 ### 4. Initialisation de la base de données
 
 Les migrations SQL sont dans `supabase/migrations/`. Exécutez-les dans l'ordre chronologique via l'interface Supabase ou le CLI.
