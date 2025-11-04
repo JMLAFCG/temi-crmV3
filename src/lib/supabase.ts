@@ -117,18 +117,25 @@ export async function mapSupabaseUserToAppUser(supabaseUser: any) {
     throw new Error('Aucun utilisateur fourni pour le mapping');
   }
 
+  console.log('[mapSupabaseUserToAppUser] Starting mapping for user:', supabaseUser.id);
+
   try {
+    console.log('[mapSupabaseUserToAppUser] Querying users table...');
     const { data: userData, error } = await supabase
       .from('users')
       .select('*')
       .eq('id', supabaseUser.id)
       .maybeSingle();
 
+    console.log('[mapSupabaseUserToAppUser] Query result:', { userData, error });
+
     if (error) {
-      console.error('Error fetching user data from users table:', error);
+      console.error('[mapSupabaseUserToAppUser] ERROR fetching user data:', error);
+      throw new Error(`Database error querying schema: ${error.message}`);
     }
 
     if (userData) {
+      console.log('[mapSupabaseUserToAppUser] User data found in users table');
       return {
         id: userData.id,
         email: userData.email,
@@ -139,8 +146,11 @@ export async function mapSupabaseUserToAppUser(supabaseUser: any) {
         updatedAt: userData.updated_at,
       };
     }
-  } catch (err) {
-    console.error('Error mapping user:', err);
+
+    console.warn('[mapSupabaseUserToAppUser] No user data found, using metadata fallback');
+  } catch (err: any) {
+    console.error('[mapSupabaseUserToAppUser] Exception caught:', err);
+    throw err;
   }
 
   const firstName = supabaseUser.user_metadata?.first_name ||
@@ -154,6 +164,7 @@ export async function mapSupabaseUserToAppUser(supabaseUser: any) {
                supabaseUser.app_metadata?.role ||
                'client';
 
+  console.log('[mapSupabaseUserToAppUser] Returning fallback user data');
   return {
     id: supabaseUser.id,
     email: supabaseUser.email || '',
