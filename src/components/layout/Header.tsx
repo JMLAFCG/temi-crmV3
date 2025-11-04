@@ -4,6 +4,7 @@ import { Menu, Search, X, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { Logo } from '../ui/Logo';
 import { NotificationCenter } from '../ui/NotificationCenter';
+import { StatusBanner } from './StatusBanner';
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -15,7 +16,9 @@ export const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
   const [showSearch, setShowSearch] = useState(false);
 
   return (
-    <header className="sticky top-0 z-10 bg-gradient-to-r from-primary-600 to-secondary-700 h-16 flex items-center px-4 shadow-lg">
+    <>
+      <StatusBanner />
+      <header className="sticky top-0 z-10 bg-gradient-to-r from-primary-600 to-secondary-700 h-16 flex items-center px-4 shadow-lg">
       <button
         onClick={toggleSidebar}
         className="p-2 rounded-2xl text-white hover:bg-white/20 lg:hidden transition-colors"
@@ -84,5 +87,6 @@ export const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
         </div>
       </div>
     </header>
+    </>
   );
 };
