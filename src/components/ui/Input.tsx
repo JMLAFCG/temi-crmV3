@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { forwardRef, memo } from 'react';
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
@@ -13,8 +13,11 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = memo(forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, fullWidth = false, leftIcon, rightIcon, onRightIconClick, className = '', type, ...props }, ref) => {
+  ({ label, error, fullWidth = false, leftIcon, rightIcon, onRightIconClick, className = '', type, id: providedId, name: providedName, ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
+    const generatedId = useId();
+    const inputId = providedId || generatedId;
+    const inputName = providedName || inputId;
     const isPasswordField = type === 'password';
     const inputType = isPasswordField && showPassword ? 'text' : type;
 
@@ -45,7 +48,7 @@ export const Input = memo(forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={`${widthClass}`}>
         {label && (
-          <label className="block text-sm font-medium text-neutral-900 mb-1">{label}</label>
+          <label htmlFor={inputId} className="block text-sm font-medium text-neutral-900 mb-1">{label}</label>
         )}
         <div className="relative">
           {leftIcon && (
@@ -55,6 +58,8 @@ export const Input = memo(forwardRef<HTMLInputElement, InputProps>(
           )}
           <input
             ref={ref}
+            id={inputId}
+            name={inputName}
             type={inputType}
             className={`${baseStyles} ${widthClass} ${errorClass} ${leftIcon ? 'pl-10' : ''} ${effectiveRightIcon ? 'pr-10' : ''} ${className}`}
             {...props}
