@@ -30,7 +30,7 @@ const GeneralSettingsPage: React.FC = () => {
       const { data, error } = await supabase
         .from('app_settings')
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -61,27 +61,36 @@ const GeneralSettingsPage: React.FC = () => {
     setSuccess(null);
 
     try {
-      if (!settingsId) {
-        throw new Error('ID des paramètres non trouvé');
+      const settingsData = {
+        company_name: settings.companyName,
+        website: settings.website,
+        email: settings.email,
+        phone: settings.phone,
+        address: settings.address,
+        logo_url: settings.logo,
+        theme: settings.theme,
+        language: settings.language,
+        timezone: settings.timezone,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (settingsId) {
+        const { error: updateError } = await supabase
+          .from('app_settings')
+          .update(settingsData)
+          .eq('id', settingsId);
+
+        if (updateError) throw updateError;
+      } else {
+        const { data: newData, error: insertError } = await supabase
+          .from('app_settings')
+          .insert([settingsData])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        if (newData) setSettingsId(newData.id);
       }
-
-      const { error: updateError } = await supabase
-        .from('app_settings')
-        .update({
-          company_name: settings.companyName,
-          website: settings.website,
-          email: settings.email,
-          phone: settings.phone,
-          address: settings.address,
-          logo_url: settings.logo,
-          theme: settings.theme,
-          language: settings.language,
-          timezone: settings.timezone,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', settingsId);
-
-      if (updateError) throw updateError;
 
       setSuccess('Paramètres enregistrés avec succès');
       setTimeout(() => setSuccess(null), 3000);
