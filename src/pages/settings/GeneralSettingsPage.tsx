@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Globe, Phone, MapPin, Building } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { supabase } from '../../lib/supabase';
 const GeneralSettingsPage: React.FC = () => {
   const [settings, setSettings] = useState({
     companyName: 'TEMI-Construction',
@@ -16,16 +17,77 @@ const GeneralSettingsPage: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [settingsId, setSettingsId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('*')
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setSettingsId(data.id);
+        setSettings({
+          companyName: data.company_name || '',
+          website: data.website || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          logo: data.logo_url || null,
+          theme: data.theme || 'light',
+          language: data.language || 'fr',
+          timezone: data.timezone || 'Europe/Paris',
+        });
+      }
+    } catch (err) {
+      console.error('Erreur lors du chargement des paramètres:', err);
+      setError('Impossible de charger les paramètres');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+    setSuccess(null);
+
     try {
-      // Sauvegarder les paramètres
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // Simuler la sauvegarde
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde des paramètres:', error);
+      if (!settingsId) {
+        throw new Error('ID des paramètres non trouvé');
+      }
+
+      const { error: updateError } = await supabase
+        .from('app_settings')
+        .update({
+          company_name: settings.companyName,
+          website: settings.website,
+          email: settings.email,
+          phone: settings.phone,
+          address: settings.address,
+          logo_url: settings.logo,
+          theme: settings.theme,
+          language: settings.language,
+          timezone: settings.timezone,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', settingsId);
+
+      if (updateError) throw updateError;
+
+      setSuccess('Paramètres enregistrés avec succès');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde des paramètres:', err);
+      setError('Erreur lors de la sauvegarde des paramètres');
     } finally {
       setLoading(false);
     }
@@ -36,6 +98,18 @@ const GeneralSettingsPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
           <h2 className="text-lg font-medium text-gray-900 mb-6">Paramètres généraux</h2>
+
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-sm text-green-800">{success}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
@@ -122,7 +196,12 @@ const GeneralSettingsPage: React.FC = () => {
             </div>
 
             <div className="flex justify-end space-x-3">
-              <Button type="button" variant="outline" onClick={() => {}} disabled={loading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={loadSettings}
+                disabled={loading}
+              >
                 Annuler
               </Button>
               <Button type="submit" variant="primary" isLoading={loading}>
