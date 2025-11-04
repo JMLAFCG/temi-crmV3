@@ -135,7 +135,6 @@ export async function mapSupabaseUserToAppUser(supabaseUser: any) {
         firstName: userData.first_name || '',
         lastName: userData.last_name || '',
         role: userData.role || 'client',
-        companyId: userData.company_id,
         createdAt: userData.created_at,
         updatedAt: userData.updated_at,
       };
@@ -161,7 +160,6 @@ export async function mapSupabaseUserToAppUser(supabaseUser: any) {
     firstName,
     lastName,
     role,
-    companyId: supabaseUser.user_metadata?.companyId || supabaseUser.app_metadata?.companyId,
     createdAt: supabaseUser.created_at,
     updatedAt: supabaseUser.updated_at || supabaseUser.created_at,
   };
