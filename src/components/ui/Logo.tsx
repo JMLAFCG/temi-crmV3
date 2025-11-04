@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useAppSettings } from '../../store/appSettingsStore';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
@@ -7,6 +8,8 @@ interface LogoProps {
 }
 
 export const Logo: FC<LogoProps> = ({ size = 'md', variant = 'full', className = '' }) => {
+  const { settings } = useAppSettings();
+
   const sizes = {
     sm: { height: 35 },
     md: { height: 60 },
@@ -19,26 +22,32 @@ export const Logo: FC<LogoProps> = ({ size = 'md', variant = 'full', className =
 
   const LogoImage = () => (
     <img
-      src="/TEMILOGOJML_Plan de travail 1.png"
-      alt="TEMI-Construction"
+      src={settings.logoUrl || "/TEMILOGOJML_Plan de travail 1.png"}
+      alt={settings.companyName}
       style={{ height: `${currentSize.height}px` }}
       className="object-contain"
     />
   );
 
-  const TextLogo = () => (
-    <div className="flex items-center space-x-2">
-      <span className="font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-        TEMI
-      </span>
-      <span className="text-white">-</span>
-      <span className="font-semibold text-secondary-700">
+  const TextLogo = () => {
+    const nameParts = settings.companyName.split('-');
+    const firstPart = nameParts[0] || 'TEMI';
+    const secondPart = nameParts[1] || 'Construction';
+
+    return (
+      <div className="flex items-center space-x-2">
         <span className="font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-          Construction
+          {firstPart}
         </span>
-      </span>
-    </div>
-  );
+        <span className="text-white">-</span>
+        <span className="font-semibold text-secondary-700">
+          <span className="font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+            {secondPart}
+          </span>
+        </span>
+      </div>
+    );
+  };
 
   if (variant === 'icon') {
     return (
