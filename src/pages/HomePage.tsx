@@ -119,7 +119,7 @@ export default function HomePage() {
               Notre Plateforme Informatique
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              TEMI est l'outil de travail quotidien développé par TEMI-Construction pour digitaliser et optimiser toutes les opérations du groupe AFCG
+              TEMI est l'outil de travail quotidien développé par le Groupe AFCG pour digitaliser et optimiser toutes les opérations construction du groupe
             </p>
           </div>
 
