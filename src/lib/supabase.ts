@@ -34,8 +34,8 @@ if (import.meta.env.DEV || import.meta.env.MODE !== 'production') {
 
 // Self-test des endpoints Supabase
 async function testSupabaseEndpoints() {
-  if (!supabaseUrl) {
-    console.warn('⚠️ Self-test impossible: URL Supabase manquante');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('⚠️ Self-test impossible: Configuration Supabase manquante');
     return;
   }
 
@@ -43,9 +43,14 @@ async function testSupabaseEndpoints() {
     const healthUrl = `${supabaseUrl}/auth/v1/health`;
     const settingsUrl = `${supabaseUrl}/auth/v1/settings`;
 
+    const headers = {
+      'apikey': supabaseAnonKey,
+      'Authorization': `Bearer ${supabaseAnonKey}`,
+    };
+
     const [healthResponse, settingsResponse] = await Promise.allSettled([
-      fetch(healthUrl, { method: 'GET' }),
-      fetch(settingsUrl, { method: 'GET' })
+      fetch(healthUrl, { method: 'GET', headers }),
+      fetch(settingsUrl, { method: 'GET', headers })
     ]);
 
     if (import.meta.env.DEV || import.meta.env.MODE !== 'production') {
@@ -53,7 +58,7 @@ async function testSupabaseEndpoints() {
 
       if (healthResponse.status === 'fulfilled') {
         const status = healthResponse.value.status;
-        console.log(`Health endpoint (${healthUrl}):`, status >= 200 && status < 300 ? '✅' : '❌', `HTTP ${status}`);
+        console.log(`Health endpoint:`, status >= 200 && status < 300 ? '✅' : '❌', `HTTP ${status}`);
         if (status >= 400) {
           console.warn(`⚠️ Health check failed with status ${status}`);
         }
@@ -63,7 +68,7 @@ async function testSupabaseEndpoints() {
 
       if (settingsResponse.status === 'fulfilled') {
         const status = settingsResponse.value.status;
-        console.log(`Settings endpoint (${settingsUrl}):`, status >= 200 && status < 300 ? '✅' : '❌', `HTTP ${status}`);
+        console.log(`Settings endpoint:`, status >= 200 && status < 300 ? '✅' : '❌', `HTTP ${status}`);
         if (status >= 400) {
           console.warn(`⚠️ Settings check failed with status ${status}`);
         }
