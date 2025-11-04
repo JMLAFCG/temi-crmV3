@@ -122,6 +122,36 @@ export const supabaseConfigState = {
   url: supabaseUrl,
 };
 
+// Manual test function (dev-only)
+export async function testSupabaseConnection() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return {
+      success: false,
+      message: 'Configuration Supabase manquante',
+    };
+  }
+
+  try {
+    const healthUrl = `${supabaseUrl}/auth/v1/health`;
+    const headers = {
+      'apikey': supabaseAnonKey,
+      'Authorization': `Bearer ${supabaseAnonKey}`,
+    };
+
+    const response = await fetch(healthUrl, { method: 'GET', headers });
+    return {
+      success: response.ok,
+      status: response.status,
+      message: response.ok ? 'Connexion réussie' : `Erreur HTTP ${response.status}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Erreur: ${error.message}`,
+    };
+  }
+}
+
 export async function signIn(email: string, password: string) {
   if (!isValidConfig) {
     return {
