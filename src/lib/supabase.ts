@@ -250,11 +250,8 @@ export async function mapSupabaseUserToAppUser(supabaseUser: any) {
     console.log('[mapSupabaseUserToAppUser] Query result:', { userData, error });
 
     if (error) {
-      console.error('[mapSupabaseUserToAppUser] ERROR fetching user data:', error);
-      throw new Error(`Database error querying schema: ${error.message}`);
-    }
-
-    if (userData) {
+      console.warn('[mapSupabaseUserToAppUser] ERROR fetching user data (using fallback):', error);
+    } else if (userData) {
       console.log('[mapSupabaseUserToAppUser] User data found in users table');
       return {
         id: userData.id,
@@ -267,10 +264,9 @@ export async function mapSupabaseUserToAppUser(supabaseUser: any) {
       };
     }
 
-    console.warn('[mapSupabaseUserToAppUser] No user data found, using metadata fallback');
+    console.warn('[mapSupabaseUserToAppUser] Using metadata fallback');
   } catch (err: any) {
-    console.error('[mapSupabaseUserToAppUser] Exception caught:', err);
-    throw err;
+    console.warn('[mapSupabaseUserToAppUser] Exception caught (using fallback):', err);
   }
 
   const firstName = supabaseUser.user_metadata?.first_name ||
