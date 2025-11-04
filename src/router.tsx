@@ -88,8 +88,12 @@ const HomePage = lazyDefault(() => import('./pages/HomePage'), 'src/pages/HomePa
 
 // ---------- Router ----------
 const mainRoutes = createBrowserRouter([
-  // Public
-  { path: paths.home, element: <AppSuspense><HomePage /></AppSuspense> },
+  // Public - redirige vers login si non connecté, sinon vers dashboard
+  {
+    path: paths.home,
+    element: <Guard><Navigate to={paths.dashboard} replace /></Guard>,
+    errorElement: <AppSuspense><HomePage /></AppSuspense>
+  },
 
   // Auth
   { path: paths.login, element: <AppSuspense><LoginPage /></AppSuspense> },
