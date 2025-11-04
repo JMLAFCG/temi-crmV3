@@ -164,7 +164,7 @@ export default function HomePage() {
               Qui utilise TEMI ?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              L'outil de travail au quotidien de tous les acteurs du groupe TEMI-Construction
+              L'outil de travail au quotidien de tous les acteurs de TEMI-Construction
             </p>
           </div>
 
