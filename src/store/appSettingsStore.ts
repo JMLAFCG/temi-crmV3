@@ -72,8 +72,52 @@ export const useAppSettings = create<AppSettingsStore>((set, get) => ({
 
   updateSettings: async (newSettings: Partial<AppSettings>) => {
     const currentSettings = get().settings;
-    set({
-      settings: { ...currentSettings, ...newSettings },
-    });
+    const updatedSettings = { ...currentSettings, ...newSettings };
+
+    set({ settings: updatedSettings, loading: true, error: null });
+
+    try {
+      const { data: existingData } = await supabase
+        .from('app_settings')
+        .select('id')
+        .maybeSingle();
+
+      const payload = {
+        company_name: updatedSettings.companyName,
+        website: updatedSettings.website,
+        email: updatedSettings.email,
+        phone: updatedSettings.phone,
+        address: updatedSettings.address,
+        logo_url: updatedSettings.logoUrl,
+        theme: updatedSettings.theme,
+        language: updatedSettings.language,
+        timezone: updatedSettings.timezone,
+      };
+
+      if (existingData?.id) {
+        const { error } = await supabase
+          .from('app_settings')
+          .update(payload)
+          .eq('id', existingData.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('app_settings')
+          .insert([payload]);
+
+        if (error) throw error;
+      }
+
+      set({ loading: false });
+    } catch (err) {
+      console.error('Error updating app settings:', err);
+      set({
+        error: 'Failed to update app settings',
+        loading: false,
+        settings: currentSettings
+      });
+      throw err;
+    }
   },
 }));
