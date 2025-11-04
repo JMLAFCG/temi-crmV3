@@ -27,18 +27,32 @@ const GeneralSettingsPage: React.FC = () => {
 
   const loadSettings = async () => {
     try {
+      // Vérifier la session complète
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('=== DEBUG SESSION ===');
+      console.log('Session exists:', !!session);
+      console.log('Access token:', session?.access_token ? 'Present' : 'Missing');
+      console.log('User ID:', session?.user?.id);
+      console.log('User email:', session?.user?.email);
+
+      if (!session) {
+        console.error('❌ Aucune session active - redirection nécessaire vers login');
+        setError('Session expirée - veuillez vous reconnecter');
+        return;
+      }
+
       // Vérifier l'utilisateur actuel
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('Utilisateur actuel:', user?.id, user?.email);
+      console.log('User from getUser():', user?.id, user?.email);
 
       // Vérifier le rôle de l'utilisateur
       if (user) {
-        const { data: userData } = await supabase
+        const { data: userData, error: userError } = await supabase
           .from('users')
           .select('role')
           .eq('id', user.id)
           .single();
-        console.log('Rôle utilisateur:', userData?.role);
+        console.log('Rôle utilisateur:', userData?.role, 'Error:', userError);
       }
 
       const { data, error } = await supabase
