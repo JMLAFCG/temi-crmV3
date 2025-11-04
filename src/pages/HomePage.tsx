@@ -27,17 +27,9 @@ export default function HomePage() {
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Version Desktop */}
-          <div className="hidden md:flex justify-between items-center py-4 relative">
+          <div className="hidden md:flex justify-between items-center py-4">
             <div className="flex items-center">
               <Logo size="xl" />
-            </div>
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center">
-              <span className="text-xs text-gray-500 mb-1">Filiale du Groupe AFCG</span>
-              <img
-                src="/GROUPE AFCG Black Logo.png"
-                alt="Groupe AFCG"
-                className="h-10 object-contain opacity-70"
-              />
             </div>
             <div className="flex items-center space-x-3">
               <Link
@@ -57,31 +49,21 @@ export default function HomePage() {
 
           {/* Version Mobile */}
           <div className="md:hidden py-3">
-            <div className="flex flex-col space-y-3">
-              <div className="flex items-center justify-between w-full">
-                <Logo size="lg" />
-                <div className="flex items-center gap-2">
-                  <Link
-                    to="/login"
-                    className="border-2 border-gray-300 text-gray-700 text-sm px-3 py-1.5 rounded-lg"
-                  >
-                    Connexion
-                  </Link>
-                  <a
-                    href="#rejoindre"
-                    className="bg-[#C00000] text-white text-sm px-3 py-1.5 rounded-lg"
-                  >
-                    Rejoindre
-                  </a>
-                </div>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xs text-gray-500 mb-1">Filiale du</span>
-                <img
-                  src="/GROUPE AFCG Black Logo.png"
-                  alt="Groupe AFCG"
-                  className="h-10 object-contain opacity-70"
-                />
+            <div className="flex items-center justify-between w-full">
+              <Logo size="lg" />
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/login"
+                  className="border-2 border-gray-300 text-gray-700 text-sm px-3 py-1.5 rounded-lg"
+                >
+                  Connexion
+                </Link>
+                <a
+                  href="#rejoindre"
+                  className="bg-[#C00000] text-white text-sm px-3 py-1.5 rounded-lg"
+                >
+                  Rejoindre
+                </a>
               </div>
             </div>
           </div>
