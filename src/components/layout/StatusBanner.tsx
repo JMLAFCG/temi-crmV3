@@ -19,7 +19,7 @@ export const StatusBanner: React.FC = () => {
     });
 
   return (
-    <div className="bg-black text-white text-xs py-1.5 px-4">
+    <div className="bg-black text-white text-xs py-2 px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <span className="text-gray-400 capitalize">{format(currentTime)}</span>
         <div className="hidden md:flex items-center space-x-3">
@@ -27,7 +27,8 @@ export const StatusBanner: React.FC = () => {
           <img
             src="/GROUPE AFCG White logo.png"
             alt="Groupe AFCG"
-            className="h-6 object-contain"
+            className="h-8 object-contain brightness-110"
+            onError={(e) => {console.error('Logo AFCG non chargé'); e.currentTarget.style.display='none';}}
           />
           <span className="text-gray-300">— Les courtiers à vos côtés !</span>
         </div>

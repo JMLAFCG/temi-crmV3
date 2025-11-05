@@ -38,7 +38,6 @@ export const navConfig: NavItem[] = [
     label: 'Projets',
     route: 'projects',
     icon: React.createElement(Briefcase, { size: 20 }),
-    badge: 24,
     roles: ['admin', 'manager', 'commercial', 'mandatary', 'client'],
     subItems: [
       {
@@ -67,14 +66,12 @@ export const navConfig: NavItem[] = [
     label: 'Clients',
     route: 'clients',
     icon: React.createElement(Users, { size: 20 }),
-    badge: 18,
     roles: ['admin', 'manager', 'commercial', 'mandatary'],
   },
   {
     label: 'Entreprises',
     route: 'companies',
     icon: React.createElement(Building, { size: 20 }),
-    badge: 42,
     roles: ['admin', 'manager', 'commercial', 'mandatary'],
     subItems: [
       {
@@ -94,14 +91,12 @@ export const navConfig: NavItem[] = [
     label: 'Apporteurs',
     route: 'providers',
     icon: React.createElement(UserPlus, { size: 20 }),
-    badge: 15,
     roles: ['admin', 'manager'],
   },
   {
     label: 'Documents',
     route: 'documents',
     icon: React.createElement(FileText, { size: 20 }),
-    badge: 156,
     roles: ['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company'],
   },
   {
@@ -114,7 +109,6 @@ export const navConfig: NavItem[] = [
     label: 'Messages',
     route: 'messages',
     icon: React.createElement(MessageSquare, { size: 20 }),
-    badge: 3,
     roles: ['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company'],
   },
   {
@@ -156,7 +150,6 @@ export const navConfig: NavItem[] = [
     label: 'Gestion IA',
     route: 'aiManagement',
     icon: React.createElement(Brain, { size: 20 }),
-    badge: 5,
     roles: ['admin', 'manager', 'commercial', 'mandatary'],
   },
   {

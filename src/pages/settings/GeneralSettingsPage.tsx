@@ -21,15 +21,48 @@ const GeneralSettingsPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Sauvegarder les paramètres
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // Simuler la sauvegarde
+      localStorage.setItem('appSettings', JSON.stringify(settings));
+
+      applyTheme(settings.theme);
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+      alert('Paramètres enregistrés avec succès !');
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des paramètres:', error);
+      alert('Erreur lors de la sauvegarde');
     } finally {
       setLoading(false);
     }
   };
+
+  const applyTheme = (theme: string) => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      document.body.style.backgroundColor = '#1a1a1a';
+    } else if (theme === 'light') {
+      root.classList.remove('dark');
+      document.body.style.backgroundColor = '#f9fafb';
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) {
+        root.classList.add('dark');
+        document.body.style.backgroundColor = '#1a1a1a';
+      } else {
+        root.classList.remove('dark');
+        document.body.style.backgroundColor = '#f9fafb';
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    const savedSettings = localStorage.getItem('appSettings');
+    if (savedSettings) {
+      const parsed = JSON.parse(savedSettings);
+      setSettings(parsed);
+      applyTheme(parsed.theme);
+    }
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto">
