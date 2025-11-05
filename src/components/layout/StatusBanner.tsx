@@ -22,9 +22,13 @@ export const StatusBanner: React.FC = () => {
     <div className="bg-black text-white text-xs py-1.5 px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <span className="text-gray-400 capitalize">{format(currentTime)}</span>
-        <div className="hidden md:flex items-center space-x-2">
+        <div className="hidden md:flex items-center space-x-3">
           <span className="text-gray-300">Plateforme interne du</span>
-          <span className="text-white font-bold">Groupe AFCG</span>
+          <img
+            src="/GROUPE AFCG White logo.png"
+            alt="Groupe AFCG"
+            className="h-6 object-contain"
+          />
           <span className="text-gray-300">— Les courtiers à vos côtés !</span>
         </div>
         <div className="flex items-center space-x-2">
