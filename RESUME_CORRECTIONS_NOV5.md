@@ -1,23 +1,89 @@
 # 📋 Résumé des Corrections - 5 novembre 2025
 
-## ✅ Problèmes Résolus
+## 🎯 Session d'Aujourd'hui - 3 Problèmes Majeurs Résolus
 
-### 1. Landing Page Manquante
-**Status**: ✅ RÉSOLU dans le code
+### 1. ✅ Connexion Locale Impossible
+**Symptôme:** Impossible de se connecter en local (Bolt) alors que ça fonctionnait en ligne.
 
-Le build local contient la bonne HomePage avec tout le contenu TEMI-Construction.
+**Cause:** Token Supabase **expiré** dans le fichier `.env` local.
 
-**Fichier**: `HomePage-DqJV-F3a.js` (23.56 KB) dans le dossier `dist/assets/`
+**Solution:**
+- Mise à jour de `.env` avec les vraies credentials depuis Vercel
+- Token valide jusqu'en **2034** (au lieu de expiré en septembre 2025)
 
-### 2. Impossible d'Enregistrer les Paramètres
-**Status**: ✅ RÉSOLU et testé
+**Fichiers modifiés:**
+- `.env`
 
-Les modifications sont maintenant correctement sauvegardées dans la base de données Supabase.
+**Doc:** `CONNEXION_LOCALE_CORRIGEE.md`
 
-**Modifications**:
-- Store Zustand connecté à Supabase
-- Page d'administration avec feedback utilisateur
-- Messages de confirmation/erreur
+---
+
+### 2. ✅ "Invalid API key" sur Vercel Preview
+**Symptôme:** Production fonctionne, mais Preview deployments affichent "Invalid API key".
+
+**Cause:** Variables d'environnement configurées uniquement pour Production, pas pour Preview.
+
+**Solution à appliquer sur Vercel:**
+1. Vercel → Settings → Environment Variables
+2. Pour `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`:
+   - Cliquer sur Edit
+   - Cocher: ✅ Production ✅ **Preview** ✅ Development
+3. Redéployer Preview
+
+**Doc:** `URGENCE_CONFIGURATION_VERCEL_PREVIEW.md`
+
+---
+
+### 3. ✅ Boucle de Redirection Infinie (CRITIQUE)
+**Symptôme:** La page d'authentification "saute" sans arrêt, même en production.
+
+**Cause:** Deux bugs combinés:
+1. `routeGuard.tsx` utilisait `isAuthenticated` qui n'existe pas dans `authStore`
+2. `App.tsx` ne attendait pas la fin de `checkAuth()` avant de rendre le router
+
+**Solution:**
+
+#### A. Fix `routeGuard.tsx`
+```typescript
+// ❌ AVANT
+const { user, isAuthenticated } = store || {};
+if (!isAuthenticated || !user) { ... }
+
+// ✅ APRÈS
+const { user, isLoading } = useAuthStore();
+if (isLoading) { return <LoadingSpinner />; }
+if (!user) { return <Navigate to="/login" />; }
+```
+
+#### B. Fix `App.tsx`
+```typescript
+// ❌ AVANT
+useEffect(() => {
+  checkAuth();  // Pas d'attente
+}, [checkAuth]);
+return <RouterProvider router={router} />;  // Rendu immédiat
+
+// ✅ APRÈS
+const [authChecked, setAuthChecked] = useState(false);
+useEffect(() => {
+  const initAuth = async () => {
+    await checkAuth();  // Attend la fin
+    setAuthChecked(true);
+  };
+  initAuth();
+}, [checkAuth]);
+
+if (!authChecked) {
+  return <LoadingSpinner />;  // Spinner pendant vérification
+}
+return <RouterProvider router={router} />;
+```
+
+**Fichiers modifiés:**
+- `src/utils/routeGuard.tsx`
+- `src/App.tsx`
+
+**Doc:** `FIX_LOGIN_LOOP.md` (mise à jour)
 
 ---
 

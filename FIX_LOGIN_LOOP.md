@@ -130,5 +130,97 @@ Si le problème revient, vérifier :
 - ✅ `src/pages/auth/LoginPage.tsx`
 - ✅ `src/components/layout/AppLayout.tsx`
 
-**Date du fix:** 28 octobre 2025
+---
+
+## 🆕 NOUVEAU FIX - 5 novembre 2025
+
+### Problème détecté
+Boucle de redirection **revenu** après modification des credentials Supabase.
+
+### Cause racine
+Le composant `routeGuard.tsx` utilisait `isAuthenticated` qui **n'existe pas** dans `authStore`.
+
+**Code problématique:**
+```typescript
+const { user, isAuthenticated } = store || {};
+
+if (!isAuthenticated || !user) {  // ❌ isAuthenticated = undefined
+  return <Navigate to={paths.login} replace />;
+}
+```
+
+### Solution appliquée
+
+#### 1. Correction de `routeGuard.tsx`
+**Fichier:** `src/utils/routeGuard.tsx`
+
+```typescript
+const Guard: React.FC<GuardProps> = ({ children, roles }) => {
+  const { user, isLoading } = useAuthStore();  // ✅ Utilise le hook correctement
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {  // ✅ Vérifie seulement user
+    return <Navigate to={paths.login} replace />;
+  }
+  // ... reste du code
+}
+```
+
+#### 2. Correction de `App.tsx`
+**Fichier:** `src/App.tsx`
+
+Problème: `checkAuth()` était appelé mais le router se rendait **avant** que la vérification soit terminée.
+
+**Solution:** Attendre la fin de `checkAuth()` avant de rendre le router.
+
+```typescript
+function App() {
+  const [authChecked, setAuthChecked] = useState(false);
+  const checkAuth = useAuthStore(state => state.checkAuth);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      await checkAuth();  // ✅ Attend la fin
+      setAuthChecked(true);
+    };
+    initAuth();
+  }, [checkAuth]);
+
+  if (!authChecked) {  // ✅ Spinner pendant la vérification
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <ErrorBoundary>
+      <RouterProvider router={router} />
+    </ErrorBoundary>
+  );
+}
+```
+
+## ✅ Résultat Final
+
+- ✅ Plus de boucle de redirection
+- ✅ Page de connexion stable
+- ✅ Connexion fonctionne en local
+- ✅ Build validé sans erreur
+- ✅ TypeScript check passé
+
+## 📋 Fichiers modifiés (5 nov 2025)
+
+- ✅ `src/utils/routeGuard.tsx` - Suppression de `isAuthenticated` inexistant
+- ✅ `src/App.tsx` - Attente de `checkAuth()` avant rendu
+
+**Date du fix:** 5 novembre 2025
 **Status:** ✅ Résolu et testé
