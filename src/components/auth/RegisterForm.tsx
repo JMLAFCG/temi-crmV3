@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { FC } from 'react';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { useAuthStore } from '../../store/authStore';
@@ -9,6 +9,8 @@ export const RegisterForm: FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [errors, setErrors] = useState<{
@@ -93,27 +95,47 @@ export const RegisterForm: FC = () => {
           leftIcon={<Mail size={18} className="text-gray-500" />}
         />
 
-        <Input
-          label="Mot de passe"
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          error={errors.password}
-          fullWidth
-          leftIcon={<Lock size={18} className="text-gray-500" />}
-        />
+        <div className="relative">
+          <Input
+            label="Mot de passe"
+            type={showPassword ? "text" : "password"}
+            placeholder="••••••••"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            error={errors.password}
+            fullWidth
+            leftIcon={<Lock size={18} className="text-gray-500" />}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 transition-colors z-10"
+            aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
 
-        <Input
-          label="Confirmer le mot de passe"
-          type="password"
-          placeholder="••••••••"
-          value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
-          error={errors.confirmPassword}
-          fullWidth
-          leftIcon={<Lock size={18} className="text-gray-500" />}
-        />
+        <div className="relative">
+          <Input
+            label="Confirmer le mot de passe"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            error={errors.confirmPassword}
+            fullWidth
+            leftIcon={<Lock size={18} className="text-gray-500" />}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 transition-colors z-10"
+            aria-label={showConfirmPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          >
+            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
 
         <div className="flex items-center">
           <input

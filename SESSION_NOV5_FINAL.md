@@ -1,6 +1,6 @@
 # 📋 Session du 5 Novembre 2025 - Résumé Final
 
-## 🎯 3 Problèmes Critiques Résolus
+## 🎯 4 Problèmes Résolus
 
 ### 1. ✅ Connexion Locale Impossible
 **Symptôme:** Impossible de se connecter en local.
@@ -46,12 +46,30 @@
 
 ---
 
+### 4. ✅ Icône d'Œil Manquante (Mots de Passe)
+**Symptôme:** Impossible de voir le mot de passe tapé.
+
+**Cause:** Bouton toggle absent des formulaires.
+
+**Solution:** Ajout icônes Eye/EyeOff sur tous les champs password.
+
+**Fichiers:**
+- `src/components/auth/LoginForm.tsx`
+- `src/components/auth/RegisterForm.tsx`
+- `src/pages/auth/ResetPasswordPage.tsx`
+
+**Total:** 5 champs de mot de passe corrigés
+
+**Doc:** `FIX_PASSWORD_TOGGLE_ICON.md`
+
+---
+
 ## 🚀 À Faire Maintenant
 
 ### 1. Pousser sur GitHub
 ```bash
 git add .
-git commit -m "fix: auth loop + local credentials + preview env"
+git commit -m "fix: auth loop + local credentials + password toggle + preview env docs"
 git push
 ```
 
@@ -74,18 +92,20 @@ git push
 - ✅ Connexion fonctionne
 - ✅ Plus de boucle
 - ✅ Token valide jusqu'en 2034
+- ✅ Icônes mot de passe présentes
 
 ### Production
 - ✅ Corrections prêtes pour déploiement
 - ✅ Build validé
+- ✅ UX améliorée (toggle password)
 
 ### Preview
 - ⏳ Config variables requise (5 min)
 
 ---
 
-**Durée session:** 2h
-**Fichiers modifiés:** 7
+**Durée session:** 2h30
+**Fichiers modifiés:** 10
 **Status:** ✅ Prêt pour déploiement
 
-🎉 **Application stable!**
+🎉 **Application stable et UX améliorée!**
