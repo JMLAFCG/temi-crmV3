@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { ProjectWizardForm } from '../../components/projects/ProjectWizardForm';
 import { supabase } from '../../lib/supabase';
@@ -11,9 +11,12 @@ const CreateProjectPage: React.FC = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const clientIdFromQuery = params.get('client_id') || '';
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (form: any) => {
     try {
+      setError(null);
+
       const payload = {
         title: form.title || 'Sans titre',
         description: form.description || null,
@@ -32,13 +35,20 @@ const CreateProjectPage: React.FC = () => {
         is_demo: false,
       };
 
-      const { data, error } = await supabase
+      console.log('Creating project with payload:', payload);
+
+      const { data, error: insertError } = await supabase
         .from('projects')
         .insert(payload)
         .select('id')
         .single();
 
-      if (error) throw error;
+      if (insertError) {
+        console.error('Supabase error:', insertError);
+        throw insertError;
+      }
+
+      console.log('Project created successfully:', data);
 
       const newId = data?.id;
       if (newId) {
@@ -46,8 +56,9 @@ const CreateProjectPage: React.FC = () => {
       } else {
         navigate(paths.projects);
       }
-    } catch (e) {
-      navigate(paths.projects);
+    } catch (e: any) {
+      console.error('Error creating project:', e);
+      setError(e?.message || 'Erreur lors de la création du projet');
     }
   };
 
@@ -63,6 +74,16 @@ const CreateProjectPage: React.FC = () => {
           Retour aux projets
         </Button>
       </div>
+
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+          <div>
+            <h3 className="text-sm font-medium text-red-800 mb-1">Erreur lors de la création</h3>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Nouveau projet</h1>
