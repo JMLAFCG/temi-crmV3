@@ -22,6 +22,7 @@ import { Logo } from '../../components/ui/Logo';
 import ClientDashboard from './ClientDashboard';
 import EntrepriseDashboard from './EntrepriseDashboard';
 import ApporteurDashboard from './ApporteurDashboard';
+import { PerformersRanking } from '../../components/dashboard/PerformersRanking';
 
 // === Stat cards ===
 interface StatCardProps {
@@ -178,6 +179,8 @@ const DashboardPage: React.FC = () => {
   const isClient = String(user?.role) === 'client';
   const isApporteur = String(user?.role) === 'apporteur';
   const isMandatary = String(user?.role) === 'mandatary';
+  const isAdmin = String(user?.role) === 'admin';
+  const isManager = String(user?.role) === 'manager';
 
   // Données dérivées
   const stats = [
@@ -396,6 +399,13 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Classement des performers - Admin et Manager uniquement */}
+      {(isAdmin || isManager) && (
+        <div className="mb-8">
+          <PerformersRanking showAmounts={isAdmin} />
+        </div>
+      )}
 
       {/* Projets + Commissions/Alertes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
