@@ -1,7 +1,7 @@
 {
-  "name": "TEMI-Construction CRM",
-  "short_name": "TEMI-CRM",
-  "description": "Application de gestion de la relation client pour TEMI-Construction",
+  "name": "Groupe AFCG - Plateforme",
+  "short_name": "AFCG",
+  "description": "Plateforme interne du Groupe AFCG - Les courtiers à vos côtés !",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -18,13 +18,13 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/TEMILOGOJML_Plan de travail 1.png",
+      "src": "/GROUPE AFCG White logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/TEMILOGOJML_Plan de travail 1.png",
+      "src": "/GROUPE AFCG White logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
@@ -74,14 +74,14 @@
       "sizes": "1280x720",
       "type": "image/svg+xml",
       "form_factor": "wide",
-      "label": "Dashboard TEMI-Construction"
+      "label": "Dashboard Groupe AFCG"
     },
     {
       "src": "/favicon.svg",
       "sizes": "750x1334",
       "type": "image/svg+xml",
       "form_factor": "narrow",
-      "label": "Application mobile TEMI-Construction"
+      "label": "Application mobile Groupe AFCG"
     }
   ]
 }

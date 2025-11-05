@@ -18,8 +18,8 @@ export const Logo: FC<LogoProps> = ({ size = 'md', variant = 'full', className =
 
   const LogoImage = () => (
     <img
-      src="/TEMILOGOJML_Plan de travail 1.png"
-      alt="TEMI-Construction"
+      src="/GROUPE AFCG White logo.png"
+      alt="GROUPE AFCG"
       style={{ height: `${currentSize.height}px` }}
       className="object-contain"
     />
