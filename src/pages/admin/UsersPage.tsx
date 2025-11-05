@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Filter, Search, ChevronDown, User, Mail, Shield } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 import { UserRole } from '../../types';
+import { useUserStore } from '../../store/userStore';
 
 interface UserCardProps {
   id: string;
@@ -84,36 +85,29 @@ const UsersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
 
-  // Données de démonstration
-  const users: UserCardProps[] = [
-    {
-      id: '1',
-      firstName: 'Thomas',
-      lastName: 'Durand',
-      email: 'thomas.durand@example.com',
-      role: 'admin',
-      lastLogin: '2025-05-10T10:30:00',
-      status: 'active',
-    },
-    {
-      id: '2',
-      firstName: 'Sophie',
-      lastName: 'Martin',
-      email: 'sophie.martin@example.com',
-      role: 'manager',
-      lastLogin: '2025-05-09T15:45:00',
-      status: 'active',
-    },
-    {
-      id: '3',
-      firstName: 'Jean',
-      lastName: 'Petit',
-      email: 'jean.petit@example.com',
-      role: 'commercial',
-      lastLogin: '2025-05-08T09:15:00',
-      status: 'active',
-    },
-  ];
+  const { users: storeUsers, loading, error, fetchUsers } = useUserStore();
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const users: UserCardProps[] = storeUsers.map(user => ({
+    id: user.id,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    email: user.email,
+    role: user.role,
+    lastLogin: user.last_login,
+    status: user.status,
+  }));
+
+  if (loading && storeUsers.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-600">Chargement des utilisateurs...</div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -213,11 +207,34 @@ const UsersPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {users.map(user => (
-          <UserCard key={user.id} {...user} />
-        ))}
-      </div>
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          {error}
+        </div>
+      )}
+
+      {users.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed border-gray-300">
+          <User size={48} className="mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun utilisateur</h3>
+          <p className="text-gray-600 mb-4">
+            Commencez par créer votre premier utilisateur pour gérer votre équipe.
+          </p>
+          <Button
+            variant="primary"
+            leftIcon={<Plus size={16} />}
+            onClick={() => navigate('/admin/users/create')}
+          >
+            Créer un utilisateur
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {users.map(user => (
+            <UserCard key={user.id} {...user} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
