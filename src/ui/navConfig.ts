@@ -141,28 +141,10 @@ export const navConfig: NavItem[] = [
     roles: ['admin', 'manager', 'comptable'],
   },
   {
-    label: 'Audit',
-    route: 'audit',
-    icon: React.createElement(Shield, { size: 20 }),
-    roles: ['admin', 'manager'],
-  },
-  {
     label: 'Gestion IA',
     route: 'aiManagement',
     icon: React.createElement(Brain, { size: 20 }),
     roles: ['admin', 'manager', 'commercial', 'mandatary'],
-  },
-  {
-    label: 'Guide Application',
-    route: 'adminGuide',
-    icon: React.createElement(Book, { size: 20 }),
-    roles: ['admin', 'manager'],
-  },
-  {
-    label: 'Documentation API',
-    route: 'apiDocumentation',
-    icon: React.createElement(Book, { size: 20 }),
-    roles: ['admin', 'manager'],
   },
   {
     label: 'Administration',
@@ -175,6 +157,9 @@ export const navConfig: NavItem[] = [
       { label: 'Rôles et permissions', route: 'settingsRoles', roles: ['admin'] },
       { label: 'Facturation', route: 'settingsBilling', roles: ['admin'] },
       { label: 'Intégrations', route: 'settingsIntegrations', roles: ['admin'] },
+      { label: 'Audit', route: 'audit', roles: ['admin', 'manager'] },
+      { label: 'Guide Application', route: 'adminGuide', roles: ['admin', 'manager'] },
+      { label: 'Documentation API', route: 'apiDocumentation', roles: ['admin', 'manager'] },
     ],
   },
 ];
