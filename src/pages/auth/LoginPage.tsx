@@ -40,10 +40,15 @@ function LoginPage() {
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-6 space-y-3">
               <SafeLink route="register">
                 <div className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
                   Créer un compte
+                </div>
+              </SafeLink>
+              <SafeLink route="joinNetwork">
+                <div className="w-full flex justify-center py-2 px-4 border-2 border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 transition-colors">
+                  Rejoindre le réseau
                 </div>
               </SafeLink>
             </div>

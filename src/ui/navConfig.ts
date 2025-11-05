@@ -154,6 +154,7 @@ export const navConfig: NavItem[] = [
     subItems: [
       { label: 'Général', route: 'settingsGeneral', roles: ['admin', 'manager'] },
       { label: 'Utilisateurs', route: 'settingsUsers', roles: ['admin', 'manager'] },
+      { label: 'Demandes d\'inscription', route: 'adminRegistrationRequests', roles: ['admin', 'manager'] },
       { label: 'Rôles et permissions', route: 'settingsRoles', roles: ['admin'] },
       { label: 'Facturation', route: 'settingsBilling', roles: ['admin'] },
       { label: 'Intégrations', route: 'settingsIntegrations', roles: ['admin'] },

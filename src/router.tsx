@@ -65,6 +65,7 @@ const BulkImportPage = lazyDefault(() => import('./pages/import/BulkImportPage')
 const AIManagementPage = lazyDefault(() => import('./pages/admin/AIManagementPage'), 'src/pages/admin/AIManagementPage.tsx');
 const GuideApplicationPage = lazyDefault(() => import('./pages/admin/GuideApplicationPage'), 'src/pages/admin/GuideApplicationPage.tsx');
 const APIDocumentationPage = lazyDefault(() => import('./pages/api/APIDocumentationPage'), 'src/pages/api/APIDocumentationPage.tsx');
+const RegistrationRequestsPage = lazyDefault(() => import('./pages/admin/RegistrationRequestsPage'), 'src/pages/admin/RegistrationRequestsPage.tsx');
 
 const SettingsLayout = lazyDefault(() => import('./pages/settings/SettingsLayout'), 'src/pages/settings/SettingsLayout.tsx');
 const GeneralSettingsPage = lazyDefault(() => import('./pages/settings/GeneralSettingsPage'), 'src/pages/settings/GeneralSettingsPage.tsx');
@@ -78,6 +79,7 @@ const UserDashboardViewer = lazyDefault(() => import('./components/users/UserDas
 
 const LoginPage = lazyDefault(() => import('./pages/auth/LoginPage'), 'src/pages/auth/LoginPage.tsx');
 const RegisterPage = lazyDefault(() => import('./pages/auth/RegisterPage'), 'src/pages/auth/RegisterPage.tsx');
+const JoinNetworkPage = lazyDefault(() => import('./pages/auth/JoinNetworkPage'), 'src/pages/auth/JoinNetworkPage.tsx');
 const ResetPasswordPage = lazyDefault(() => import('./pages/auth/ResetPasswordPage'), 'src/pages/auth/ResetPasswordPage.tsx');
 
 const HomePage = lazyDefault(() => import('./pages/HomePage'), 'src/pages/HomePage.tsx');
@@ -90,6 +92,7 @@ const mainRoutes = createBrowserRouter([
   // Auth
   { path: paths.login, element: <AppSuspense><LoginPage /></AppSuspense> },
   { path: paths.register, element: <AppSuspense><RegisterPage /></AppSuspense> },
+  { path: paths.joinNetwork, element: <AppSuspense><JoinNetworkPage /></AppSuspense> },
   { path: paths.resetPassword, element: <AppSuspense><ResetPasswordPage /></AppSuspense> },
 
   // Protégé par AppLayout
@@ -286,6 +289,14 @@ const mainRoutes = createBrowserRouter([
         element: (
           <Guard roles={['admin', 'manager']}>
             <AppSuspense><AuditPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
+        path: paths.adminRegistrationRequests,
+        element: (
+          <Guard roles={['admin', 'manager']}>
+            <AppSuspense><RegistrationRequestsPage /></AppSuspense>
           </Guard>
         ),
       },

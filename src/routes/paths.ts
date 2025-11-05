@@ -58,6 +58,7 @@ export const paths = {
 
   // Administration
   admin: '/admin',
+  adminRegistrationRequests: '/admin/registration-requests',
   settings: '/settings',
   settingsGeneral: '/settings/general',
   settingsUsers: '/settings/users',
@@ -75,6 +76,7 @@ export const paths = {
   // Auth
   login: '/login',
   register: '/register',
+  joinNetwork: '/join-network',
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   verifyEmail: '/verify-email',
