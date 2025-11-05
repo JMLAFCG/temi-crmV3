@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, Users, Briefcase, Shield, FileCheck, TrendingUp, CheckCircle, ArrowRight } from 'lucide-react';
 import { Logo } from '../components/ui/Logo';
-import { StatusBanner } from '../components/layout/StatusBanner';
 
 export default function HomePage() {
   const [formData, setFormData] = useState({
@@ -22,8 +21,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <StatusBanner />
-
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Version Desktop */}
