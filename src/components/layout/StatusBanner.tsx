@@ -21,22 +21,23 @@ export const StatusBanner: React.FC = () => {
   return (
     <div className="bg-black text-white text-xs py-2 px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <span className="text-gray-400 capitalize">{format(currentTime)}</span>
-        <div className="hidden md:flex items-center space-x-3">
-          <span className="text-gray-300">Plateforme interne du</span>
+        <span className="text-gray-400 capitalize text-[11px]">{format(currentTime)}</span>
+        <div className="hidden md:flex items-center space-x-2">
+          <span className="text-gray-300 text-[11px]">Plateforme interne du</span>
           <img
             src="/GROUPE AFCG White logo.png"
             alt="Groupe AFCG"
-            className="h-8 object-contain brightness-110"
+            className="h-5 object-contain brightness-125 inline-block"
+            style={{ verticalAlign: 'middle' }}
             onError={(e) => {console.error('Logo AFCG non chargé'); e.currentTarget.style.display='none';}}
           />
-          <span className="text-gray-300">— Les courtiers à vos côtés !</span>
+          <span className="text-gray-300 text-[11px]">— Les courtiers à vos côtés !</span>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="text-gray-400">Statut :</span>
+          <span className="text-gray-400 text-[11px]">Statut :</span>
           <span className="flex items-center space-x-1">
-            <span>{statusInfo.indicator}</span>
-            <span className="text-white font-medium">{statusInfo.label}</span>
+            <span className="text-[11px]">{statusInfo.indicator}</span>
+            <span className="text-white font-medium text-[11px]">{statusInfo.label}</span>
           </span>
         </div>
       </div>
