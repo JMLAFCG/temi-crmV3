@@ -15,6 +15,7 @@ import {
   Book,
   Receipt,
   Shield,
+  Upload,
 } from 'lucide-react';
 import { RouteKey, paths } from '../routes/paths';
 
@@ -128,6 +129,15 @@ export const navConfig: NavItem[] = [
         route: 'commissionsMandataries',
         roles: ['admin', 'manager', 'mandatary'],
       },
+    ],
+  },
+  {
+    label: 'Import & Prospection',
+    route: 'bulkImport',
+    icon: React.createElement(Upload, { size: 20 }),
+    roles: ['admin', 'manager'],
+    subItems: [
+      { label: 'Import en masse', route: 'bulkImport', roles: ['admin', 'manager'] },
     ],
   },
   {

@@ -60,6 +60,7 @@ const MandataryCommissionsPage = lazyDefault(() => import('./pages/commissions/M
 
 const InvoicingPage = lazyDefault(() => import('./pages/invoicing/InvoicingPage'), 'src/pages/invoicing/InvoicingPage.tsx');
 const AuditPage = lazyDefault(() => import('./pages/audit/AuditPage'), 'src/pages/audit/AuditPage.tsx');
+const BulkImportPage = lazyDefault(() => import('./pages/import/BulkImportPage'), 'src/pages/import/BulkImportPage.tsx');
 
 const AIManagementPage = lazyDefault(() => import('./pages/admin/AIManagementPage'), 'src/pages/admin/AIManagementPage.tsx');
 const GuideApplicationPage = lazyDefault(() => import('./pages/admin/GuideApplicationPage'), 'src/pages/admin/GuideApplicationPage.tsx');
@@ -261,6 +262,14 @@ const mainRoutes = createBrowserRouter([
         element: (
           <Guard roles={['admin', 'manager', 'mandatary']}>
             <AppSuspense><MandataryCommissionsPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
+        path: paths.bulkImport,
+        element: (
+          <Guard roles={['admin', 'manager']}>
+            <AppSuspense><BulkImportPage /></AppSuspense>
           </Guard>
         ),
       },

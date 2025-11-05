@@ -38,7 +38,10 @@ export const paths = {
   // Commissions
   commissions: '/commissions',
   commissionsMandataries: '/commissions/mandataries',
-  
+
+  // Import
+  bulkImport: '/import',
+
   // Facturation
   invoicing: '/invoicing',
   
