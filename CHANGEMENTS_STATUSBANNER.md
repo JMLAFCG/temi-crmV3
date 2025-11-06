@@ -1,59 +1,50 @@
-# Corrections StatusBanner et Health Check
+# ✅ StatusBanner - Configuration Finale
 
-## Date: 2025-11-05
+## 🎯 Affichage du Bandeau Noir
 
-## Fichiers modifiés/créés
+### Contenu Complet:
 
-### 1. Nouveaux fichiers créés
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  [Date]  │  Plateforme interne du [LOGO AFCG BLANC] — Les courtiers à vos côtés !  │  Statut  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-#### `/src/lib/platformStatus.ts`
-- Nouveau module pour le monitoring de statut de la plateforme
-- Utilise `GET /rest/v1/app_settings?select=id&limit=1` au lieu de `/auth/v1/health`
-- Vérifie le statut toutes les 60 secondes
-- Retourne 'operational', 'degraded' ou 'offline'
+## ✅ Éléments Affichés
 
-#### `/src/components/layout/StatusBanner.tsx`
-- Nouveau composant de bannière de statut
-- Export nommé `StatusBanner`
-- Affiche l'heure en temps réel et le statut de la plateforme
-- Utilise `platformStatusMonitor` pour les mises à jour de statut
+### 1. Logo AFCG Blanc (Centre)
+- Fichier: `/groupe-afcg-white-logo.png`
+- Taille: 24px (h-6)
+- Effet: brightness-110 (légèrement éclairci)
+- Visibilité: **Tous les écrans** (mobile + desktop)
 
-### 2. Fichiers modifiés
+### 2. Phrase 1: "Plateforme interne du"
+- Position: Avant le logo
+- Couleur: text-gray-300
+- Visibilité: **Tous les écrans**
 
-#### `/src/pages/HomePage.tsx`
-- Ajout de l'import: `import { StatusBanner } from '../components/layout/StatusBanner';`
-- Ajout du composant `<StatusBanner />` en haut de la page
+### 3. Phrase 2: "— Les courtiers à vos côtés !"
+- Position: Après le logo
+- Couleur: text-gray-300
+- Visibilité: **Tous les écrans**
 
-#### `/package.json`
-- Ajout de `"engines": { "node": ">=18" }`
+## 📱 Responsive
 
-## Changements techniques
+### Desktop (≥ 768px):
+```
+[Date] [Plateforme du LOGO - courtiers] [Statut]
+```
 
-### Health Check
-**AVANT:** Utilisait `/auth/v1/health` → Générait des erreurs 401
+### Mobile (< 768px):
+```
+[Plateforme du LOGO - courtiers]
+         [Statut]
+```
 
-**APRÈS:** Utilise `/rest/v1/app_settings?select=id&limit=1` avec:
-- Headers: `apikey` et `Authorization` avec `VITE_SUPABASE_ANON_KEY`
-- Timeout de 5 secondes
-- Vérification toutes les 60 secondes
+## ✅ Résultat Final
 
-### Variables d'environnement utilisées
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-
-## Vérifications
-✅ Build sans erreur
-✅ Type checking OK
-✅ StatusBanner avec export nommé
-✅ platformStatus utilise REST API public
-✅ Plus de 401 sur health check
-
-## Pour GitHub
-Commit message: `fix: StatusBanner + platformStatus health check via app_settings`
-
-## Fichiers à uploader sur GitHub
-1. src/lib/platformStatus.ts
-2. src/components/layout/StatusBanner.tsx
-3. src/pages/HomePage.tsx
-4. package.json
-5. CHANGEMENTS_STATUSBANNER.md
+Le bandeau noir affiche maintenant:
+✅ Logo AFCG blanc (toujours visible)
+✅ "Plateforme interne du" (toujours visible)
+✅ "— Les courtiers à vos côtés !" (toujours visible)
+✅ Responsive sur tous les écrans

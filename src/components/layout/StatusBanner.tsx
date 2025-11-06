@@ -20,9 +20,10 @@ export const StatusBanner: React.FC = () => {
 
   return (
     <div className="bg-black text-white text-xs py-2 px-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <span className="text-gray-400 capitalize text-[11px]">{format(currentTime)}</span>
-        <div className="hidden md:flex items-center space-x-2">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 md:gap-0">
+        <span className="text-gray-400 capitalize text-[11px] hidden md:block">{format(currentTime)}</span>
+
+        <div className="flex items-center space-x-2">
           <span className="text-gray-300 text-[11px]">Plateforme interne du</span>
           <img
             src="/groupe-afcg-white-logo.png"
@@ -33,6 +34,7 @@ export const StatusBanner: React.FC = () => {
           />
           <span className="text-gray-300 text-[11px]">— Les courtiers à vos côtés !</span>
         </div>
+
         <div className="flex items-center space-x-2">
           <span className="text-gray-400 text-[11px]">Statut :</span>
           <span className="flex items-center space-x-1">
