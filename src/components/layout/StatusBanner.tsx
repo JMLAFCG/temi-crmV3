@@ -25,7 +25,7 @@ export const StatusBanner: React.FC = () => {
         <div className="hidden md:flex items-center space-x-2">
           <span className="text-gray-300 text-[11px]">Plateforme interne du</span>
           <img
-            src="/GROUPE AFCG White logo.png"
+            src="/groupe-afcg-white-logo.png"
             alt="Groupe AFCG"
             className="h-5 object-contain brightness-125 inline-block"
             style={{ verticalAlign: 'middle' }}
