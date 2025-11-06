@@ -11,7 +11,9 @@ function LoginPage() {
 
   useEffect(() => {
     if (user && !isLoading) {
-      navigate('/dashboard', { replace: true });
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 100);
     }
   }, [user, isLoading, navigate]);
 

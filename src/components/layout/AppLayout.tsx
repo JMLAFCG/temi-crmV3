@@ -3,6 +3,7 @@ import type { FC } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { Header } from './Header';
+import { StatusBanner } from './StatusBanner';
 import { useAuthStore } from '../../store/authStore';
 import { safeNavigate } from '../../lib/safeNavigate';
 
@@ -74,6 +75,7 @@ export const AppLayout: FC = () => {
 
       {/* Main content */}
       <div className="lg:pl-72 flex flex-col flex-1 w-full">
+        <StatusBanner />
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">

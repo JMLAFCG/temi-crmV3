@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Briefcase,
   Users,
@@ -17,6 +17,10 @@ import {
   Zap,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { useProjectStore } from '../../store/projectStore';
+import { useClientStore } from '../../store/clientStore';
+import { useCompanyStore } from '../../store/companyStore';
+import { useCommissionStore } from '../../store/commissionStore';
 import { Button } from '../../components/ui/Button';
 import { Logo } from '../../components/ui/Logo';
 import ClientDashboard from './ClientDashboard';
@@ -182,58 +186,66 @@ const DashboardPage: React.FC = () => {
   const isAdmin = String(user?.role) === 'admin';
   const isManager = String(user?.role) === 'manager';
 
+  const { projects, fetchProjects } = useProjectStore();
+  const { clients, fetchClients } = useClientStore();
+  const { companies, fetchCompanies } = useCompanyStore();
+  const { commissions, fetchCommissions } = useCommissionStore();
+
+  useEffect(() => {
+    fetchProjects();
+    fetchClients();
+    fetchCompanies();
+    fetchCommissions();
+  }, [fetchProjects, fetchClients, fetchCompanies, fetchCommissions]);
+
+  // Calculer les vraies statistiques
+  const activeProjects = projects.filter(p => p.status === 'in_progress' || p.status === 'pending').length;
+  const activeClients = clients.filter(c => c.user?.status === 'active').length;
+  const partnerCompanies = companies.filter(c => c.status === 'active').length;
+  const totalRevenue = projects.reduce((sum, p) => sum + (p.budget?.total || 0), 0);
+  const pendingQuotes = projects.filter(p => p.status === 'pending').length;
+  const totalCommissions = commissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+
   // Données dérivées
   const stats = [
     {
       title: 'Projets Actifs',
-      value: 24,
+      value: activeProjects,
       icon: <Briefcase size={24} />,
-      change: '+12%',
-      positive: true,
       gradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
     },
     {
       title: 'Clients Actifs',
-      value: 18,
+      value: activeClients,
       icon: <Users size={24} />,
-      change: '+5%',
-      positive: true,
       gradient: 'bg-gradient-to-br from-success-600 to-success-800',
     },
     ...(isMandatary
       ? [
           {
             title: 'Devis en attente',
-            value: 8,
+            value: pendingQuotes,
             icon: <FileText size={24} />,
-            change: '+3',
-            positive: true,
             gradient: 'bg-gradient-to-br from-warning-600 to-warning-800',
           },
           {
             title: 'Commissions',
-            value: '12.5k€',
+            value: `${(totalCommissions / 1000).toFixed(1)}k€`,
             icon: <Euro size={24} />,
-            change: '+8%',
-            positive: true,
             gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
           },
         ]
       : [
           {
             title: 'Entreprises Partenaires',
-            value: 42,
+            value: partnerCompanies,
             icon: <Building size={24} />,
-            change: '+8%',
-            positive: true,
             gradient: 'bg-gradient-to-br from-secondary-600 to-secondary-800',
           },
           {
             title: "Chiffre d'Affaires",
-            value: '156k€',
+            value: `${(totalRevenue / 1000).toFixed(0)}k€`,
             icon: <Euro size={24} />,
-            change: '+15%',
-            positive: true,
             gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
           },
         ]),
