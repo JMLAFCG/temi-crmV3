@@ -27,7 +27,7 @@ export const StatusBanner: React.FC = () => {
           <img
             src="/groupe-afcg-white-logo.png"
             alt="Groupe AFCG"
-            className="h-5 object-contain brightness-125 inline-block"
+            className="h-6 object-contain brightness-110 inline-block"
             style={{ verticalAlign: 'middle' }}
             onError={(e) => {console.error('Logo AFCG non chargé'); e.currentTarget.style.display='none';}}
           />

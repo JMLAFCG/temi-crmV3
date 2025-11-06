@@ -22,6 +22,9 @@ export const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
       >
         <Menu size={24} />
       </button>
+      <div className="flex items-center ml-2 lg:ml-4 mr-3 lg:mr-6">
+        <Logo size="sm" />
+      </div>
       <div className="flex-1 flex items-center justify-between">
         <div className={`${showSearch ? 'flex w-full' : 'hidden md:flex'} max-w-lg relative`}>
           {showSearch && (
