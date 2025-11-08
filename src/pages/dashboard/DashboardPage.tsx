@@ -293,16 +293,20 @@ const DashboardPage: React.FC = () => {
       {/* En-tête */}
       <div className="mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="flex items-center mb-4">
-              <Logo size="lg" variant="full" className="mr-3" />
+          <div className="flex-1">
+            <div className="flex items-center gap-6">
+              <div className="flex-shrink-0">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
+                  Bonjour, {user?.firstName || 'Utilisateur'} 👋
+                </h1>
+                <p className="text-secondary-700 text-lg">
+                  {isMandatary ? 'Gérez vos projets et clients efficacement' : "Voici un aperçu de votre activité aujourd'hui"}
+                </p>
+              </div>
+              <div className="hidden lg:flex items-center justify-center flex-shrink-0 ml-8">
+                <Logo size="lg" variant="full" />
+              </div>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
-              Bonjour, {user?.firstName || 'Utilisateur'} 👋
-            </h1>
-            <p className="text-secondary-700 text-lg">
-              {isMandatary ? 'Gérez vos projets et clients efficacement' : "Voici un aperçu de votre activité aujourd'hui"}
-            </p>
           </div>
 
           <div className="mt-6 lg:mt-0 flex items-center space-x-4">
