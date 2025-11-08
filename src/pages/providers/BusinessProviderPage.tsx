@@ -3,6 +3,7 @@ import { Plus, Filter, Search, ChevronDown, User, Mail, Phone, MapPin, Euro } fr
 import { Button } from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { useProviderStore } from '../../store/providerStore';
 
 interface BusinessProviderCardProps {
   id: string;
@@ -121,74 +122,12 @@ const BusinessProviderPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const { user } = useAuthStore();
+  const { providers, loading, fetchProviders } = useProviderStore();
 
-  // ⚠️ IMPORTANT : hook state AVANT tout return conditionnel
-  const [providers, setProviders] = useState<BusinessProviderCardProps[]>([
-    {
-      id: '1',
-      type: 'individual',
-      first_name: 'Thomas',
-      last_name: 'Durand',
-      name: 'Thomas Durand',
-      email: 'thomas.durand@example.com',
-      phone: '06 12 34 56 78',
-      address: 'Paris',
-      projectsCount: 12,
-      totalCommissions: 24500,
-      pendingCommissions: 3500,
-      status: 'active',
-      verification_status: 'verified',
-    },
-    {
-      id: '2',
-      type: 'company',
-      first_name: 'Sophie',
-      last_name: 'Martin',
-      company_name: 'Électricité Moderne SARL',
-      name: 'Sophie Martin',
-      email: 'sophie.martin@example.com',
-      phone: '06 23 45 67 89',
-      address: 'Lyon',
-      projectsCount: 8,
-      totalCommissions: 15800,
-      pendingCommissions: 2200,
-      status: 'active',
-      verification_status: 'pending',
-    },
-    {
-      id: '3',
-      type: 'individual',
-      first_name: 'Jean',
-      last_name: 'Petit',
-      name: 'Jean Petit',
-      email: 'jean.petit@example.com',
-      phone: '06 34 56 78 90',
-      address: 'Marseille',
-      projectsCount: 5,
-      totalCommissions: 9500,
-      pendingCommissions: 1500,
-      status: 'inactive',
-      verification_status: 'rejected',
-    },
-    {
-      id: '4',
-      type: 'company',
-      first_name: 'Marc',
-      last_name: 'Dubois',
-      company_name: 'Électricité Moderne',
-      name: 'Électricité Moderne',
-      email: 'contact@electricite-moderne.fr',
-      phone: '01 23 45 67 89',
-      address: 'Paris',
-      projectsCount: 6,
-      totalCommissions: 8500,
-      pendingCommissions: 1200,
-      status: 'active',
-      verification_status: 'verified',
-    },
-  ]);
+  React.useEffect(() => {
+    fetchProviders();
+  }, [fetchProviders]);
 
-  // Vérification des permissions (rendu alternatif, plus de return avant hooks)
   const hasAccess = user?.role === 'admin' || user?.role === 'manager';
 
   if (!hasAccess) {
@@ -295,11 +234,44 @@ const BusinessProviderPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {providers.map(provider => (
-          <BusinessProviderCard key={provider.id} {...provider} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+        </div>
+      ) : providers.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 max-w-md mx-auto">
+            <User size={48} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun apporteur</h3>
+            <p className="text-gray-600 mb-4">Commencez par ajouter votre premier apporteur d'affaires.</p>
+            <Button onClick={() => navigate('/providers/create')} leftIcon={<Plus size={16} />}>
+              Ajouter un apporteur
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {providers.map(provider => (
+            <BusinessProviderCard
+              key={provider.id}
+              id={provider.id}
+              type={provider.type}
+              first_name={provider.first_name}
+              last_name={provider.last_name}
+              company_name={provider.company_name}
+              name={provider.name}
+              email={provider.email}
+              phone={provider.phone}
+              address={provider.address}
+              projectsCount={provider.projects_count}
+              totalCommissions={provider.total_commissions}
+              pendingCommissions={provider.pending_commissions}
+              status={provider.status}
+              verification_status={provider.verification_status}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

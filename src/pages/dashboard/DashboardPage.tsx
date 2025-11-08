@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Briefcase,
   Users,
@@ -162,6 +163,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ icon, title, description, t
 // === Page ===
 const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   // Redirection automatique vers le dashboard spécifique selon le rôle
   if (user) {
@@ -251,18 +253,18 @@ const DashboardPage: React.FC = () => {
         ]),
   ];
 
-  const recentActivities = [
-    { icon: <Target size={20} />, title: 'Nouveau projet créé', description: 'Projet de rénovation pour Martin Dupont', time: 'Il y a 2h', type: 'success' as const },
-    { icon: <FileText size={20} />, title: 'Document téléchargé', description: "Plan d'étage pour le projet #1234", time: 'Il y a 4h', type: 'info' as const },
-    { icon: <Award size={20} />, title: 'Nouvelle entreprise partenaire', description: 'Électricité Moderne a rejoint la plateforme', time: 'Hier', type: 'success' as const },
-    { icon: <AlertTriangle size={20} />, title: 'Document expirant', description: 'Assurance décennale expire dans 30 jours', time: 'Il y a 1 jour', type: 'warning' as const },
-  ];
+  const recentActivities: ActivityItemProps[] = [];
 
-  const recentProjects = [
-    { title: 'Rénovation Cuisine Moderne', client: 'Martin Dupont', budget: '25 000 €', progress: 65, status: 'in_progress' as const, priority: 'high' as const },
-    { title: 'Extension Maison', client: 'Sophie Martin', budget: '75 000 €', progress: 10, status: 'pending' as const, priority: 'medium' as const },
-    { title: 'Rénovation Salle de Bain', client: 'Jean Petit', budget: '12 000 €', progress: 100, status: 'completed' as const, priority: 'low' as const },
-  ];
+  const recentProjects = projects
+    .slice(0, 3)
+    .map(p => ({
+      title: p.title || 'Sans titre',
+      client: 'Client',
+      budget: p.budget?.total ? `${(p.budget.total / 1000).toFixed(0)}k€` : '0€',
+      progress: 0,
+      status: (p.status || 'pending') as 'pending' | 'in_progress' | 'completed' | 'cancelled',
+      priority: 'medium' as const,
+    }));
 
   const quickActions =
     isClient || isApporteur || isMandatary
@@ -396,21 +398,26 @@ const DashboardPage: React.FC = () => {
               <p className="text-secondary-600">Dernières actions sur la plateforme</p>
             </div>
 
-            <div className="p-2">
-              {recentActivities.map((activity, index) => (
-                <ActivityItem
-                  key={index}
-                  icon={activity.icon}
-                  title={activity.title}
-                  description={activity.description}
-                  time={activity.time}
-                  type={activity.type}
-                />
-              ))}
-            </div>
-
-            <div className="p-6 border-t border-gray-100/50">
-              <Button variant="outline" fullWidth>Voir toute l'activité</Button>
+            <div className="p-6">
+              {recentActivities.length === 0 ? (
+                <div className="text-center py-8">
+                  <Target size={48} className="mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500 text-sm">Aucune activité récente</p>
+                </div>
+              ) : (
+                <div className="p-2">
+                  {recentActivities.map((activity, index) => (
+                    <ActivityItem
+                      key={index}
+                      icon={activity.icon}
+                      title={activity.title}
+                      description={activity.description}
+                      time={activity.time}
+                      type={activity.type}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -439,9 +446,19 @@ const DashboardPage: React.FC = () => {
           </div>
 
           <div className="p-6 space-y-4">
-            {recentProjects.map((project, index) => (
-              <ProjectCard key={index} {...project} />
-            ))}
+            {recentProjects.length === 0 ? (
+              <div className="text-center py-8">
+                <Briefcase size={48} className="mx-auto text-gray-300 mb-3" />
+                <p className="text-gray-500 text-sm">Aucun projet récent</p>
+                <Button variant="primary" size="sm" onClick={() => navigate('/projects/create')} className="mt-4">
+                  Créer un projet
+                </Button>
+              </div>
+            ) : (
+              recentProjects.map((project, index) => (
+                <ProjectCard key={index} {...project} />
+              ))
+            )}
           </div>
         </div>
 
