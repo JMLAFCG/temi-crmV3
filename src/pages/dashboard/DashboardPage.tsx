@@ -208,6 +208,24 @@ const DashboardPage: React.FC = () => {
   const pendingQuotes = projects.filter(p => p.status === 'pending').length;
   const totalCommissions = commissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
 
+  // Calculer la croissance mensuelle réelle (comparaison avec le mois dernier)
+  const currentMonth = new Date().getMonth();
+  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const currentMonthProjects = projects.filter(p => {
+    const projectMonth = new Date(p.created_at || '').getMonth();
+    return projectMonth === currentMonth;
+  });
+  const lastMonthProjects = projects.filter(p => {
+    const projectMonth = new Date(p.created_at || '').getMonth();
+    return projectMonth === lastMonth;
+  });
+  const currentMonthRevenue = currentMonthProjects.reduce((sum, p) => sum + (p.budget?.total || 0), 0);
+  const lastMonthRevenue = lastMonthProjects.reduce((sum, p) => sum + (p.budget?.total || 0), 0);
+  const revenueGrowth = lastMonthRevenue > 0
+    ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1)
+    : '0.0';
+  const isGrowthPositive = parseFloat(revenueGrowth) >= 0;
+
   // Données dérivées
   const stats = [
     {
@@ -312,17 +330,6 @@ const DashboardPage: React.FC = () => {
           </div>
 
           <div className="mt-6 lg:mt-0 flex items-center space-x-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search size={20} className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="pl-12 pr-4 py-3 rounded-2xl border-0 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-accent-500/80 backdrop-blur-sm shadow-lg w-80 placeholder-gray-500"
-              />
-            </div>
-
             <button className="p-3 rounded-2xl bg-accent-500/80 backdrop-blur-sm text-primary-600 relative shadow-lg hover:shadow-xl hover:bg-accent-500 transition-all duration-200 transform hover:scale-105">
               <Bell size={20} />
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-warning-600 rounded-full animate-pulse" />
@@ -362,10 +369,16 @@ const DashboardPage: React.FC = () => {
                 </h2>
                 <p className="text-secondary-600">Performance de l'année en cours</p>
               </div>
-              <div className="flex items-center text-success-600 bg-success-50 px-4 py-2 rounded-xl border border-success-200">
-                <ArrowUpRight size={20} className="mr-2" />
-                <span className="font-semibold">+12.5%</span>
-              </div>
+              {parseFloat(revenueGrowth) !== 0 && (
+                <div className={`flex items-center px-4 py-2 rounded-xl border ${
+                  isGrowthPositive
+                    ? 'text-success-600 bg-success-50 border-success-200'
+                    : 'text-error-600 bg-error-50 border-error-200'
+                }`}>
+                  <ArrowUpRight size={20} className={`mr-2 ${!isGrowthPositive && 'rotate-90'}`} />
+                  <span className="font-semibold">{isGrowthPositive ? '+' : ''}{revenueGrowth}%</span>
+                </div>
+              )}
             </div>
 
             <div className="h-80 flex items-end space-x-3">
