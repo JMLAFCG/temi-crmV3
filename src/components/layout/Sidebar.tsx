@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
       {/* En-tête */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
-        <Logo size="lg" variant="full" />
+        <Logo size="xl" variant="full" />
         {onClose && (
           <button
             onClick={onClose}

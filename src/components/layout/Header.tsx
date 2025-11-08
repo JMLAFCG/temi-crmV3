@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import type { FC } from 'react';
 import { Menu, Search, X, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
-import { Logo } from '../ui/Logo';
 import { NotificationCenter } from '../ui/NotificationCenter';
 
 interface HeaderProps {
@@ -22,10 +21,7 @@ export const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
       >
         <Menu size={24} />
       </button>
-      <div className="flex items-center ml-2 lg:ml-4 mr-3 lg:mr-6">
-        <Logo size="sm" />
-      </div>
-      <div className="flex-1 flex items-center justify-between">
+      <div className="flex-1 flex items-center justify-between ml-2 lg:ml-4">
         <div className={`${showSearch ? 'flex w-full' : 'hidden md:flex'} max-w-lg relative`}>
           {showSearch && (
             <button onClick={() => setShowSearch(false)} className="p-2 mr-1 text-white md:hidden">
