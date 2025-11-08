@@ -68,9 +68,9 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
     }
   };
 
-  const handleDownloadTemplate = () => {
+  const handleDownloadTemplate = async () => {
     const filename = `template_${entityType}_${Date.now()}.xlsx`;
-    generateExcelTemplate(templateHeaders, templateExample, filename);
+    await generateExcelTemplate(templateHeaders, templateExample, filename);
   };
 
   const handleClose = () => {

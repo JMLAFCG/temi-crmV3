@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export interface ImportResult<T> {
   success: T[];
@@ -9,57 +9,86 @@ export function parseExcelFile<T>(
   file: File,
   validator: (row: any, index: number) => { valid: boolean; data?: T; error?: string }
 ): Promise<ImportResult<T>> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+  return new Promise(async (resolve, reject) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
 
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows: any[] = XLSX.utils.sheet_to_json(firstSheet);
-
-        const result: ImportResult<T> = {
-          success: [],
-          errors: [],
-        };
-
-        rows.forEach((row, index) => {
-          const validation = validator(row, index + 2);
-          if (validation.valid && validation.data) {
-            result.success.push(validation.data);
-          } else {
-            result.errors.push({
-              row: index + 2,
-              data: row,
-              error: validation.error || 'Données invalides',
-            });
-          }
-        });
-
-        resolve(result);
-      } catch (error: any) {
-        reject(new Error(`Erreur de parsing Excel: ${error.message}`));
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet) {
+        throw new Error('Aucune feuille trouvée dans le fichier');
       }
-    };
 
-    reader.onerror = () => {
-      reject(new Error('Erreur de lecture du fichier'));
-    };
+      const rows: any[] = [];
+      const headers: string[] = [];
 
-    reader.readAsArrayBuffer(file);
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) {
+          row.eachCell((cell) => {
+            headers.push(String(cell.value || ''));
+          });
+        } else {
+          const rowData: any = {};
+          row.eachCell((cell, colNumber) => {
+            const header = headers[colNumber - 1];
+            if (header) {
+              rowData[header] = cell.value;
+            }
+          });
+          if (Object.keys(rowData).length > 0) {
+            rows.push(rowData);
+          }
+        }
+      });
+
+      const result: ImportResult<T> = {
+        success: [],
+        errors: [],
+      };
+
+      rows.forEach((row, index) => {
+        const validation = validator(row, index + 2);
+        if (validation.valid && validation.data) {
+          result.success.push(validation.data);
+        } else {
+          result.errors.push({
+            row: index + 2,
+            data: row,
+            error: validation.error || 'Données invalides',
+          });
+        }
+      });
+
+      resolve(result);
+    } catch (error: any) {
+      reject(new Error(`Erreur de parsing Excel: ${error.message}`));
+    }
   });
 }
 
-export function generateExcelTemplate(
+export async function generateExcelTemplate(
   headers: string[],
   exampleRow: any[],
   filename: string
-): void {
-  const worksheet = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
-  XLSX.writeFile(workbook, filename);
+): Promise<void> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Template');
+
+  worksheet.addRow(headers);
+  worksheet.addRow(exampleRow);
+
+  worksheet.getRow(1).font = { bold: true };
+  worksheet.columns = headers.map(() => ({ width: 20 }));
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  window.URL.revokeObjectURL(url);
 }
 
 export interface ClientImportRow {
