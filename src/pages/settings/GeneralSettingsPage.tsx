@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Globe, Phone, MapPin, Building } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { supabase } from '../../lib/supabase';
+
 const GeneralSettingsPage: React.FC = () => {
   const [settings, setSettings] = useState({
-    companyName: 'TEMI-Construction',
-    website: 'https://temi-construction.fr',
-    email: 'contact@temi-construction.fr',
-    phone: '01 23 45 67 89',
-    address: '123 Rue de la Construction, 75001 Paris',
+    companyName: '',
+    website: '',
+    email: '',
+    phone: '',
+    address: '',
     logo: null as string | null,
     theme: 'light',
     language: 'fr',
@@ -16,16 +18,79 @@ const GeneralSettingsPage: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('key, value');
+
+      if (error) throw error;
+
+      if (data) {
+        const settingsMap: Record<string, any> = {};
+        data.forEach(item => {
+          settingsMap[item.key] = item.value;
+        });
+
+        setSettings({
+          companyName: settingsMap.company_name || '',
+          website: settingsMap.company_website || '',
+          email: settingsMap.company_email || '',
+          phone: settingsMap.company_phone || '',
+          address: settingsMap.company_address || '',
+          logo: null,
+          theme: 'light',
+          language: 'fr',
+          timezone: 'Europe/Paris',
+        });
+
+        const savedTheme = localStorage.getItem('appTheme') || 'light';
+        applyTheme(savedTheme);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des paramètres:', error);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      localStorage.setItem('appSettings', JSON.stringify(settings));
+      const updates = [
+        { key: 'company_name', value: settings.companyName },
+        { key: 'company_website', value: settings.website },
+        { key: 'company_email', value: settings.email },
+        { key: 'company_phone', value: settings.phone },
+        { key: 'company_address', value: settings.address },
+      ];
 
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('app_settings')
+          .upsert(
+            {
+              key: update.key,
+              value: JSON.stringify(update.value).replace(/^"(.*)"$/, '$1'),
+              description: `${update.key.replace('company_', '').replace('_', ' ')}`,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'key' }
+          );
+
+        if (error) throw error;
+      }
+
+      localStorage.setItem('appTheme', settings.theme);
       applyTheme(settings.theme);
 
-      await new Promise(resolve => setTimeout(resolve, 500));
       alert('Paramètres enregistrés avec succès !');
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des paramètres:', error);
@@ -55,14 +120,13 @@ const GeneralSettingsPage: React.FC = () => {
     }
   };
 
-  React.useEffect(() => {
-    const savedSettings = localStorage.getItem('appSettings');
-    if (savedSettings) {
-      const parsed = JSON.parse(savedSettings);
-      setSettings(parsed);
-      applyTheme(parsed.theme);
-    }
-  }, []);
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
