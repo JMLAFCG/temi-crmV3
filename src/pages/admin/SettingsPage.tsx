@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Mail, Globe, Phone, MapPin, FileText, Bell } from 'lucide-react';
+import { Mail, Globe, Phone, MapPin, FileText, Bell, Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from '../../hooks/useTheme';
+
 const SettingsPage: React.FC = () => {
+  const { theme, setTheme, currentTheme } = useTheme();
   const [generalSettings, setGeneralSettings] = useState({
     companyName: 'TEMI-Construction',
-    website: 'https://temi-construction.fr',
-    email: 'contact@temi-construction.fr',
-    phone: '01 23 45 67 89',
-    address: '123 Rue de la Construction, 75001 Paris',
+    website: 'https://www.temi-construction.com',
+    email: 'contact@temi-construction.com',
+    phone: '02 35 77 18 90',
+    address: '17 Rue du Moulin Potel, 27400 Acquigny',
   });
 
   const [emailSettings, setEmailSettings] = useState({
@@ -72,6 +75,76 @@ const SettingsPage: React.FC = () => {
               onChange={e => setGeneralSettings({ ...generalSettings, address: e.target.value })}
               leftIcon={<MapPin size={18} className="text-gray-500" />}
             />
+          </div>
+        </div>
+
+        {/* Préférences */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Préférences</h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thème</label>
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => setTheme('light')}
+                  className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all ${
+                    theme === 'light'
+                      ? 'border-primary-600 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                  }`}
+                >
+                  <Sun size={24} className="mb-2" />
+                  <span className="text-sm font-medium">Clair</span>
+                </button>
+
+                <button
+                  onClick={() => setTheme('dark')}
+                  className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all ${
+                    theme === 'dark'
+                      ? 'border-primary-600 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                  }`}
+                >
+                  <Moon size={24} className="mb-2" />
+                  <span className="text-sm font-medium">Sombre</span>
+                </button>
+
+                <button
+                  onClick={() => setTheme('system')}
+                  className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all ${
+                    theme === 'system'
+                      ? 'border-primary-600 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                  }`}
+                >
+                  <Monitor size={24} className="mb-2" />
+                  <span className="text-sm font-medium">Automatique</span>
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {theme === 'system'
+                  ? 'Le thème s\'adapte automatiquement aux préférences de votre système'
+                  : `Thème ${theme === 'light' ? 'clair' : 'sombre'} appliqué`}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Langue</label>
+              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Fuseau horaire</label>
+              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                <option value="Europe/Paris">Europe/Paris (GMT+1)</option>
+                <option value="Europe/London">Europe/London (GMT+0)</option>
+                <option value="America/New_York">America/New York (GMT-5)</option>
+              </select>
+            </div>
           </div>
         </div>
 
