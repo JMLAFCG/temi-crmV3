@@ -35,38 +35,24 @@ export const navConfig: NavItem[] = [
     icon: React.createElement(Home, { size: 20 }),
   },
   {
+    label: 'Clients',
+    route: 'clients',
+    icon: React.createElement(Users, { size: 20 }),
+    roles: ['admin', 'manager', 'commercial', 'mandatary'],
+    subItems: [
+      { label: 'Liste des clients', route: 'clients', roles: ['admin', 'manager', 'commercial', 'mandatary'] },
+      { label: 'Nouveau client', route: 'clientsCreate', roles: ['admin', 'manager', 'commercial', 'mandatary'] },
+    ],
+  },
+  {
     label: 'Projets',
     route: 'projects',
     icon: React.createElement(Briefcase, { size: 20 }),
     roles: ['admin', 'manager', 'commercial', 'mandatary', 'client'],
     subItems: [
-      {
-        label: 'Projets actifs',
-        route: 'projectsActive',
-        roles: ['admin', 'manager', 'commercial', 'mandatary'],
-      },
-      {
-        label: 'En attente',
-        route: 'projectsPending',
-        roles: ['admin', 'manager', 'commercial', 'mandatary'],
-      },
-      {
-        label: 'Terminés',
-        route: 'projectsCompleted',
-        roles: ['admin', 'manager', 'commercial', 'mandatary'],
-      },
-      {
-        label: 'Nouveau projet',
-        route: 'projectsCreate',
-        roles: ['admin', 'manager', 'commercial', 'mandatary'],
-      },
+      { label: 'Tous les projets', route: 'projects', roles: ['admin', 'manager', 'commercial', 'mandatary', 'client'] },
+      { label: 'Nouveau projet', route: 'projectsCreate', roles: ['admin', 'manager', 'commercial', 'mandatary'] },
     ],
-  },
-  {
-    label: 'Clients',
-    route: 'clients',
-    icon: React.createElement(Users, { size: 20 }),
-    roles: ['admin', 'manager', 'commercial', 'mandatary'],
   },
   {
     label: 'Entreprises',
@@ -74,17 +60,8 @@ export const navConfig: NavItem[] = [
     icon: React.createElement(Building, { size: 20 }),
     roles: ['admin', 'manager', 'commercial', 'mandatary'],
     subItems: [
-      {
-        label: 'Partenaires',
-        route: 'companiesPartners',
-        roles: ['admin', 'manager', 'commercial', 'mandatary'],
-      },
-      { label: 'Fournisseurs', route: 'companiesProviders', roles: ['admin', 'manager'] },
-      {
-        label: 'Ajouter une entreprise',
-        route: 'companiesCreate',
-        roles: ['admin', 'manager', 'commercial', 'mandatary'],
-      },
+      { label: 'Liste des entreprises', route: 'companies', roles: ['admin', 'manager', 'commercial', 'mandatary'] },
+      { label: 'Nouvelle entreprise', route: 'companiesCreate', roles: ['admin', 'manager', 'commercial', 'mandatary'] },
     ],
   },
   {
@@ -92,11 +69,33 @@ export const navConfig: NavItem[] = [
     route: 'providers',
     icon: React.createElement(UserPlus, { size: 20 }),
     roles: ['admin', 'manager'],
+    subItems: [
+      { label: 'Liste des apporteurs', route: 'providers', roles: ['admin', 'manager'] },
+      { label: 'Nouvel apporteur', route: 'providersCreate', roles: ['admin', 'manager'] },
+    ],
   },
   {
-    label: 'Documents',
-    route: 'documents',
-    icon: React.createElement(FileText, { size: 20 }),
+    label: 'Mandataires',
+    route: 'commissionsMandataries',
+    icon: React.createElement(Award, { size: 20 }),
+    roles: ['admin', 'manager', 'mandatary'],
+  },
+  {
+    label: 'Facturation',
+    route: 'invoicing',
+    icon: React.createElement(Receipt, { size: 20 }),
+    roles: ['admin', 'manager', 'comptable'],
+  },
+  {
+    label: 'Commissions',
+    route: 'commissions',
+    icon: React.createElement(Euro, { size: 20 }),
+    roles: ['admin', 'manager', 'business_provider', 'mandatary'],
+  },
+  {
+    label: 'Messages',
+    route: 'messages',
+    icon: React.createElement(MessageSquare, { size: 20 }),
     roles: ['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company'],
   },
   {
@@ -106,45 +105,22 @@ export const navConfig: NavItem[] = [
     roles: ['admin', 'manager', 'commercial', 'mandatary'],
   },
   {
-    label: 'Messages',
-    route: 'messages',
-    icon: React.createElement(MessageSquare, { size: 20 }),
-    roles: ['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company'],
-  },
-  {
-    label: 'Commissions',
-    route: 'commissions',
-    icon: React.createElement(Euro, { size: 20 }),
-    roles: ['admin', 'manager', 'business_provider'],
-    subItems: [
-      { label: 'Toutes les commissions', route: 'commissions', roles: ['admin', 'manager'] },
-      {
-        label: 'Commissions mandataires',
-        route: 'commissionsMandataries',
-        roles: ['admin', 'manager', 'mandatary'],
-      },
-    ],
+    label: 'Gestion IA',
+    route: 'aiManagement',
+    icon: React.createElement(Brain, { size: 20 }),
+    roles: ['admin', 'manager', 'commercial', 'mandatary'],
   },
   {
     label: 'Import & Prospection',
     route: 'bulkImport',
     icon: React.createElement(Upload, { size: 20 }),
     roles: ['admin', 'manager'],
-    subItems: [
-      { label: 'Import en masse', route: 'bulkImport', roles: ['admin', 'manager'] },
-    ],
   },
   {
-    label: 'Facturation',
-    route: 'invoicing',
-    icon: React.createElement(Receipt, { size: 20 }),
-    roles: ['admin', 'manager', 'comptable'],
-  },
-  {
-    label: 'Gestion IA',
-    route: 'aiManagement',
-    icon: React.createElement(Brain, { size: 20 }),
-    roles: ['admin', 'manager', 'commercial', 'mandatary'],
+    label: 'Documents',
+    route: 'documents',
+    icon: React.createElement(FileText, { size: 20 }),
+    roles: ['admin', 'manager', 'commercial', 'mandatary', 'client', 'partner_company'],
   },
   {
     label: 'Administration',

@@ -167,6 +167,22 @@ const mainRoutes = createBrowserRouter([
         ),
       },
       {
+        path: paths.companiesPartners,
+        element: (
+          <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
+            <AppSuspense><CompaniesPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
+        path: paths.companiesProviders,
+        element: (
+          <Guard roles={['admin', 'manager']}>
+            <AppSuspense><CompaniesPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
         path: paths.companiesCreate,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
@@ -193,10 +209,42 @@ const mainRoutes = createBrowserRouter([
         ),
       },
       {
+        path: paths.projectsActive,
+        element: (
+          <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
+            <AppSuspense><ProjectsPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
+        path: paths.projectsPending,
+        element: (
+          <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
+            <AppSuspense><ProjectsPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
+        path: paths.projectsCompleted,
+        element: (
+          <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
+            <AppSuspense><ProjectsPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
         path: paths.projectsCreate,
         element: (
           <Guard roles={['admin', 'manager', 'commercial', 'mandatary']}>
             <AppSuspense><CreateProjectPage /></AppSuspense>
+          </Guard>
+        ),
+      },
+      {
+        path: paths.projectDetails,
+        element: (
+          <Guard roles={['admin', 'manager', 'commercial', 'mandatary', 'client']}>
+            <AppSuspense><ProjectsPage /></AppSuspense>
           </Guard>
         ),
       },
