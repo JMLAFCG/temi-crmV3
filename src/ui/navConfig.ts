@@ -16,6 +16,7 @@ import {
   Receipt,
   Shield,
   Upload,
+  Award,
 } from 'lucide-react';
 import { RouteKey, paths } from '../routes/paths';
 
