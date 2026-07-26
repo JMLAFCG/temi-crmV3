@@ -1,161 +1,192 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building, Mail, Phone, MapPin, Edit, Trash2, Eye } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  BriefcaseBusiness,
+  Building,
+  CalendarClock,
+  CheckCircle2,
+  ChevronRight,
+  Edit,
+  Euro,
+  FileWarning,
+  Mail,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Trash2,
+  UserRound,
+} from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { useClientStore } from '../../store/clientStore';
 import { ClientForm } from '../../components/clients/ClientForm';
+import { useClientStore } from '../../store/clientStore';
+import { useProjectStore } from '../../store/projectStore';
+
+const currency = new Intl.NumberFormat('fr-FR', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+});
+
+const dateFormat = new Intl.DateTimeFormat('fr-FR', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
+
+const statusLabel: Record<string, string> = {
+  draft: 'Brouillon',
+  pending: 'En attente',
+  in_progress: 'En cours',
+  completed: 'Terminé',
+  cancelled: 'Annulé',
+};
+
+const statusClass: Record<string, string> = {
+  draft: 'bg-slate-100 text-slate-700',
+  pending: 'bg-amber-100 text-amber-800',
+  in_progress: 'bg-blue-100 text-blue-800',
+  completed: 'bg-emerald-100 text-emerald-800',
+  cancelled: 'bg-red-100 text-red-800',
+};
+
+const getProgress = (status?: string) => {
+  switch (status) {
+    case 'completed':
+      return 100;
+    case 'in_progress':
+      return 60;
+    case 'pending':
+      return 30;
+    case 'draft':
+      return 10;
+    default:
+      return 0;
+  }
+};
+
 const ClientDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { clients, fetchClients, updateClient, deleteClient } = useClientStore();
+  const {
+    clients,
+    loading: clientsLoading,
+    error: clientsError,
+    fetchClients,
+    updateClient,
+    deleteClient,
+  } = useClientStore();
+  const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchClients();
-  }, [fetchClients]);
+    void Promise.all([fetchClients(), fetchProjects()]);
+  }, [fetchClients, fetchProjects]);
 
-  // Trouver le client par ID ou créer un client mock pour la démo
-  let client = clients.find(c => c.id === id);
+  const client = clients.find(item => item.id === id);
 
-  // Si pas de client trouvé, créer un client mock basé sur l'ID
-  if (!client && id) {
-    const mockClients = [
-      {
-        id: '1',
-        user_id: 'user-1',
-        user: {
-          id: 'user-1',
-          email: 'martin.dupont@example.com',
-          first_name: 'Martin',
-          last_name: 'Dupont',
-          role: 'client',
-          created_at: '2025-01-15T10:30:00Z',
-          updated_at: '2025-01-15T10:30:00Z',
-        },
-        company_name: null,
-        siret: null,
-        phone: '06 12 34 56 78',
-        address: {
-          street: '15 Rue de Paris',
-          postal_code: '75001',
-          city: 'Paris',
-          country: 'France',
-        },
-        notes: 'Client très motivé pour son projet de rénovation',
-        created_at: '2025-01-15T10:30:00Z',
-        updated_at: '2025-01-15T10:30:00Z',
-      },
-      {
-        id: '2',
-        user_id: 'user-2',
-        user: {
-          id: 'user-2',
-          email: 'sophie.martin@example.com',
-          first_name: 'Sophie',
-          last_name: 'Martin',
-          role: 'client',
-          created_at: '2025-01-10T14:20:00Z',
-          updated_at: '2025-01-10T14:20:00Z',
-        },
-        company_name: null,
-        siret: null,
-        phone: '06 23 45 67 89',
-        address: {
-          street: '8 Avenue Victor Hugo',
-          postal_code: '69002',
-          city: 'Lyon',
-          country: 'France',
-        },
-        notes: null,
-        created_at: '2025-01-10T14:20:00Z',
-        updated_at: '2025-01-10T14:20:00Z',
-      },
-      {
-        id: '3',
-        user_id: 'user-3',
-        user: {
-          id: 'user-3',
-          email: 'jean.petit@example.com',
-          first_name: 'Jean',
-          last_name: 'Petit',
-          role: 'client',
-          created_at: '2025-01-05T09:15:00Z',
-          updated_at: '2025-01-05T09:15:00Z',
-        },
-        company_name: null,
-        siret: null,
-        phone: '06 34 56 78 90',
-        address: {
-          street: '25 Boulevard de la Liberté',
-          postal_code: '59800',
-          city: 'Lille',
-          country: 'France',
-        },
-        notes: 'Projet urgent - délais serrés',
-        created_at: '2025-01-05T09:15:00Z',
-        updated_at: '2025-01-05T09:15:00Z',
-      },
+  const clientProjects = useMemo(() => {
+    if (!client) return [];
+    return projects.filter(project => project.client_id === client.id || project.client_id === client.user_id);
+  }, [client, projects]);
+
+  const situation = useMemo(() => {
+    if (!client) return null;
+
+    const activeProjects = clientProjects.filter(project =>
+      ['draft', 'pending', 'in_progress'].includes(project.status)
+    );
+    const blockedProjects = clientProjects.filter(project => project.status === 'pending');
+    const completedProjects = clientProjects.filter(project => project.status === 'completed');
+    const potential = activeProjects.reduce((sum, project) => sum + Number(project.budget?.total || 0), 0);
+    const profileFields = [
+      client.user?.email,
+      client.phone,
+      client.address?.street,
+      client.address?.postal_code,
+      client.address?.city,
     ];
+    const profileCompleteness = Math.round(
+      (profileFields.filter(Boolean).length / profileFields.length) * 100
+    );
+    const productionScore = clientProjects.length
+      ? Math.round(
+          clientProjects.reduce((sum, project) => sum + getProgress(project.status), 0) /
+            clientProjects.length
+        )
+      : 0;
+    const riskPenalty = blockedProjects.length * 12 + (profileCompleteness < 80 ? 10 : 0);
+    const healthScore = Math.max(
+      0,
+      Math.min(100, Math.round(45 + profileCompleteness * 0.25 + productionScore * 0.3 - riskPenalty))
+    );
 
-    client = mockClients.find(c => c.id === id);
+    return {
+      activeProjects,
+      blockedProjects,
+      completedProjects,
+      potential,
+      profileCompleteness,
+      productionScore,
+      healthScore,
+    };
+  }, [client, clientProjects]);
+
+  const handleUpdate = async (data: any) => {
+    if (!client) return;
+    setSaving(true);
+    try {
+      await updateClient(client.id, data);
+      setIsEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!client || !window.confirm('Supprimer définitivement ce client ?')) return;
+    setSaving(true);
+    try {
+      await deleteClient(client.id);
+      navigate('/clients');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if ((clientsLoading || projectsLoading) && !client) {
+    return <div className="p-8 text-center text-slate-500">Chargement de la situation client…</div>;
   }
 
-  if (!client) {
+  if (!client || !situation) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">Client non trouvé</p>
-        <Button variant="outline" onClick={() => navigate('/clients')} className="mt-4">
-          Retour à la liste
+      <div className="max-w-xl mx-auto rounded-2xl border border-slate-200 bg-white p-8 text-center">
+        <AlertTriangle className="mx-auto mb-3 text-amber-500" size={28} />
+        <h1 className="text-xl font-semibold text-slate-900">Client introuvable</h1>
+        <p className="mt-2 text-sm text-slate-500">
+          {clientsError || "Aucune donnée client ne correspond à cet identifiant."}
+        </p>
+        <Button variant="outline" onClick={() => navigate('/clients')} className="mt-5">
+          Retour aux clients
         </Button>
       </div>
     );
   }
 
-  const handleUpdate = async (data: any) => {
-    setLoading(true);
-    try {
-      await updateClient(client.id, data);
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating client:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await deleteClient(client.id);
-      navigate('/clients');
-    } catch (error) {
-      console.error('Error deleting client:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (isEditing) {
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-          <button
-            onClick={() => setIsEditing(false)}
-            className="flex items-center text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            Retour aux détails
-          </button>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Modifier le client</h1>
-
+        <button
+          onClick={() => setIsEditing(false)}
+          className="mb-6 flex items-center text-sm font-medium text-slate-600 hover:text-slate-900"
+        >
+          <ArrowLeft size={18} className="mr-2" />
+          Retour à la synthèse
+        </button>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h1 className="mb-6 text-2xl font-bold text-slate-900">Modifier le client</h1>
           <ClientForm
             initialData={{
               user_first_name: client.user.first_name,
@@ -169,137 +200,197 @@ const ClientDetailsPage: React.FC = () => {
             }}
             onSubmit={handleUpdate}
             onCancel={() => setIsEditing(false)}
-            isLoading={loading}
+            isLoading={saving}
           />
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
-        <button
-          onClick={() => navigate('/clients')}
-          className="flex items-center text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Retour à la liste
-        </button>
-      </div>
+  const primaryAction = situation.blockedProjects[0] || situation.activeProjects[0];
 
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-6">
+  return (
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <button
+            onClick={() => navigate('/clients')}
+            className="mb-3 flex items-center text-sm font-medium text-slate-500 hover:text-slate-900"
+          >
+            <ArrowLeft size={17} className="mr-2" />
+            Clients
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl bg-slate-900 p-3 text-white">
+              <UserRound size={25} />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-slate-950">
                 {client.user.first_name} {client.user.last_name}
               </h1>
-              {client.company_name && <p className="text-gray-600 mt-1">{client.company_name}</p>}
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                leftIcon={<Edit size={16} />}
-                onClick={() => setIsEditing(true)}
-              >
-                Modifier
-              </Button>
-              <Button
-                variant="primary"
-                leftIcon={<Eye size={16} />}
-                onClick={() => {
-                  // Naviguer vers la page de visualisation du dashboard utilisateur
-                  navigate(`/users/${client.user.id}/dashboard`);
-                }}
-              >
-                Voir son espace
-              </Button>
-              <Button
-                variant="danger"
-                leftIcon={<Trash2 size={16} />}
-                onClick={handleDelete}
-                isLoading={loading}
-              >
-                Supprimer
-              </Button>
+              <p className="text-sm text-slate-500">
+                {client.company_name || 'Particulier'} · client depuis le {dateFormat.format(new Date(client.created_at))}
+              </p>
             </div>
           </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" leftIcon={<Edit size={16} />} onClick={() => setIsEditing(true)}>
+            Modifier
+          </Button>
+          <Button variant="danger" leftIcon={<Trash2 size={16} />} onClick={handleDelete} isLoading={saving}>
+            Supprimer
+          </Button>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-sm font-medium text-gray-500">Contact</h2>
-                <div className="mt-2 space-y-2">
-                  <p className="flex items-center text-gray-900">
-                    <Mail size={18} className="text-gray-400 mr-2" />
-                    {client.user.email}
-                  </p>
-                  {client.phone && (
-                    <p className="flex items-center text-gray-900">
-                      <Phone size={18} className="text-gray-400 mr-2" />
-                      {client.phone}
-                    </p>
-                  )}
-                </div>
-              </div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <MetricCard label="Santé" value={`${situation.healthScore}%`} icon={<ShieldCheck size={20} />} />
+        <MetricCard label="Dossiers actifs" value={situation.activeProjects.length} icon={<BriefcaseBusiness size={20} />} />
+        <MetricCard label="Blocages" value={situation.blockedProjects.length} icon={<FileWarning size={20} />} alert={situation.blockedProjects.length > 0} />
+        <MetricCard label="Dossiers terminés" value={situation.completedProjects.length} icon={<CheckCircle2 size={20} />} />
+        <MetricCard label="Potentiel actif" value={currency.format(situation.potential)} icon={<Euro size={20} />} />
+      </div>
 
-              {client.company_name && (
-                <div>
-                  <h2 className="text-sm font-medium text-gray-500">Entreprise</h2>
-                  <div className="mt-2 space-y-2">
-                    <p className="flex items-center text-gray-900">
-                      <Building size={18} className="text-gray-400 mr-2" />
-                      {client.company_name}
-                    </p>
-                    {client.siret && <p className="text-gray-600 ml-6">SIRET : {client.siret}</p>}
-                  </div>
-                </div>
-              )}
-
-              {client.address && Object.keys(client.address).length > 0 && (
-                <div>
-                  <h2 className="text-sm font-medium text-gray-500">Adresse</h2>
-                  <div className="mt-2">
-                    <p className="flex items-start text-gray-900">
-                      <MapPin size={18} className="text-gray-400 mr-2 mt-1" />
-                      <span>
-                        {client.address.street}
-                        <br />
-                        {client.address.postal_code} {client.address.city}
-                        {client.address.country && (
-                          <>
-                            <br />
-                            {client.address.country}
-                          </>
-                        )}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
+      <div className="grid gap-6 xl:grid-cols-[1.4fr_0.6fr]">
+        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 p-5">
             <div>
-              <h2 className="text-sm font-medium text-gray-500 mb-2">Projets</h2>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-600">Aucun projet en cours</p>
-              </div>
+              <h2 className="font-semibold text-slate-950">Situation opérationnelle</h2>
+              <p className="text-sm text-slate-500">Lecture immédiate des dossiers et des blocages</p>
             </div>
+            <Button variant="outline" onClick={() => navigate('/projects/create')}>Nouveau dossier</Button>
           </div>
 
-          {client.notes && (
-            <div className="mt-6">
-              <h2 className="text-sm font-medium text-gray-500 mb-2">Notes</h2>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-600 whitespace-pre-wrap">{client.notes}</p>
-              </div>
+          {clientProjects.length === 0 ? (
+            <div className="p-8 text-center">
+              <BriefcaseBusiness className="mx-auto mb-3 text-slate-300" size={32} />
+              <p className="font-medium text-slate-700">Aucun dossier lié à ce client</p>
+              <p className="mt-1 text-sm text-slate-500">La situation deviendra calculable dès le premier dossier.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {clientProjects.map(project => {
+                const progress = getProgress(project.status);
+                return (
+                  <button
+                    key={project.id}
+                    onClick={() => navigate(`/projects/${project.id}`)}
+                    className="grid w-full gap-4 p-5 text-left transition hover:bg-slate-50 lg:grid-cols-[1fr_140px_120px_24px] lg:items-center"
+                  >
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-slate-900">{project.title || 'Dossier sans titre'}</span>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass[project.status] || statusClass.draft}`}>
+                          {statusLabel[project.status] || project.status}
+                        </span>
+                      </div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-full rounded-full bg-slate-900" style={{ width: `${progress}%` }} />
+                      </div>
+                    </div>
+                    <div className="text-sm">
+                      <span className="block text-slate-400">Avancement</span>
+                      <strong className="text-slate-900">{progress}%</strong>
+                    </div>
+                    <div className="text-sm">
+                      <span className="block text-slate-400">Potentiel</span>
+                      <strong className="text-slate-900">{currency.format(Number(project.budget?.total || 0))}</strong>
+                    </div>
+                    <ChevronRight className="text-slate-400" size={20} />
+                  </button>
+                );
+              })}
             </div>
           )}
-        </div>
+        </section>
+
+        <aside className="space-y-6">
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="font-semibold text-slate-950">Prochaine action</h2>
+            {primaryAction ? (
+              <button
+                onClick={() => navigate(`/projects/${primaryAction.id}`)}
+                className="mt-4 w-full rounded-xl border border-slate-200 p-4 text-left hover:bg-slate-50"
+              >
+                <div className="flex items-start gap-3">
+                  <CalendarClock className={primaryAction.status === 'pending' ? 'text-amber-600' : 'text-blue-600'} size={21} />
+                  <div className="flex-1">
+                    <p className="font-semibold text-slate-900">
+                      {primaryAction.status === 'pending' ? 'Débloquer le dossier' : 'Faire avancer le dossier'}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">{primaryAction.title}</p>
+                  </div>
+                  <ChevronRight size={18} className="text-slate-400" />
+                </div>
+              </button>
+            ) : (
+              <p className="mt-3 text-sm text-slate-500">Créer un premier dossier pour générer une priorité.</p>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="font-semibold text-slate-950">Coordonnées</h2>
+            <div className="mt-4 space-y-3 text-sm text-slate-700">
+              <ContactLine icon={<Mail size={17} />} value={client.user.email} href={`mailto:${client.user.email}`} />
+              <ContactLine icon={<Phone size={17} />} value={client.phone || 'Téléphone non renseigné'} href={client.phone ? `tel:${client.phone}` : undefined} />
+              <ContactLine
+                icon={<MapPin size={17} />}
+                value={[client.address?.street, client.address?.postal_code, client.address?.city].filter(Boolean).join(', ') || 'Adresse non renseignée'}
+              />
+              {client.company_name && <ContactLine icon={<Building size={17} />} value={client.company_name} />}
+            </div>
+            <div className="mt-5">
+              <div className="mb-2 flex justify-between text-xs font-medium text-slate-500">
+                <span>Complétude du profil</span>
+                <span>{situation.profileCompleteness}%</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${situation.profileCompleteness}%` }} />
+              </div>
+            </div>
+          </section>
+
+          {client.notes && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="font-semibold text-slate-950">Note utile</h2>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">{client.notes}</p>
+            </section>
+          )}
+        </aside>
       </div>
     </div>
   );
+};
+
+const MetricCard = ({
+  label,
+  value,
+  icon,
+  alert = false,
+}: {
+  label: string;
+  value: React.ReactNode;
+  icon: React.ReactNode;
+  alert?: boolean;
+}) => (
+  <div className={`rounded-2xl border bg-white p-4 shadow-sm ${alert ? 'border-amber-300' : 'border-slate-200'}`}>
+    <div className="flex items-center justify-between">
+      <span className={`rounded-xl p-2 ${alert ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'}`}>{icon}</span>
+    </div>
+    <p className="mt-4 text-2xl font-bold text-slate-950">{value}</p>
+    <p className="mt-1 text-xs font-medium text-slate-500">{label}</p>
+  </div>
+);
+
+const ContactLine = ({ icon, value, href }: { icon: React.ReactNode; value: string; href?: string }) => {
+  const content = (
+    <span className="flex items-start gap-3">
+      <span className="mt-0.5 text-slate-400">{icon}</span>
+      <span className="break-all">{value}</span>
+    </span>
+  );
+  return href ? <a href={href} className="block hover:text-slate-950">{content}</a> : content;
 };
 
 export default ClientDetailsPage;
