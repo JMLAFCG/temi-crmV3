@@ -1,563 +1,334 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Briefcase,
-  Users,
-  Building,
-  FileText,
-  TrendingUp,
-  Clock,
-  ArrowUpRight,
-  Euro,
   AlertTriangle,
+  ArrowRight,
+  BriefcaseBusiness,
+  CheckCircle2,
+  Clock3,
+  Euro,
+  FileText,
   Search,
-  Bell,
-  MessageSquare,
-  Target,
-  Award,
-  Zap,
+  Users,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
 import { useClientStore } from '../../store/clientStore';
-import { useCompanyStore } from '../../store/companyStore';
 import { useCommissionStore } from '../../store/commissionStore';
-import { Button } from '../../components/ui/Button';
-import { Logo } from '../../components/ui/Logo';
 import ClientDashboard from './ClientDashboard';
 import EntrepriseDashboard from './EntrepriseDashboard';
 import ApporteurDashboard from './ApporteurDashboard';
-import { PerformersRanking } from '../../components/dashboard/PerformersRanking';
+import { buildPath, paths } from '../../routes/paths';
+import type { Project } from '../../types';
 
-// === Stat cards ===
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  change?: string;
-  positive?: boolean;
-  gradient: string;
-}
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, change, positive, gradient }) => {
-  return (
-    <div className={`relative overflow-hidden rounded-2xl p-6 text-white ${gradient}`}>
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">{icon}</div>
-          {change && (
-            <div
-              className={`flex items-center text-sm font-medium ${
-                positive ? 'text-green-200' : 'text-red-200'
-              }`}
-            >
-              <TrendingUp size={16} className="mr-1" />
-              {change}
-            </div>
-          )}
-        </div>
-        <h3 className="text-white/80 text-sm font-medium mb-1">{title}</h3>
-        <p className="text-3xl font-bold">{value}</p>
-      </div>
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
-    </div>
-  );
+const currency = new Intl.NumberFormat('fr-FR', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+});
+
+const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
+  day: '2-digit',
+  month: 'short',
+});
+
+const statusLabel: Record<Project['status'], string> = {
+  draft: 'Brouillon',
+  pending: 'En attente',
+  in_progress: 'En cours',
+  completed: 'Terminé',
+  cancelled: 'Annulé',
 };
 
-// === Project cards ===
-interface ProjectCardProps {
-  title: string;
-  client: string;
-  budget: string;
-  progress: number;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  priority: 'high' | 'medium' | 'low';
-}
-const ProjectCard: React.FC<ProjectCardProps> = ({
-  title,
-  client,
-  budget,
-  progress,
-  status,
-  priority,
-}) => {
-  const statusColors = {
-    pending: 'bg-amber-100 text-amber-800 border-amber-200',
-    in_progress: 'bg-blue-100 text-blue-800 border-blue-200',
-    completed: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    cancelled: 'bg-red-100 text-red-800 border-red-200',
-  } as const;
-
-  const priorityColors = {
-    high: 'bg-red-500',
-    medium: 'bg-amber-500',
-    low: 'bg-emerald-500',
-  } as const;
-
-  const statusLabels = {
-    pending: 'En attente',
-    in_progress: 'En cours',
-    completed: 'Terminé',
-    cancelled: 'Annulé',
-  } as const;
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-300">
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-start space-x-3">
-          <div className={`w-1 h-12 rounded-full ${priorityColors[priority]}`} />
-          <div>
-            <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
-            <p className="text-gray-600">Client: {client}</p>
-          </div>
-        </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[status]}`}>
-          {statusLabels[status]}
-        </span>
-      </div>
-
-      <p className="text-gray-700 mb-4 font-medium">Budget: {budget}</p>
-
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Progression</span>
-          <span className="text-sm font-bold text-gray-900">{progress}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
-          <div
-            className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-    </div>
-  );
+const statusClass: Record<Project['status'], string> = {
+  draft: 'bg-slate-100 text-slate-700',
+  pending: 'bg-amber-100 text-amber-800',
+  in_progress: 'bg-blue-100 text-blue-800',
+  completed: 'bg-emerald-100 text-emerald-800',
+  cancelled: 'bg-red-100 text-red-800',
 };
 
-// === Activity items ===
-interface ActivityItemProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  time: string;
-  type: 'success' | 'warning' | 'info';
-}
-const ActivityItem: React.FC<ActivityItemProps> = ({ icon, title, description, time, type }) => {
-  const typeColors = {
-    success: 'bg-emerald-100 text-emerald-600',
-    warning: 'bg-amber-100 text-amber-600',
-    info: 'bg-blue-100 text-blue-600',
-  } as const;
-
-  return (
-    <div className="flex items-start space-x-4 p-4 hover:bg-gray-50 rounded-xl transition-colors">
-      <div className={`p-2 rounded-xl ${typeColors[type]}`}>{icon}</div>
-      <div className="flex-1">
-        <h4 className="font-semibold text-gray-900">{title}</h4>
-        <p className="text-gray-600 text-sm">{description}</p>
-        <p className="text-gray-500 text-xs mt-1">{time}</p>
-      </div>
-    </div>
-  );
+const getProgress = (project: Project) => {
+  if (project.status === 'completed') return 100;
+  if (project.status === 'cancelled') return 0;
+  if (project.status === 'draft') return 15;
+  if (project.status === 'pending') return 35;
+  return 65;
 };
 
-// === Page ===
+const getClientName = (project: Project) => {
+  const client = project.client;
+  if (!client) return 'Client non renseigné';
+  return `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.email || 'Client';
+};
+
 const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const [search, setSearch] = useState('');
 
-  // Redirection automatique vers le dashboard spécifique selon le rôle
   if (user) {
-    const userRole = typeof user.role === 'string' ? user.role : 'unknown_role';
-    switch (userRole) {
-      case 'client':
-        return <ClientDashboard />;
-      case 'entreprise_partenaire':
-      case 'partner_company':
-        return <EntrepriseDashboard />;
-      case 'apporteur':
-      case 'business_provider':
-        return <ApporteurDashboard />;
-      // autres rôles => dashboard principal
-    }
+    const role = String(user.role);
+    if (role === 'client') return <ClientDashboard />;
+    if (role === 'entreprise_partenaire' || role === 'partner_company') return <EntrepriseDashboard />;
+    if (role === 'apporteur' || role === 'business_provider') return <ApporteurDashboard />;
   }
 
-  // Flags de rôle
-  const isClient = String(user?.role) === 'client';
-  const isApporteur = String(user?.role) === 'apporteur';
-  const isMandatary = String(user?.role) === 'mandatary';
-  const isAdmin = String(user?.role) === 'admin';
-  const isManager = String(user?.role) === 'manager';
-
-  const { projects, fetchProjects } = useProjectStore();
+  const { projects, fetchProjects, loading: projectsLoading, error: projectsError } = useProjectStore();
   const { clients, fetchClients } = useClientStore();
-  const { companies, fetchCompanies } = useCompanyStore();
   const { commissions, fetchCommissions } = useCommissionStore();
 
   useEffect(() => {
-    fetchProjects();
-    fetchClients();
-    fetchCompanies();
-    fetchCommissions();
-  }, [fetchProjects, fetchClients, fetchCompanies, fetchCommissions]);
+    void Promise.all([fetchProjects(), fetchClients(), fetchCommissions()]);
+  }, [fetchProjects, fetchClients, fetchCommissions]);
 
-  // Calculer les vraies statistiques
-  const activeProjects = projects.filter(p => p.status === 'in_progress' || p.status === 'pending').length;
-  const activeClients = clients.filter(c => c.user?.status === 'active').length;
-  const partnerCompanies = companies.filter(c => c.status === 'active').length;
-  const totalRevenue = projects.reduce((sum, p) => sum + (p.budget?.total || 0), 0);
-  const pendingQuotes = projects.filter(p => p.status === 'pending').length;
-  const totalCommissions = commissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+  const metrics = useMemo(() => {
+    const activeProjects = projects.filter(project => ['pending', 'in_progress'].includes(project.status));
+    const urgentProjects = activeProjects.filter(project => {
+      const endDate = project.timeline?.endDate;
+      if (!endDate) return false;
+      const days = Math.ceil((new Date(endDate).getTime() - Date.now()) / 86_400_000);
+      return days <= 7;
+    });
+    const pendingProjects = projects.filter(project => project.status === 'pending');
+    const potential = activeProjects.reduce((sum, project) => sum + (project.budget?.total || 0), 0);
+    const pendingCommissions = commissions
+      .filter((commission: any) => ['pending', 'en_attente'].includes(String(commission.status || commission.statut)))
+      .reduce((sum: number, commission: any) => sum + Number(commission.commission_amount || commission.montant || 0), 0);
 
-  // Calculer la croissance mensuelle réelle (comparaison avec le mois dernier)
-  const currentMonth = new Date().getMonth();
-  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-  const currentMonthProjects = projects.filter(p => {
-    const projectMonth = new Date(p.created_at || '').getMonth();
-    return projectMonth === currentMonth;
-  });
-  const lastMonthProjects = projects.filter(p => {
-    const projectMonth = new Date(p.created_at || '').getMonth();
-    return projectMonth === lastMonth;
-  });
-  const currentMonthRevenue = currentMonthProjects.reduce((sum, p) => sum + (p.budget?.total || 0), 0);
-  const lastMonthRevenue = lastMonthProjects.reduce((sum, p) => sum + (p.budget?.total || 0), 0);
-  const revenueGrowth = lastMonthRevenue > 0
-    ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1)
-    : '0.0';
-  const isGrowthPositive = parseFloat(revenueGrowth) >= 0;
+    return {
+      activeProjects: activeProjects.length,
+      urgentProjects: urgentProjects.length,
+      pendingProjects: pendingProjects.length,
+      potential,
+      pendingCommissions,
+      activeClients: clients.length,
+    };
+  }, [clients.length, commissions, projects]);
 
-  // Données dérivées
-  const stats = [
-    {
-      title: 'Projets Actifs',
-      value: activeProjects,
-      icon: <Briefcase size={24} />,
-      gradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
-    },
-    {
-      title: 'Clients Actifs',
-      value: activeClients,
-      icon: <Users size={24} />,
-      gradient: 'bg-gradient-to-br from-success-600 to-success-800',
-    },
-    ...(isMandatary
-      ? [
-          {
-            title: 'Devis en attente',
-            value: pendingQuotes,
-            icon: <FileText size={24} />,
-            gradient: 'bg-gradient-to-br from-warning-600 to-warning-800',
-          },
-          {
-            title: 'Commissions',
-            value: `${(totalCommissions / 1000).toFixed(1)}k€`,
-            icon: <Euro size={24} />,
-            gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
-          },
-        ]
-      : [
-          {
-            title: 'Entreprises Partenaires',
-            value: partnerCompanies,
-            icon: <Building size={24} />,
-            gradient: 'bg-gradient-to-br from-secondary-600 to-secondary-800',
-          },
-          {
-            title: "Chiffre d'Affaires",
-            value: `${(totalRevenue / 1000).toFixed(0)}k€`,
-            icon: <Euro size={24} />,
-            gradient: 'bg-gradient-to-br from-accent-600 to-primary-600',
-          },
-        ]),
-  ];
+  const priorityProjects = useMemo(() => {
+    return [...projects]
+      .filter(project => project.status !== 'completed' && project.status !== 'cancelled')
+      .sort((a, b) => {
+        const statusWeight = (project: Project) => (project.status === 'pending' ? 0 : project.status === 'in_progress' ? 1 : 2);
+        const statusDifference = statusWeight(a) - statusWeight(b);
+        if (statusDifference !== 0) return statusDifference;
+        return Number(b.budget?.total || 0) - Number(a.budget?.total || 0);
+      })
+      .slice(0, 8);
+  }, [projects]);
 
-  const recentActivities: ActivityItemProps[] = [];
+  const filteredProjects = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return priorityProjects;
+    return projects
+      .filter(project =>
+        [project.title, project.location?.city, getClientName(project)]
+          .filter(Boolean)
+          .some(value => String(value).toLowerCase().includes(term))
+      )
+      .slice(0, 8);
+  }, [priorityProjects, projects, search]);
 
-  const recentProjects = projects
-    .slice(0, 3)
-    .map(p => ({
-      title: p.title || 'Sans titre',
-      client: 'Client',
-      budget: p.budget?.total ? `${(p.budget.total / 1000).toFixed(0)}k€` : '0€',
-      progress: 0,
-      status: (p.status || 'pending') as 'pending' | 'in_progress' | 'completed' | 'cancelled',
-      priority: 'medium' as const,
-    }));
-
-  const quickActions =
-    isClient || isApporteur || isMandatary
-      ? [
-          {
-            icon: <Zap size={20} />,
-            title: isClient ? 'Nouveau projet' : isApporteur ? 'Voir mes apports' : 'Créer un devis',
-            description: isClient ? 'Démarrer un nouveau projet' : isApporteur ? 'Consulter mes commissions' : 'Nouveau devis client',
-            action: 'Commencer',
-            gradient: 'from-primary-50 to-primary-100',
-            iconGradient: 'from-primary-500 to-primary-600',
-          },
-        ]
-      : [];
-
-  const alerts = [
-    {
-      icon: <AlertTriangle size={20} />,
-      title: 'Document expirant',
-      description: 'Assurance décennale expire dans 30 jours',
-      gradient: 'from-warning-50 to-warning-100',
-      iconGradient: 'from-warning-500 to-warning-600',
-    },
-  ];
+  const loading = projectsLoading && projects.length === 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-accent-50 to-secondary-50 -m-6 p-6">
-      {/* En-tête */}
-      <div className="mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex-1">
-            <div className="flex items-center justify-between gap-12">
-              <div className="flex-shrink-0">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
-                  Bonjour, {user?.firstName || 'Utilisateur'} 👋
-                </h1>
-                <p className="text-secondary-700 text-lg">
-                  {isMandatary ? 'Gérez vos projets et clients efficacement' : "Voici un aperçu de votre activité aujourd'hui"}
-                </p>
-              </div>
-              <div className="hidden lg:flex items-center justify-center flex-shrink-0 pr-12">
-                <Logo size="lg" variant="full" />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 lg:mt-0 flex items-center space-x-4">
-            <button className="p-3 rounded-2xl bg-accent-500/80 backdrop-blur-sm text-primary-600 relative shadow-lg hover:shadow-xl hover:bg-accent-500 transition-all duration-200 transform hover:scale-105">
-              <Bell size={20} />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-warning-600 rounded-full animate-pulse" />
-            </button>
-
-            <button className="p-3 rounded-2xl bg-accent-500/80 backdrop-blur-sm text-primary-600 relative shadow-lg hover:shadow-xl hover:bg-accent-500 transition-all duration-200 transform hover:scale-105">
-              <MessageSquare size={20} />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-warning-500 rounded-full animate-pulse" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <StatCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            icon={stat.icon}
-            change={stat.change}
-            positive={stat.positive}
-            gradient={stat.gradient}
-          />
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Graphique des revenus (mock) */}
-        <div className="lg:col-span-2">
-          <div className="bg-accent-500/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 border border-accent-500/20">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-700 bg-clip-text text-transparent">
-                  Revenus Mensuels
-                </h2>
-                <p className="text-secondary-600">Performance de l'année en cours</p>
-              </div>
-              {parseFloat(revenueGrowth) !== 0 && (
-                <div className={`flex items-center px-4 py-2 rounded-xl border ${
-                  isGrowthPositive
-                    ? 'text-success-600 bg-success-50 border-success-200'
-                    : 'text-error-600 bg-error-50 border-error-200'
-                }`}>
-                  <ArrowUpRight size={20} className={`mr-2 ${!isGrowthPositive && 'rotate-90'}`} />
-                  <span className="font-semibold">{isGrowthPositive ? '+' : ''}{revenueGrowth}%</span>
-                </div>
-              )}
-            </div>
-
-            <div className="h-80 flex items-end space-x-3">
-              {[35, 45, 30, 25, 40, 50, 60, 45, 50, 55, 70, 65].map((height, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
-                  <div
-                    className={`w-full rounded-t-lg ${
-                      i === 11
-                        ? 'bg-gradient-to-t from-primary-500 to-secondary-700 shadow-lg'
-                        : 'bg-gradient-to-t from-secondary-200 to-secondary-300 hover:from-primary-200 hover:to-secondary-400'
-                    }`}
-                    style={{ height: `${height * 3}px` }}
-                  />
-                  <span className="text-xs text-secondary-600 mt-2 font-medium">
-                    {['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][i]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Activité récente (mock) */}
+    <div className="space-y-6">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <div className="bg-accent-500/90 backdrop-blur-sm rounded-3xl shadow-xl border border-accent-500/20 h-fit">
-            <div className="p-6 border-b border-gray-100/50">
-              <h2 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-700 bg-clip-text text-transparent">
-                Activité Récente
-              </h2>
-              <p className="text-secondary-600">Dernières actions sur la plateforme</p>
-            </div>
-
-            <div className="p-6">
-              {recentActivities.length === 0 ? (
-                <div className="text-center py-8">
-                  <Target size={48} className="mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-500 text-sm">Aucune activité récente</p>
-                </div>
-              ) : (
-                <div className="p-2">
-                  {recentActivities.map((activity, index) => (
-                    <ActivityItem
-                      key={index}
-                      icon={activity.icon}
-                      title={activity.title}
-                      description={activity.description}
-                      time={activity.time}
-                      type={activity.type}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <p className="text-sm font-medium text-gray-500">Pilotage opérationnel</p>
+          <h1 className="text-3xl font-bold text-gray-950">Bonjour {user?.firstName || 'Jean-Marc'}</h1>
         </div>
-      </div>
-
-      {/* Classement des performers - Admin et Manager uniquement */}
-      {(isAdmin || isManager) && (
-        <div className="mb-8">
-          <PerformersRanking showAmounts={isAdmin} />
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => navigate(paths.clientsCreate)}
+            className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+          >
+            Nouveau client
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(paths.projectsCreate)}
+            className="rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+          >
+            Nouveau dossier
+          </button>
         </div>
+      </header>
+
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        {[
+          { label: 'Urgences', value: metrics.urgentProjects, icon: AlertTriangle, route: paths.projectsPending },
+          { label: 'Dossiers actifs', value: metrics.activeProjects, icon: BriefcaseBusiness, route: paths.projectsActive },
+          { label: 'En attente', value: metrics.pendingProjects, icon: Clock3, route: paths.projectsPending },
+          { label: 'Clients', value: metrics.activeClients, icon: Users, route: paths.clients },
+          { label: 'Potentiel actif', value: currency.format(metrics.potential), icon: Euro, route: paths.projects },
+        ].map(metric => (
+          <button
+            key={metric.label}
+            type="button"
+            onClick={() => navigate(metric.route)}
+            className="rounded-2xl border border-gray-200 bg-white p-4 text-left transition hover:border-primary-300 hover:shadow-sm"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <metric.icon size={19} className="text-gray-500" />
+              <ArrowRight size={16} className="text-gray-400" />
+            </div>
+            <div className="text-2xl font-bold text-gray-950">{metric.value}</div>
+            <div className="mt-1 text-sm text-gray-500">{metric.label}</div>
+          </button>
+        ))}
+      </section>
+
+      {metrics.pendingCommissions > 0 && (
+        <button
+          type="button"
+          onClick={() => navigate(paths.commissions)}
+          className="flex w-full items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-left"
+        >
+          <span>
+            <span className="block text-sm font-medium text-amber-800">Commissions en attente</span>
+            <span className="text-xl font-bold text-amber-950">{currency.format(metrics.pendingCommissions)}</span>
+          </span>
+          <ArrowRight className="text-amber-700" />
+        </button>
       )}
 
-      {/* Projets + Commissions/Alertes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20">
-          <div className="p-6 border-b border-gray-100/50">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                  Projets Récents
-                </h2>
-                <p className="text-neutral-600">Suivi de vos projets en cours</p>
-              </div>
-              <Button variant="outline" size="sm">Voir tous</Button>
+      <section className="rounded-2xl border border-gray-200 bg-white">
+        <div className="border-b border-gray-200 p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-gray-950">Dossiers à traiter</h2>
+              <p className="text-sm text-gray-500">Les dossiers en attente apparaissent en premier.</p>
             </div>
-          </div>
-
-          <div className="p-6 space-y-4">
-            {recentProjects.length === 0 ? (
-              <div className="text-center py-8">
-                <Briefcase size={48} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-gray-500 text-sm">Aucun projet récent</p>
-                <Button variant="primary" size="sm" onClick={() => navigate('/projects/create')} className="mt-4">
-                  Créer un projet
-                </Button>
-              </div>
-            ) : (
-              recentProjects.map((project, index) => (
-                <ProjectCard key={index} {...project} />
-              ))
-            )}
+            <label className="relative block w-full md:max-w-sm">
+              <span className="sr-only">Rechercher un dossier</span>
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                value={search}
+                onChange={event => setSearch(event.target.value)}
+                placeholder="Client, dossier ou ville"
+                className="w-full rounded-xl border border-gray-300 py-2 pl-10 pr-3 text-base focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              />
+            </label>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
-              {isClient ? 'Mes Documents' : isApporteur || isMandatary ? 'Mes Commissions' : 'Commissions'}
-            </h2>
+        {projectsError && (
+          <div className="m-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-800">{projectsError}</div>
+        )}
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-success-50 to-success-100 rounded-xl border border-success-200">
-                <div className="flex items-center">
-                  <div className="p-3 rounded-xl bg-gradient-to-r from-success-500 to-success-600 text-white shadow-lg">
-                    <Euro size={20} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="font-semibold text-neutral-900">
-                      {isClient ? 'Documents validés' : (isApporteur || isMandatary) ? 'Mes commissions' : 'Ce mois'}
-                    </p>
-                    <p className="text-sm text-neutral-600">Mois courant</p>
-                  </div>
-                </div>
-                <p className="font-bold text-2xl text-neutral-900">
-                  {isClient ? '2/3' : (isApporteur || isMandatary) ? '—' : '—'}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-secondary-50 to-secondary-100 rounded-xl border border-secondary-200">
-                <div className="flex items-center">
-                  <div className="p-3 rounded-xl bg-gradient-to-r from-secondary-500 to-secondary-600 text-white shadow-lg">
-                    <Clock size={20} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="font-semibold text-neutral-900">
-                      {isClient ? 'En attente' : (isApporteur || isMandatary) ? 'À recevoir' : 'En attente'}
-                    </p>
-                    <p className="text-sm text-neutral-600">
-                      {isClient ? 'Validation documents' : (isApporteur || isMandatary) ? 'Commissions' : 'Projets en cours'}
-                    </p>
-                  </div>
-                </div>
-                <p className="font-bold text-2xl text-neutral-900">—</p>
-              </div>
-            </div>
+        {loading ? (
+          <div className="p-8 text-center text-gray-500">Chargement des dossiers…</div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="p-8 text-center">
+            <CheckCircle2 className="mx-auto mb-3 text-emerald-500" size={30} />
+            <p className="font-semibold text-gray-900">Aucun dossier à afficher</p>
+            <p className="mt-1 text-sm text-gray-500">Crée un dossier ou modifie ta recherche.</p>
           </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-warning-600 to-error-600 bg-clip-text text-transparent mb-6">
-              {isClient || isApporteur || isMandatary ? 'Actions Rapides' : 'Alertes Importantes'}
-            </h2>
-
-            <div className="space-y-4">
-              {quickActions.map((action, index) => (
-                <div
-                  key={index}
-                  className={`flex items-start p-4 bg-gradient-to-r ${action.gradient} rounded-xl border border-primary-200`}
-                >
-                  <div className={`p-2 rounded-lg bg-gradient-to-r ${action.iconGradient} text-white mr-4 shadow-lg`}>
-                    {action.icon}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-neutral-900">{action.title}</p>
-                    <p className="text-sm text-neutral-600">{action.description}</p>
-                    <Button variant="outline" size="sm" className="mt-2">{action.action}</Button>
-                  </div>
-                </div>
-              ))}
-
-              {alerts.map((alert, index) => (
-                <div
-                  key={`alert-${index}`}
-                  className={`flex items-start p-4 bg-gradient-to-r ${alert.gradient} rounded-xl border border-warning-200`}
-                >
-                  <div className={`p-2 rounded-lg bg-gradient-to-r ${alert.iconGradient} text-white mr-4 shadow-lg`}>
-                    {alert.icon}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-neutral-900">{alert.title}</p>
-                    <p className="text-sm text-neutral-600">{alert.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left">
+              <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                <tr>
+                  <th className="px-4 py-3">Client et dossier</th>
+                  <th className="px-4 py-3">Situation</th>
+                  <th className="px-4 py-3">Avancement</th>
+                  <th className="px-4 py-3">Échéance</th>
+                  <th className="px-4 py-3 text-right">Potentiel</th>
+                  <th className="px-4 py-3" aria-label="Action" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredProjects.map(project => {
+                  const progress = getProgress(project);
+                  const endDate = project.timeline?.endDate;
+                  return (
+                    <tr
+                      key={project.id}
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => navigate(buildPath('projectDetails', { id: project.id }))}
+                    >
+                      <td className="px-4 py-4">
+                        <div className="font-semibold text-gray-950">{project.title || 'Dossier sans titre'}</div>
+                        <div className="mt-1 text-sm text-gray-500">{getClientName(project)}</div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass[project.status]}`}>
+                          {statusLabel[project.status]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-2 w-28 overflow-hidden rounded-full bg-gray-200">
+                            <div className="h-full rounded-full bg-primary-600" style={{ width: `${progress}%` }} />
+                          </div>
+                          <span className="text-sm font-semibold text-gray-700">{progress}%</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-700">
+                        {endDate ? dateFormatter.format(new Date(endDate)) : 'Non définie'}
+                      </td>
+                      <td className="px-4 py-4 text-right font-semibold text-gray-950">
+                        {currency.format(project.budget?.total || 0)}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <ArrowRight size={18} className="inline text-gray-400" />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </div>
-      </div>
+        )}
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <button
+          type="button"
+          onClick={() => navigate(paths.documents)}
+          className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 text-left hover:border-primary-300"
+        >
+          <span className="flex items-center gap-3">
+            <FileText className="text-gray-500" size={20} />
+            <span>
+              <span className="block font-semibold text-gray-950">Documents</span>
+              <span className="text-sm text-gray-500">Contrôler les pièces</span>
+            </span>
+          </span>
+          <ArrowRight size={18} className="text-gray-400" />
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate(paths.calendar)}
+          className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 text-left hover:border-primary-300"
+        >
+          <span className="flex items-center gap-3">
+            <Clock3 className="text-gray-500" size={20} />
+            <span>
+              <span className="block font-semibold text-gray-950">Agenda</span>
+              <span className="text-sm text-gray-500">Voir les prochaines échéances</span>
+            </span>
+          </span>
+          <ArrowRight size={18} className="text-gray-400" />
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate(paths.clients)}
+          className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 text-left hover:border-primary-300"
+        >
+          <span className="flex items-center gap-3">
+            <Users className="text-gray-500" size={20} />
+            <span>
+              <span className="block font-semibold text-gray-950">Clients</span>
+              <span className="text-sm text-gray-500">Accéder aux synthèses</span>
+            </span>
+          </span>
+          <ArrowRight size={18} className="text-gray-400" />
+        </button>
+      </section>
     </div>
   );
 };
